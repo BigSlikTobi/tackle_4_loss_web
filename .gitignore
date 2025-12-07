@@ -7,11 +7,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +17,35 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.local
+
+# Web app (Vite/React)
+web/node_modules
+web/dist
+web/dist-ssr
+web/.vite
+web/.env
+web/.env.local
+web/.env.*.local
+web/design_tokens.dart
+
+# Flutter app
+flutter_app/.dart_tool/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages
+flutter_app/.metadata
+flutter_app/build/
+flutter_app/ios/Pods/
+flutter_app/ios/.symlinks/
+flutter_app/ios/Flutter/.last_build_id
+flutter_app/android/.gradle/
+flutter_app/android/app/debug
+flutter_app/android/app/profile
+flutter_app/android/app/release
+flutter_app/lib/design_tokens.dart

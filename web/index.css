@@ -465,12 +465,27 @@ h4 { font-size: var(--fs-sm); line-height: 1.4; }
   color: #0f3d2e;
   font-weight: 700;
   letter-spacing: -0.01em;
+  transition: transform 0.18s ease, color 0.2s ease;
 }
 
 .read-link svg {
   transition: transform 0.2s ease;
 }
 
+.read-link:hover {
+  transform: translateY(-2px);
+  color: #157054;
+}
+
 .read-link:hover svg {
   transform: translateX(2px);
+}
+
+.section-fade {
+  animation: sectionFade 0.35s ease;
+}
+
+@keyframes sectionFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

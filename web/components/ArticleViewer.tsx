@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Article } from '../types';
-import { Check, Volume2, Square, Loader2 } from 'lucide-react';
+import { Check, Volume2, Square, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ArticleViewerProps {
   article: Article;
@@ -165,7 +165,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
   const sectionProgressPercent = Math.round(((currentSectionIndex + 1) / totalSections) * 100);
 
   return (
-    <div ref={contentRef} className="relative min-h-screen">
+    <div ref={contentRef} className="relative min-h-screen detail-transition">
       {/* Floating audio control */}
       {article.audioFile && (
         <button
@@ -235,7 +235,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
             className="relative h-80 bg-black overflow-hidden rounded-2xl"
           >
             {/* Base image always visible for smooth transitions */}
-            <div className="absolute inset-0 hero-tilt">
+            <div className="absolute inset-0 hero-tilt hero-image-soft">
               <img
                 src={currentSection.image || article.heroImage}
                 alt={currentSection.headline}
@@ -262,13 +262,14 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
               </video>
             )}
             <div className="absolute inset-0 shimmer pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+            <div className="absolute inset-0 hero-overlay" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 hero-text-veil" />
 
             {isFirstSection && (
               <div className="absolute inset-0 flex flex-col justify-end p-8">
                 <div className="space-y-4">
                   <h1
-                    className="text-5xl md:text-7xl font-black leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] tracking-tight"
+                    className="text-5xl md:text-7xl font-extrabold leading-none drop-shadow-[0_6px_24px_rgba(0,0,0,0.4)] tracking-tight"
                     style={{ color: 'var(--neutral-0)' }}
                   >
                     {article.title}
@@ -276,8 +277,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
                   <div className="flex items-start gap-3">
                     <div className="w-1 h-16 bg-[var(--brand)] rounded-full shadow-lg" />
                     <p
-                      className="text-lg md:text-2xl leading-relaxed font-medium max-w-2xl"
-                      style={{ color: 'var(--neutral-0)' }}
+                      className="hero-subtitle text-lg md:text-2xl leading-relaxed font-normal max-w-2xl"
                     >
                       {article.subtitle}
                     </p>
@@ -289,7 +289,11 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
         </div>
 
         {/* Article body */}
-        <main className="space-y-6" ref={sectionRef}>
+        <main
+          key={`${article.id}-${currentSectionIndex}`}
+          className="space-y-6 section-fade"
+          ref={sectionRef}
+        >
           <div className="space-y-2">
             <h2 className="text-2xl md:text-3xl font-bold text-zinc-900">
               {currentSection.headline}
@@ -333,18 +337,19 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
               <button
                 onClick={handlePreviousSection}
                 disabled={isFirstSection}
-                className={`section-nav-btn section-nav-prev flex-1 ${isFirstSection ? 'btn-disabled' : ''}`}
+                className={`read-link section-nav-link section-nav-prev micro-press ${isFirstSection ? 'is-disabled' : ''}`}
               >
+                <ChevronLeft className="w-4 h-4" />
                 Prev
               </button>
 
               {!isLastSection ? (
                 <button
                   onClick={handleNextSection}
-                  className="section-nav-btn section-nav-next flex-1"
+                  className="read-link section-nav-link section-nav-next chapter-turn micro-press"
                 >
                   Next
-                  <Check className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               ) : (
                 <div className="flex-1 text-left">

@@ -1,308 +1,362 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Article } from '../types';
-import { ChevronDown, ChevronUp, Clock, Calendar, Hash, ArrowDown, Loader2, Volume2, Square } from 'lucide-react';
+import { Check, Volume2, Square, Loader2 } from 'lucide-react';
 
 interface ArticleViewerProps {
   article: Article;
-  isDarkMode: boolean;
+  onHeroReady?: (el: HTMLDivElement | null) => void;
 }
 
-const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, isDarkMode }) => {
+const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  // Audio State
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [sectionScrollProgress, setSectionScrollProgress] = useState(0);
+  const [showCheckmark, setShowCheckmark] = useState(false);
+  const [showVideo, setShowVideo] = useState(!!article.videoFile);
+  const [videoReady, setVideoReady] = useState(false);
   const [isAudioReady, setIsAudioReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const contentRef = useRef<HTMLDivElement>(null);
+  // Track scroll progress within current section
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
 
-  const currentSection = article.sections[currentSectionIndex];
-  const nextSection = article.sections[currentSectionIndex + 1];
+      const rect = sectionRef.current.getBoundingClientRect();
+      const sectionTop = rect.top;
+      const sectionHeight = rect.height;
+      const windowHeight = window.innerHeight;
 
-  // Preload Audio on Mount
+      // Calculate how much of the section has been scrolled through
+      const scrolled = Math.max(0, windowHeight - sectionTop);
+      const progress = Math.min((scrolled / sectionHeight) * 100, 100);
+      setSectionScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial calculation
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [currentSectionIndex]);
+
+  // Expose hero media element to parent for transitions
+  useEffect(() => {
+    if (onHeroReady) onHeroReady(heroRef.current);
+    return () => {
+      if (onHeroReady) onHeroReady(null);
+    };
+  }, [onHeroReady]);
+
+  // Preload audio for read-aloud
   useEffect(() => {
     if (article.audioFile) {
-      console.log("Preloading audio:", article.audioFile);
       const audio = new Audio(article.audioFile);
-      // Essential for loading from different origins without "supported sources" error
-      audio.crossOrigin = "anonymous";
-      audio.preload = "auto";
-      
-      // Setup listeners
-      audio.addEventListener('canplaythrough', () => {
-        console.log("Audio ready to play");
-        setIsAudioReady(true);
-      });
-      
-      audio.addEventListener('ended', () => {
-        setIsPlaying(false);
-      });
-      
-      audio.addEventListener('error', (e) => {
-        const error = (e.target as HTMLAudioElement).error;
-        console.error("Audio error event:", e);
-        console.error("Audio error code:", error?.code);
-        console.error("Audio error message:", error?.message);
+      audio.crossOrigin = 'anonymous';
+      audio.preload = 'auto';
+
+      const handleReady = () => setIsAudioReady(true);
+      const handleEnded = () => setIsPlaying(false);
+      const handleError = () => {
         setIsAudioReady(false);
         setIsPlaying(false);
-      });
+      };
 
-      // Start loading
+      audio.addEventListener('canplaythrough', handleReady);
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError);
       audio.load();
+
       audioRef.current = audio;
+
+      return () => {
+        audio.pause();
+        audio.removeEventListener('canplaythrough', handleReady);
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError);
+        audioRef.current = null;
+        setIsPlaying(false);
+        setIsAudioReady(false);
+      };
     }
 
-    // Cleanup on unmount or article change
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      setIsPlaying(false);
+      setIsAudioReady(false);
     };
   }, [article.audioFile]);
 
-  const handleToggleAudio = () => {
-    if (!audioRef.current || !article.audioFile) {
-      console.error("No audio reference or file available");
-      return;
+  const handleNextSection = () => {
+    if (currentSectionIndex < article.sections.length - 1) {
+      setCurrentSectionIndex(prev => prev + 1);
+      setSectionScrollProgress(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      triggerSectionComplete();
     }
+  };
+
+  const handlePreviousSection = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(prev => prev - 1);
+      setSectionScrollProgress(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleToggleAudio = () => {
+    if (!audioRef.current || !article.audioFile) return;
 
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play()
+      audioRef.current
+        .play()
         .then(() => setIsPlaying(true))
-        .catch(e => {
-           console.error("Play execution error:", e);
-           // Handle NotAllowedError (Autoplay) specific logic if needed
-           alert("Could not play audio. The browser might be blocking it or the source is invalid.");
+        .catch(() => {
+          setIsPlaying(false);
+          setIsAudioReady(false);
         });
     }
   };
 
-  const handleNextSection = () => {
-    // Optional: Pause audio on navigation if desired. 
-    // Currently leaving it playing as requested for "Read Article" mode.
-    
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentSectionIndex((prev) => prev + 1);
-      setIsTransitioning(false);
-      if (contentRef.current) {
-        contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 300);
+  const triggerSectionComplete = () => {
+    setShowCheckmark(true);
+    // Haptic feedback (if supported)
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+    setTimeout(() => setShowCheckmark(false), 1000);
   };
 
-  const handlePrevSection = () => {
-    if (currentSectionIndex === 0) return;
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setCurrentSectionIndex((prev) => prev - 1);
-      setIsTransitioning(false);
-      if (contentRef.current) {
-        contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 300);
-  };
+  useEffect(() => {
+    setShowVideo(!!article.videoFile);
+    setVideoReady(false);
+  }, [article.id, article.videoFile]);
+
+  // Ensure hero video autoplays; fall back to image if blocked or fails
+  useEffect(() => {
+    if (!showVideo || !videoRef.current) return;
+    const video = videoRef.current;
+    video.muted = true;
+    video.playsInline = true;
+    const playPromise = video.play();
+    if (playPromise) {
+      playPromise.catch(() => setShowVideo(false));
+    }
+  }, [article.id, showVideo]);
+
+  // Reset scroll/section on article change
+  useEffect(() => {
+    setCurrentSectionIndex(0);
+    setSectionScrollProgress(0);
+  }, [article.id]);
+
+  const currentSection = article.sections[currentSectionIndex];
+  const isLastSection = currentSectionIndex === article.sections.length - 1;
+  const isFirstSection = currentSectionIndex === 0;
+  const totalSections = article.sections.length;
+  const sectionProgressPercent = Math.round(((currentSectionIndex + 1) / totalSections) * 100);
 
   return (
-    <div className="flex flex-col gap-8">
-      
-      {/* Article Header Card (Static Background) */}
-      <div 
-        className={`p-6 md:p-8 rounded-2xl transition-all duration-500 relative overflow-hidden group border min-h-[300px] flex flex-col justify-between ${
-        isDarkMode ? 'metallic-panel border-tfl-green-600/30' : 'metallic-panel-light border-white'
-      }`}>
-        
-        {/* Static Background Image Layer */}
-        <div className="absolute inset-0 z-0">
-            {/* Base Image */}
-            <img 
-                src={article.heroImage} 
-                alt={article.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-[20s] ease-linear group-hover:scale-105"
-            />
-            {/* Overlays for readability - adjusted for better image visibility */}
-            <div className={`absolute inset-0 ${
-              isDarkMode 
-                ? 'bg-gradient-to-t from-tfl-green-950 via-tfl-green-950/70 to-transparent' 
-                : 'bg-gradient-to-t from-white via-white/80 to-white/20'
-            }`}></div>
-            <div className="absolute inset-0 bg-black/10 mix-blend-overlay"></div>
-        </div>
-
-        {/* Top Content (Metadata) */}
-        <div className="relative z-10 w-full flex flex-wrap items-start justify-between gap-4">
-          <span className={`px-2 py-1 text-xs font-bold tracking-widest uppercase rounded border backdrop-blur-sm ${isDarkMode ? 'bg-black/40 border-tfl-green-500 text-tfl-green-300' : 'bg-white/60 border-tfl-green-600 text-tfl-green-900'}`}>
-               DeepDive
-          </span>
-          
-          <div className="flex items-center gap-4 text-xs font-bold tracking-widest uppercase opacity-90 backdrop-blur-sm rounded-full px-3 py-1 bg-black/20">
-            <span className={`flex items-center gap-1 ${isDarkMode ? 'text-white' : 'text-slate-100'}`}><Calendar size={12} /> {article.date}</span>
-            <span className="w-1 h-1 rounded-full bg-white opacity-50 hidden sm:block"></span>
-            <span className={`flex items-center gap-1 ${isDarkMode ? 'text-white' : 'text-slate-100'}`}><Clock size={12} /> 15 min read</span>
-          </div>
-        </div>
-
-        {/* Bottom Content (Title, Subtitle, Author) */}
-        <div className="relative z-10 mt-8">
-          <h1 className={`text-3xl md:text-5xl font-black mb-2 font-sans leading-tight tracking-tight drop-shadow-lg ${
-            isDarkMode ? 'metallic-text' : 'text-slate-900'
-          }`}>
-            {article.title}
-          </h1>
-          
-          <h2 className={`text-xl md:text-2xl font-serif italic mb-6 leading-relaxed drop-shadow-md ${
-            isDarkMode ? 'text-tfl-green-100' : 'text-tfl-green-900'
-          }`}>
-            {article.subtitle}
-          </h2>
-
-          <div className="flex items-center gap-4 pt-4 border-t border-dashed border-current border-opacity-30">
-            <div className={`w-10 h-10 rounded-full p-[2px] ${isDarkMode ? 'bg-gradient-to-tr from-tfl-green-500 to-yellow-500' : 'bg-gradient-to-tr from-tfl-green-400 to-tfl-green-600'}`}>
-              <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden">
-                <img src={`https://api.dicebear.com/7.x/initials/svg?seed=${article.author}`} alt="author" className="w-full h-full" />
-              </div>
-            </div>
-            <div>
-              <p className={`text-sm font-bold ${isDarkMode ? 'text-white' : 'text-black'}`}>{article.author}</p>
-              <p className={`text-[10px] opacity-80 uppercase tracking-wide font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Analysis Team</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div 
-        ref={contentRef}
-        className={`transition-all duration-500 min-h-[400px] ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Previous Button */}
-            {currentSectionIndex > 0 && (
-              <button
-                onClick={handlePrevSection}
-                className={`mr-2 p-2 rounded-full border shadow-sm transition-all duration-300 group ${
-                  isDarkMode 
-                    ? 'bg-tfl-green-950 border-tfl-green-800 text-tfl-green-400 hover:border-tfl-green-500 hover:shadow-[0_0_10px_rgba(34,197,94,0.2)]' 
-                    : 'bg-white border-tfl-green-200 text-tfl-green-700 hover:border-tfl-green-400'
-                }`}
-                title="Go back to previous section"
-              >
-                <ChevronUp size={18} className="transition-transform group-hover:-translate-y-0.5" />
-              </button>
-            )}
-
-            <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm border ${
-               isDarkMode ? 'bg-tfl-green-900 border-tfl-green-600 text-tfl-green-300' : 'bg-tfl-green-100 border-tfl-green-300 text-tfl-green-800'
-            }`}>
-              {currentSectionIndex + 1}
-            </div>
-            <span className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-tfl-green-400' : 'text-tfl-green-700'}`}>
-              Section {currentSectionIndex + 1} of {article.sections.length}
-            </span>
-            <div className={`h-[1px] w-12 ${isDarkMode ? 'bg-tfl-green-900' : 'bg-tfl-green-200'}`}></div>
-          </div>
-
-          {/* Audio Controls */}
-          {article.audioFile && (
-            <button
-              onClick={handleToggleAudio}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-all ${
-                isDarkMode 
-                  ? isPlaying 
-                    ? 'bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900/50'
-                    : 'bg-tfl-green-900/30 border-tfl-green-700 text-tfl-green-400 hover:bg-tfl-green-900/50'
-                  : isPlaying
-                    ? 'bg-red-100 border-red-200 text-red-600'
-                    : 'bg-tfl-green-50 border-tfl-green-200 text-tfl-green-700 hover:bg-tfl-green-100'
-              }`}
-            >
-              {!isAudioReady && isPlaying && <Loader2 size={14} className="animate-spin" />}
-              {isPlaying ? (
-                <Square size={14} fill="currentColor" />
-              ) : (
-                <Volume2 size={14} />
-              )}
-              {isPlaying ? 'Stop Audio' : 'Read Article'}
-            </button>
-          )}
-        </div>
-
-        <h3 className={`text-2xl md:text-4xl font-bold mb-8 font-sans ${
-           isDarkMode ? 'text-white drop-shadow-lg' : 'text-slate-900'
-        }`}>
-           {currentSection.headline}
-        </h3>
-
-        <div className={`prose prose-lg md:prose-xl max-w-none ${isDarkMode ? 'prose-invert prose-p:text-gray-300 prose-headings:text-white' : 'prose-p:text-slate-700'}`}>
-          {currentSection.content.map((paragraph, idx) => (
-            <p key={idx} className="mb-6 leading-relaxed font-serif text-justify md:text-left">
-              {paragraph}
-            </p>
-          ))}
-        </div>
-      </div>
-
-      {/* Next Section Teaser (Interactive) */}
-      {nextSection ? (
+    <div ref={contentRef} className="relative min-h-screen">
+      {/* Floating audio control */}
+      {article.audioFile && (
         <button
-          onClick={handleNextSection}
-          className={`group relative w-full text-left p-6 md:p-8 rounded-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] metallic-button overflow-hidden`}
+          onClick={handleToggleAudio}
+          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${
+            isPlaying
+              ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
+              : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
+          }`}
+          title={isPlaying ? 'Stop audio' : 'Play audio'}
         >
-          {/* Shine effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-          
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex-1 pr-6">
-              <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-3 text-tfl-green-300 group-hover:text-white transition-colors">
-                <ArrowDown size={14} className="animate-bounce" /> Read Next
-              </span>
-              <h4 className="text-xl md:text-2xl font-bold font-sans text-white group-hover:text-tfl-green-100 transition-colors">
-                {nextSection.headline}
-              </h4>
-            </div>
-            <div className="h-12 w-12 rounded-full border-2 border-tfl-green-400/30 flex items-center justify-center text-tfl-green-300 group-hover:bg-tfl-green-400 group-hover:text-black group-hover:border-transparent transition-all duration-300">
-              <ChevronDown className="w-6 h-6" />
-            </div>
-          </div>
+          {isPlaying ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+          {isPlaying ? 'Stop' : 'Audio'}
+          {!isAudioReady && !isPlaying && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
         </button>
-      ) : (
-         <div className={`p-10 rounded-xl text-center border ${
-            isDarkMode 
-              ? 'bg-tfl-green-950/40 border-tfl-green-900' 
-              : 'bg-tfl-green-50 border-tfl-green-200'
-         }`}>
-           <div className="inline-block p-4 rounded-full bg-tfl-green-500/10 mb-4">
-             <Hash className={`w-8 h-8 ${isDarkMode ? 'text-tfl-green-400' : 'text-tfl-green-600'}`} />
-           </div>
-           <h4 className="text-xl font-bold mb-2">End of DeepDive</h4>
-           <p className="opacity-70 max-w-md mx-auto">You've reached the end of this analysis. We hope you enjoyed the read.</p>
-           <button 
-             onClick={() => {
-                setCurrentSectionIndex(0);
-                if (contentRef.current) {
-                  contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-             }}
-             className="mt-6 px-6 py-2 rounded-full font-bold uppercase tracking-wide text-xs border border-current hover:bg-current hover:text-black transition-colors"
-           >
-             Read Again
-           </button>
-         </div>
       )}
 
-      {/* Progress Bar fixed at bottom */}
-      <div className={`fixed bottom-0 left-0 w-full h-1 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-200'}`}>
-        <div 
-           className="h-full bg-tfl-green-500 transition-all duration-500 ease-out"
-           style={{ width: `${((currentSectionIndex + 1) / article.sections.length) * 100}%` }}
-        />
+      {/* Section Complete Checkmark */}
+      {showCheckmark && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+          <div className="w-20 h-20 bg-[var(--brand)] rounded-full flex items-center justify-center animate-[ping_0.5s_ease-out] shadow-lg">
+            <Check className="w-10 h-10 text-white" strokeWidth={3} />
+          </div>
+        </div>
+      )}
+
+      {/* Vertical Progress Indicator - Right Side, More Prominent */}
+      <div className="fixed right-4 md:right-8 top-32 bottom-32 flex flex-col items-center z-30">
+        <div className="relative flex-1 w-1 bg-gray-200/70 rounded-full">
+          {/* Progress fill with glow */}
+          <div 
+            className="absolute top-0 w-full bg-[var(--brand)] rounded-full transition-all duration-500 ease-out"
+            style={{ 
+              height: `${sectionScrollProgress}%`,
+              boxShadow: '0 0 10px rgba(15, 61, 46, 0.45), 0 0 20px rgba(15, 61, 46, 0.25)'
+            }}
+          />
+          
+          {/* Horizontal crosshair line */}
+          <div 
+            className="absolute left-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-[var(--brand)] to-transparent transition-all duration-500 ease-out"
+            style={{ 
+              top: `${sectionScrollProgress}%`, 
+              transform: `translate(-50%, -50%)`,
+              boxShadow: '0 0 15px rgba(15, 61, 46, 0.6)'
+            }}
+          />
+          
+          {/* Glowing intersection point */}
+          <div 
+            className="absolute w-3 h-3 bg-white rounded-full transition-all duration-500 ease-out progress-glow border-2 border-[var(--brand)]"
+            style={{ 
+              top: `${sectionScrollProgress}%`, 
+              left: '50%',
+              transform: 'translate(-50%, -50%)'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Main Content Container: single column layout */}
+      <div className="max-w-4xl mx-auto px-4 space-y-10">
+        {/* Hero */}
+        <div className="mb-8">
+          <div 
+            ref={heroRef}
+            className="relative h-80 bg-black overflow-hidden rounded-2xl"
+          >
+            {/* Base image always visible for smooth transitions */}
+            <div className="absolute inset-0 hero-tilt">
+              <img
+                src={currentSection.image || article.heroImage}
+                alt={currentSection.headline}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Video overlay fades in/out over the image */}
+            {showVideo && article.videoFile && (
+              <video
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+                style={{ opacity: videoReady ? 1 : 0 }}
+                autoPlay
+                muted
+                playsInline
+                preload="auto"
+                poster={currentSection.image || article.heroImage}
+                onCanPlayThrough={() => setVideoReady(true)}
+                onEnded={() => { setShowVideo(false); setVideoReady(false); }}
+                onError={() => { setShowVideo(false); setVideoReady(false); }}
+              >
+                <source src={article.videoFile} />
+              </video>
+            )}
+            <div className="absolute inset-0 shimmer pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+
+            {isFirstSection && (
+              <div className="absolute inset-0 flex flex-col justify-end p-8">
+                <div className="space-y-4">
+                  <h1
+                    className="text-5xl md:text-7xl font-black leading-none drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] tracking-tight"
+                    style={{ color: 'var(--neutral-0)' }}
+                  >
+                    {article.title}
+                  </h1>
+                  <div className="flex items-start gap-3">
+                    <div className="w-1 h-16 bg-[var(--brand)] rounded-full shadow-lg" />
+                    <p
+                      className="text-lg md:text-2xl leading-relaxed font-medium max-w-2xl"
+                      style={{ color: 'var(--neutral-0)' }}
+                    >
+                      {article.subtitle}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Article body */}
+        <main className="space-y-6" ref={sectionRef}>
+          <div className="space-y-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-zinc-900">
+              {currentSection.headline}
+            </h2>
+          </div>
+
+          <div className="prose prose-lg max-w-none">
+            {currentSection.content.map((paragraph, pIndex) => (
+              <p key={pIndex} className="text-zinc-900 leading-relaxed mb-4 text-lg">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <div
+              className="section-progress"
+              role="progressbar"
+              aria-valuemin={1}
+              aria-valuemax={totalSections}
+              aria-valuenow={currentSectionIndex + 1}
+            >
+              <div className="section-progress-bar">
+                <div
+                  className="section-progress-fill"
+                  style={{ width: `${sectionProgressPercent}%` }}
+                />
+              </div>
+              <div className="section-progress-dots">
+                {article.sections.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`section-progress-dot ${idx === currentSectionIndex ? 'is-active' : ''}`}
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <button
+                onClick={handlePreviousSection}
+                disabled={isFirstSection}
+                className={`btn-secondary flex-1 ${isFirstSection ? 'btn-disabled' : ''}`}
+              >
+                Prev
+              </button>
+
+              {!isLastSection ? (
+                <button
+                  onClick={handleNextSection}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2"
+                >
+                  Next
+                  <Check className="w-5 h-5" />
+                </button>
+              ) : (
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2 text-[var(--brand)] font-bold">
+                    <Check className="w-5 h-5" /> Done
+                  </div>
+                  <p className="text-sm text-zinc-600">{article.sections.length} sections read</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
