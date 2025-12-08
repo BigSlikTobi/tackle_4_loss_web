@@ -78,7 +78,7 @@ class Article {
       title: json['title'],
       subtitle: json['subtitle'],
       author: json['author'],
-      date: DateFormat('MMMM d, yyyy', 'de_DE').format(DateTime.parse(json['published_at'])),
+      date: DateFormat('MMMM d, yyyy', json['language_code'] ?? 'de').format(DateTime.parse(json['published_at'])),
       heroImage: json['hero_image_url'],
       audioFile: json['audio_file'],
       videoFile: json['video_file'],
