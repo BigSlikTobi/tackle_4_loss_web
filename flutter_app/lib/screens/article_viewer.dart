@@ -33,7 +33,7 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
             setState(() {
               _isVideoInitialized = true;
             });
-            _videoController!.setLooping(true);
+            _videoController!.setLooping(false);
             _videoController!.setVolume(0);
             _videoController!.play();
           }
@@ -49,17 +49,29 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
   }
 
   void _toggleAudio() async {
-    if (_isPlayingAudio) {
-      await _audioPlayer.pause();
-    } else {
-      if (widget.article.audioFile != null) {
-        await _audioPlayer.play(UrlSource(widget.article.audioFile!));
+    debugPrint('Audio button tapped');
+    HapticFeedback.lightImpact();
+    try {
+      if (_isPlayingAudio) {
+        await _audioPlayer.pause();
+      } else {
+        if (widget.article.audioFile != null) {
+          debugPrint('Playing audio from: ${widget.article.audioFile}');
+          await _audioPlayer.play(UrlSource(widget.article.audioFile!));
+        }
       }
-    }
-    if (mounted) {
-      setState(() {
-        _isPlayingAudio = !_isPlayingAudio;
-      });
+      if (mounted) {
+        setState(() {
+          _isPlayingAudio = !_isPlayingAudio;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error playing audio: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error playing audio: $e')),
+        );
+      }
     }
   }
 
@@ -247,13 +259,37 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
           ),
           if (widget.article.audioFile != null)
             Positioned(
-              bottom: 20,
-              right: 20,
-              child: FloatingActionButton.extended(
-                onPressed: _toggleAudio,
-                backgroundColor: _isPlayingAudio ? Colors.red : AppColors.brandBase,
-                icon: Icon(_isPlayingAudio ? LucideIcons.square : LucideIcons.volume2),
-                label: Text(_isPlayingAudio ? 'STOP' : 'AUDIO'),
+              bottom: 32,
+              right: 24,
+              child: GestureDetector(
+                onTap: _toggleAudio,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: _isPlayingAudio ? AppColors.brandBase : Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: _isPlayingAudio ? AppColors.brandBase : AppColors.neutralBorder,
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      LucideIcons.headphones,
+                      color: _isPlayingAudio ? Colors.white : AppColors.brandBase,
+                      size: 24,
+                    ),
+                  ),
+                ),
               ),
             ),
         ],
