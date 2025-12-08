@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -12,10 +13,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   await initializeDateFormatting();
+  await dotenv.load(fileName: ".env");
 
   await Supabase.initialize(
-    url: 'https://yqtiuzhedkfacwgormhn.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxdGl1emhlZGtmYWN3Z29ybWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NzcwMDgsImV4cCI6MjA1NzQ1MzAwOH0.h2FYangQNOdEJWq8ExWBABiphzoLObWcj5B9Z-uIgQc',
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
   runApp(const MyApp());

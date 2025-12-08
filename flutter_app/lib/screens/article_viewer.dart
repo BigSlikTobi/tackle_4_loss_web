@@ -44,6 +44,7 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
   @override
   void dispose() {
     _videoController?.dispose();
+    _audioPlayer.stop(); // Ensure audio stops
     _audioPlayer.dispose();
     super.dispose();
   }
