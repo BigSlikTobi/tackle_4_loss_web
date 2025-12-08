@@ -1,6 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'design_tokens.dart';
+import 'models.dart';
+import 'widgets/header.dart';
+import 'widgets/article_feed.dart';
+import 'screens/article_viewer.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await initializeDateFormatting();
+
+  await Supabase.initialize(
+    url: 'https://yqtiuzhedkfacwgormhn.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxdGl1emhlZGtmYWN3Z29ybWhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4NzcwMDgsImV4cCI6MjA1NzQ1MzAwOH0.h2FYangQNOdEJWq8ExWBABiphzoLObWcj5B9Z-uIgQc',
+  );
+
   runApp(const MyApp());
 }
 
@@ -9,83 +26,127 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const brandGreen = Color(0xFF0D2119);
-    const brandSand = Color(0xFFC7C8B8);
-
     return MaterialApp(
       title: 'Tackle4Loss',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: brandGreen,
-          primary: brandGreen,
-          secondary: brandSand,
-          brightness: Brightness.light,
+          seedColor: AppColors.brandBase,
+          primary: AppColors.brandBase,
+          secondary: AppColors.brandLight,
+          surface: AppColors.neutralSoft,
         ),
         useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF7F7F5),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: brandGreen,
-          foregroundColor: brandSand,
-          elevation: 0,
-          centerTitle: false,
-        ),
+        scaffoldBackgroundColor: AppColors.neutralSoft,
+        textTheme: GoogleFonts.interTextTheme(),
       ),
       home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _selectedLanguage = 'de';
+  List<Article> _articles = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchArticles();
+  }
+
+  Future<void> _fetchArticles() async {
+    try {
+      debugPrint('Fetching articles from Supabase...');
+      final response = await Supabase.instance.client
+          .schema('content')
+          .from('deepdive_article')
+          .select('*')
+          .order('published_at', ascending: false);
+
+      debugPrint('Raw response length: ${(response as List).length}');
+
+      final articles = (response as List)
+          .map((json) {
+            try {
+              return Article.fromSupabase(json);
+            } catch (e) {
+              debugPrint('Error parsing article ${json['id']}: $e');
+              rethrow;
+            }
+          })
+          .toList();
+
+      debugPrint('Parsed ${articles.length} articles');
+
+      if (mounted) {
+        setState(() {
+          _articles = articles;
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Loaded ${articles.length} articles')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error fetching articles: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final filteredArticles = _articles
+        .where((a) => a.languageCode == _selectedLanguage)
+        .toList();
+    
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        title: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              margin: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0D2119),
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 6,
-                    offset: Offset(0, 3),
+      body: CustomScrollView(
+        slivers: [
+          AppHeader(
+            selectedLanguage: _selectedLanguage,
+            onLanguageChanged: (lang) {
+              setState(() {
+                _selectedLanguage = lang;
+              });
+            },
+          ),
+          if (_isLoading)
+            const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else
+            ArticleFeed(
+              articles: filteredArticles,
+              onSelect: (article) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ArticleViewerScreen(article: article),
                   ),
-                ],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: Image.asset('assets/T4L_app_logo.png', fit: BoxFit.cover),
+                );
+              },
             ),
-            const Text(
-              'Tackle4Loss',
-              style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5),
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Text(
-              'Welcome to Tackle4Loss',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Logo wired for both web and mobile.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
