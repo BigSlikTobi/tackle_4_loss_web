@@ -42,7 +42,6 @@ export default function BreakingNewsModal({
     // ArticleViewer State
     const [currentSectionIndex] = useState(0);
     const [sectionScrollProgress, setSectionScrollProgress] = useState(0);
-    const [showCheckmark, setShowCheckmark] = useState(false);
     const [isAudioReady, setIsAudioReady] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
 
