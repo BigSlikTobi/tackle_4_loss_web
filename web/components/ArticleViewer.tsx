@@ -171,10 +171,11 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
       {article.audioFile && (
         <button
           onClick={handleToggleAudio}
-          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${isPlaying
-            ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
-            : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
-            }`}
+          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${
+            isPlaying
+              ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
+              : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
+          }`}
           title={isPlaying ? 'Stop audio' : 'Play audio'}
         >
           {isPlaying ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
