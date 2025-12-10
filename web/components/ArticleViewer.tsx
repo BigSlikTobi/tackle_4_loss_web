@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Article } from '../types';
 import { Check, Volume2, Square, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ArticleViewerProps {
   article: Article;
@@ -170,11 +171,10 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
       {article.audioFile && (
         <button
           onClick={handleToggleAudio}
-          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${
-            isPlaying
-              ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
-              : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
-          }`}
+          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${isPlaying
+            ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
+            : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
+            }`}
           title={isPlaying ? 'Stop audio' : 'Play audio'}
         >
           {isPlaying ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -196,29 +196,29 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
       <div className="fixed right-4 md:right-8 top-32 bottom-32 flex flex-col items-center z-30">
         <div className="relative flex-1 w-1 bg-gray-200/70 rounded-full">
           {/* Progress fill with glow */}
-          <div 
+          <div
             className="absolute top-0 w-full bg-[var(--brand)] rounded-full transition-all duration-500 ease-out"
-            style={{ 
+            style={{
               height: `${sectionScrollProgress}%`,
               boxShadow: '0 0 10px rgba(15, 61, 46, 0.45), 0 0 20px rgba(15, 61, 46, 0.25)'
             }}
           />
-          
+
           {/* Horizontal crosshair line */}
-          <div 
+          <div
             className="absolute left-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-[var(--brand)] to-transparent transition-all duration-500 ease-out"
-            style={{ 
-              top: `${sectionScrollProgress}%`, 
+            style={{
+              top: `${sectionScrollProgress}%`,
               transform: `translate(-50%, -50%)`,
               boxShadow: '0 0 15px rgba(15, 61, 46, 0.6)'
             }}
           />
-          
+
           {/* Glowing intersection point */}
-          <div 
+          <div
             className="absolute w-3 h-3 bg-white rounded-full transition-all duration-500 ease-out progress-glow border-2 border-[var(--brand)]"
-            style={{ 
-              top: `${sectionScrollProgress}%`, 
+            style={{
+              top: `${sectionScrollProgress}%`,
               left: '50%',
               transform: 'translate(-50%, -50%)'
             }}
@@ -230,7 +230,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
       <div className="max-w-4xl mx-auto px-4 space-y-10">
         {/* Hero */}
         <div className="mb-8">
-          <div 
+          <div
             ref={heroRef}
             className="relative h-80 bg-black overflow-hidden rounded-2xl"
           >
@@ -301,11 +301,9 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
           </div>
 
           <div className="prose prose-lg max-w-none">
-            {currentSection.content.map((paragraph, pIndex) => (
-              <p key={pIndex} className="text-zinc-900 leading-relaxed mb-4 text-lg">
-                {paragraph}
-              </p>
-            ))}
+            <ReactMarkdown>
+              {currentSection.content.join('\n\n')}
+            </ReactMarkdown>
           </div>
 
           <div className="space-y-3 pt-2">

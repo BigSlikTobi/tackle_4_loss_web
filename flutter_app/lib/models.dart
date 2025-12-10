@@ -87,3 +87,51 @@ class Article {
     );
   }
 }
+
+class BreakingNews {
+  final String id;
+  final String headline;
+  final String? imageUrl;
+  final DateTime createdAt;
+
+  BreakingNews({
+    required this.id,
+    required this.headline,
+    this.imageUrl,
+    required this.createdAt,
+  });
+
+  factory BreakingNews.fromJson(Map<String, dynamic> json) {
+    return BreakingNews(
+      id: json['id'],
+      headline: json['headline'],
+      imageUrl: json['image_url'] ?? json['hero_image_url'],
+      createdAt: DateTime.parse(json['created_at']),
+    );
+  }
+}
+
+class BreakingNewsDetail extends BreakingNews {
+  final String content;
+  final String introduction;
+
+  BreakingNewsDetail({
+    required super.id,
+    required super.headline,
+    super.imageUrl,
+    required super.createdAt,
+    required this.content,
+    required this.introduction,
+  });
+
+  factory BreakingNewsDetail.fromJson(Map<String, dynamic> json) {
+    return BreakingNewsDetail(
+      id: json['id'],
+      headline: json['headline'],
+      imageUrl: json['image_url'] ?? json['hero_image_url'],
+      createdAt: DateTime.parse(json['created_at']),
+      content: json['content'] ?? '',
+      introduction: json['introduction'] ?? '',
+    );
+  }
+}

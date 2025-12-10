@@ -18,8 +18,8 @@ cp .env.example .env
 Edit the `.env` file and replace `your_supabase_anon_key_here` with your actual Supabase anonymous (public) key:
 
 ```env
-VITE_SUPABASE_URL=https://yqtiuzhedkfacwgormhn.supabase.co
-VITE_SUPABASE_ANON_KEY=your_actual_anon_key_here
+VITE_SUPABASE_URL=YOUR_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
 You can find these credentials in your Supabase project settings:

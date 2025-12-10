@@ -19,11 +19,6 @@ const Header: React.FC<HeaderProps> = ({ selectedLanguage, onChangeLanguage }) =
                 className="w-full h-full object-cover"
               />
             </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-zinc-900">
-                Deep Dives
-              </h1>
-            </div>
           </div>
 
           {/* Language Selector */}
@@ -32,11 +27,10 @@ const Header: React.FC<HeaderProps> = ({ selectedLanguage, onChangeLanguage }) =
               <button
                 key={lang}
                 onClick={() => onChangeLanguage(lang)}
-                className={`haptic-light px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wide transition-all ${
-                  selectedLanguage === lang
+                className={`haptic-light px-4 py-2 rounded-lg text-sm font-semibold uppercase tracking-wide transition-all ${selectedLanguage === lang
                     ? 'bg-[var(--brand)] text-white shadow-sm'
                     : 'text-zinc-600 hover:text-zinc-900 hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 {lang}
               </button>

@@ -43,16 +43,6 @@ class AppHeader extends StatelessWidget {
             child: Image.asset('assets/T4L_app_logo.png', fit: BoxFit.cover),
           ),
           const SizedBox(width: AppSpacing.space2),
-          const Text(
-            'Deep Dives',
-            style: TextStyle(
-              color: AppColors.neutralText,
-              fontFamily: AppTypography.fontFamilyPrimary,
-              fontWeight: AppTypography.fontWeightBold,
-              fontSize: AppTypography.fontSizeLg,
-              letterSpacing: -0.5,
-            ),
-          ),
         ],
       ),
       actions: [

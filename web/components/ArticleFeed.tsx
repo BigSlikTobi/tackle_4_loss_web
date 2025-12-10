@@ -1,10 +1,12 @@
 import React from 'react';
 import { SupabaseArticle } from '../types';
 import { Calendar, ChevronRight } from 'lucide-react';
+import BreakingNewsList from './BreakingNewsList';
 
 interface ArticleFeedProps {
   articles: SupabaseArticle[];
   onSelect: (article: SupabaseArticle) => void;
+  selectedLanguage: string;
 }
 
 const DeepDiveGlyph = () => (
@@ -13,7 +15,7 @@ const DeepDiveGlyph = () => (
   </div>
 );
 
-const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect }) => {
+const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect, selectedLanguage }) => {
   return (
     <div className="space-y-6">
       {/* Featured Article */}
@@ -31,7 +33,7 @@ const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect }) => {
                   src={articles[0].hero_image_url}
                   alt={articles[0].title}
                   className="deep-dive-image w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />    
+                />
               </div>
             </div>
 
@@ -108,15 +110,8 @@ const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect }) => {
         ))}
       </div>
 
-      {articles.length === 0 && (
-        <div className="text-center py-20">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">📰</span>
-          </div>
-          <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
-          <p className="text-sm text-zinc-500">Check soon</p>
-        </div>
-      )}
+      {/* Breaking News Section */}
+      <BreakingNewsList languageCode={selectedLanguage} />
     </div>
   );
 };
