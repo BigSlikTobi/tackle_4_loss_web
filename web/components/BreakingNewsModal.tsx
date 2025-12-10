@@ -40,7 +40,7 @@ export default function BreakingNewsModal({
     const [article, setArticle] = useState<MappedArticle | null>(null);
 
     // ArticleViewer State
-    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+    const [currentSectionIndex] = useState(0);
     const [sectionScrollProgress, setSectionScrollProgress] = useState(0);
     const [showCheckmark, setShowCheckmark] = useState(false);
     const [showVideo, setShowVideo] = useState(false);
