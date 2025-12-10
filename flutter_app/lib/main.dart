@@ -7,6 +7,7 @@ import 'design_tokens.dart';
 import 'models.dart';
 import 'widgets/header.dart';
 import 'widgets/article_feed.dart';
+import 'widgets/breaking_news_list_widget.dart';
 import 'screens/article_viewer.dart';
 
 void main() async {
@@ -67,18 +68,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchArticles() async {
     try {
-      debugPrint('Fetching articles from Supabase...');
-      final response = await Supabase.instance.client
-          .schema('content')
-          .from('deepdive_article')
-          .select('*')
-          .order('published_at', ascending: false);
+      debugPrint('Fetching articles from Supabase Edge Function...');
+      
+      final response = await Supabase.instance.client.functions.invoke(
+        'get-all-deepdives',
+        body: {'language_code': _selectedLanguage},
+      );
 
-      debugPrint('Raw response length: ${(response as List).length}');
+      final data = response.data as List;
+      debugPrint('Raw response length: ${data.length}');
 
-      final articles = (response as List)
+      final articles = data
           .map((json) {
             try {
+              // Note: Sections will be empty here, effectively making this a "preview" object
               return Article.fromSupabase(json);
             } catch (e) {
               debugPrint('Error parsing article ${json['id']}: $e');
@@ -94,9 +97,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _articles = articles;
           _isLoading = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Loaded ${articles.length} articles')),
-        );
       }
     } catch (e) {
       debugPrint('Error fetching articles: $e');
@@ -117,9 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredArticles = _articles
-        .where((a) => a.languageCode == _selectedLanguage)
-        .toList();
+    // Filtering is now done on server side via the edge function parameter
+    final filteredArticles = _articles; 
     
     return Scaffold(
       body: CustomScrollView(
@@ -129,7 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
             onLanguageChanged: (lang) {
               setState(() {
                 _selectedLanguage = lang;
+                _isLoading = true;
+                _articles = []; // Clear current list while loading new language
               });
+              _fetchArticles(); // Refetch with new language
             },
           ),
           if (_isLoading)
@@ -139,15 +141,45 @@ class _HomeScreenState extends State<HomeScreen> {
           else
             ArticleFeed(
               articles: filteredArticles,
-              onSelect: (article) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ArticleViewerScreen(article: article),
-                  ),
+              onSelect: (article) async {
+                // Fetch full article details including sections
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
                 );
+
+                try {
+                  final response = await Supabase.instance.client.functions.invoke(
+                    'get-article-viewer-data',
+                    body: {'article_id': article.id},
+                  );
+                  
+                  if (mounted) {
+                     Navigator.pop(context); // Hide loader
+
+                     final fullArticle = Article.fromSupabase(response.data);
+                     
+                     Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ArticleViewerScreen(article: fullArticle),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    Navigator.pop(context); // Hide loader
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error loading article: $e')),
+                    );
+                  }
+                }
               },
             ),
+          SliverToBoxAdapter(
+            child: BreakingNewsListWidget(languageCode: _selectedLanguage),
+          ),
         ],
       ),
     );

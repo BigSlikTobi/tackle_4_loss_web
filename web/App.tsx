@@ -9,12 +9,12 @@ import { supabase } from './lib/supabase';
 
 // --- Helper: Parse Supabase Section Format ---
 function parseArticle(supabaseArticle: SupabaseArticle): Article {
-  const sections: ArticleSection[] = Object.entries(supabaseArticle.sections)
+  const sections: ArticleSection[] = Object.entries(supabaseArticle.sections || {})
     .sort(([keyA], [keyB]) => keyA.localeCompare(keyB, undefined, { numeric: true }))
     .map(([key, rawText]) => {
       // Raw text format: "## Headline\n### Subheader\n\nContent..."
       const lines = rawText.split('\n');
-      
+
       // 1. Extract Headline (Starts with ## )
       const headlineLine = lines.find(line => line.startsWith('## '));
       const headline = headlineLine ? headlineLine.replace('## ', '').trim() : 'Section';
@@ -39,6 +39,7 @@ function parseArticle(supabaseArticle: SupabaseArticle): Article {
     author: supabaseArticle.author,
     date: new Date(supabaseArticle.published_at).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }),
     heroImage: supabaseArticle.hero_image_url,
+    languageCode: supabaseArticle.language_code,
     audioFile: supabaseArticle.audio_file,
     videoFile: supabaseArticle.video_file,
     sections
@@ -53,15 +54,14 @@ export default function App() {
 
   useEffect(() => {
     const fetchArticles = async () => {
+      setLoading(true); // Ensure loading state is true when refetching
       try {
-        const { data, error } = await supabase
-          .schema('content')
-          .from('deepdive_article')
-          .select('*')
-          .order('published_at', { ascending: false });
+        const { data, error } = await supabase.functions.invoke('get-all-deepdives', {
+          body: { language_code: selectedLanguage }
+        });
 
         if (error) {
-          console.error('Supabase error:', error);
+          console.error('Supabase function error:', error);
           throw error;
         }
 
@@ -70,7 +70,6 @@ export default function App() {
         }
       } catch (error) {
         console.error('Failed to fetch articles:', error);
-        // Fallback to mock data on error so the app is viewable
         setArticles(MOCK_SUPABASE_DATA);
       } finally {
         setLoading(false);
@@ -78,15 +77,29 @@ export default function App() {
     };
 
     fetchArticles();
-  }, []);
+  }, [selectedLanguage]); // Add selectedLanguage dependency
 
-  // Filter articles based on language
-  const filteredArticles = articles.filter(a => a.language_code === selectedLanguage);
+  // No longer need client-side filtering since we filter on the server
+  const filteredArticles = articles;
 
-  const handleSelectArticle = (rawArticle: SupabaseArticle) => {
-    const parsed = parseArticle(rawArticle);
-    setSelectedArticle(parsed);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleSelectArticle = async (rawArticle: SupabaseArticle) => {
+    try {
+      // Fetch full details including sections
+      const { data, error } = await supabase.functions.invoke('get-article-viewer-data', {
+        body: { article_id: rawArticle.id }
+      });
+
+      if (error) throw error;
+
+      const fullArticle = data as SupabaseArticle;
+      const parsed = parseArticle(fullArticle);
+      setSelectedArticle(parsed);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      console.error("Error fetching article details", e);
+      // Fallback or show error? For now, try to parse what we have if possible, or do nothing.
+      // If sections are missing, parseArticle might fail if not updated to handle optional sections.
+    }
   };
 
   const handleBackToFeed = () => {
@@ -95,21 +108,21 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header 
-        selectedLanguage={selectedLanguage} 
-        onChangeLanguage={(lang) => setSelectedLanguage(lang)} 
+      <Header
+        selectedLanguage={selectedLanguage}
+        onChangeLanguage={(lang) => setSelectedLanguage(lang)}
       />
-      
+
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
-       
+
         {/* Back Button (If Reading) */}
         {selectedArticle && (
-           <button 
-             onClick={handleBackToFeed}
-             className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent"
-           >
-             <ArrowLeft size={14} /> Back
-           </button>
+          <button
+            onClick={handleBackToFeed}
+            className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent"
+          >
+            <ArrowLeft size={14} /> Back
+          </button>
         )}
 
         {/* Content Area */}
@@ -119,23 +132,24 @@ export default function App() {
             <p className="text-sm font-medium text-zinc-500">Loading</p>
           </div>
         ) : selectedArticle ? (
-          <ArticleViewer 
-            article={selectedArticle} 
+          <ArticleViewer
+            article={selectedArticle}
           />
         ) : (
           <>
             {filteredArticles.length === 0 ? (
-               <div className="text-center py-20 fade-in">
-                 <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                   <span className="text-3xl">🔍</span>
-                 </div>
-                 <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
-                 <p className="text-sm text-zinc-500">Check later</p>
-               </div>
+              <div className="text-center py-20 fade-in">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">🔍</span>
+                </div>
+                <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
+                <p className="text-sm text-zinc-500">Check later</p>
+              </div>
             ) : (
-              <ArticleFeed 
-                articles={filteredArticles} 
-                onSelect={handleSelectArticle} 
+              <ArticleFeed
+                articles={filteredArticles}
+                onSelect={handleSelectArticle}
+                selectedLanguage={selectedLanguage}
               />
             )}
           </>
