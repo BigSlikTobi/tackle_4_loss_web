@@ -9,8 +9,17 @@ import '../design_tokens.dart';
 
 class ArticleViewerScreen extends StatefulWidget {
   final Article article;
+  final Article? nextArticle;
+  final Article? previousArticle;
+  final Function(String id)? onNavigate;
 
-  const ArticleViewerScreen({super.key, required this.article});
+  const ArticleViewerScreen({
+    super.key,
+    required this.article,
+    this.nextArticle,
+    this.previousArticle,
+    this.onNavigate,
+  });
 
   @override
   State<ArticleViewerScreen> createState() => _ArticleViewerScreenState();
@@ -253,6 +262,91 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
                       ],
                     ),
                     const SizedBox(height: 80), // Space for FAB
+                    
+                    // --- Navigation Footer ---
+                    if ((widget.nextArticle != null || widget.previousArticle != null) && widget.onNavigate != null) ...[
+                      const Divider(height: 1, color: AppColors.neutralBorder),
+                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Previous Button
+                          if (widget.previousArticle != null)
+                             InkWell(
+                               onTap: () => widget.onNavigate!(widget.previousArticle!.id),
+                               borderRadius: BorderRadius.circular(8),
+                               child: Row(
+                                 children: [
+                                   // Thumbnail
+                                   Container(
+                                     width: 48,
+                                     height: 48,
+                                     decoration: BoxDecoration(
+                                       borderRadius: BorderRadius.circular(8),
+                                       color: AppColors.neutralSoft,
+                                       image: widget.previousArticle!.heroImage.isNotEmpty ? DecorationImage(
+                                         image: CachedNetworkImageProvider(widget.previousArticle!.heroImage),
+                                         fit: BoxFit.cover,
+                                       ) : null,
+                                     ),
+                                     child: widget.previousArticle!.heroImage.isEmpty ? const Icon(LucideIcons.chevronLeft, size: 16, color: Colors.grey) : null,
+                                   ),
+                                   const SizedBox(width: 12),
+                                   Column(
+                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                     children: [
+                                       const Text(
+                                         "PREVIOUS",
+                                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1.2),
+                                       ),
+                                     ],
+                                   ),
+                                 ],
+                               ),
+                             )
+                          else
+                             const SizedBox(width: 48),
+
+                          // Next Button
+                          if (widget.nextArticle != null)
+                             InkWell(
+                               onTap: () => widget.onNavigate!(widget.nextArticle!.id),
+                               borderRadius: BorderRadius.circular(8),
+                               child: Row(
+                                 children: [
+                                   Column(
+                                     crossAxisAlignment: CrossAxisAlignment.end,
+                                     children: [
+                                       const Text(
+                                         "NEXT",
+                                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1.2),
+                                       ),
+                                     ],
+                                   ),
+                                   const SizedBox(width: 12),
+                                   // Thumbnail
+                                   Container(
+                                     width: 48,
+                                     height: 48,
+                                     decoration: BoxDecoration(
+                                       borderRadius: BorderRadius.circular(8),
+                                       color: AppColors.neutralSoft,
+                                       image: widget.nextArticle!.heroImage.isNotEmpty ? DecorationImage(
+                                          image: CachedNetworkImageProvider(widget.nextArticle!.heroImage),
+                                          fit: BoxFit.cover,
+                                       ) : null,
+                                     ),
+                                     child: widget.nextArticle!.heroImage.isEmpty ? const Icon(LucideIcons.chevronRight, size: 16, color: Colors.grey) : null,
+                                   ),
+                                 ],
+                               ),
+                             )
+                          else
+                             const SizedBox(width: 48),
+                        ],
+                      ),
+                      const SizedBox(height: 100), // Bottom padding
+                    ],
                   ]),
                 ),
               ),

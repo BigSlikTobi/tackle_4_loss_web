@@ -86,6 +86,19 @@ class Article {
       sections: sections,
     );
   }
+
+  factory Article.empty() {
+    return Article(
+      id: '',
+      title: '',
+      subtitle: '',
+      author: '',
+      date: '',
+      heroImage: '',
+      languageCode: 'en',
+      sections: [],
+    );
+  }
 }
 
 class BreakingNews {

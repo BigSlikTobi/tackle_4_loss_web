@@ -33,6 +33,9 @@ web/.env
 web/.env.local
 web/.env.*.local
 web/design_tokens.dart
+web/.firebase
+web/firebase.json
+web/.firebaserc
 
 # Flutter app
 flutter_app/.dart_tool/
@@ -49,3 +52,17 @@ flutter_app/android/app/debug
 flutter_app/android/app/profile
 flutter_app/android/app/release
 flutter_app/lib/design_tokens.dart
+
+# Android
+flutter_app/android/local.properties
+flutter_app/android/.gradle
+flutter_app/android/captures
+flutter_app/android/gradlew
+flutter_app/android/gradlew.bat
+
+# iOS
+flutter_app/ios/Flutter/Generated.xcconfig
+flutter_app/ios/Flutter/flutter_export_environment.sh
+flutter_app/ios/Runner.xcworkspace/xcuserdata
+flutter_app/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata
+flutter_app/ios/Runner.xcodeproj/xcuserdata

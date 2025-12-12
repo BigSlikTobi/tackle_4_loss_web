@@ -68,27 +68,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchArticles() async {
     try {
-      debugPrint('Fetching articles from Supabase Edge Function...');
+      debugPrint('Fetching latest deepdive from Supabase Edge Function...');
       
       final response = await Supabase.instance.client.functions.invoke(
-        'get-all-deepdives',
+        'get-latest-deepdive',
         body: {'language_code': _selectedLanguage},
       );
 
-      final data = response.data as List;
-      debugPrint('Raw response length: ${data.length}');
-
-      final articles = data
-          .map((json) {
-            try {
-              // Note: Sections will be empty here, effectively making this a "preview" object
-              return Article.fromSupabase(json);
-            } catch (e) {
-              debugPrint('Error parsing article ${json['id']}: $e');
-              rethrow;
-            }
-          })
-          .toList();
+      final data = response.data;
+      
+      List<Article> articles = [];
+      if (data != null) {
+        try {
+          articles = [Article.fromSupabase(data)];
+        } catch (e) {
+          debugPrint('Error parsing article: $e');
+        }
+      }
 
       debugPrint('Parsed ${articles.length} articles');
 
@@ -110,6 +106,68 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),
+        );
+      }
+    }
+  }
+
+  Future<void> _selectArticle(BuildContext context, Article article, List<Article> allArticles) async {
+    // Fetch full article details including sections
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final response = await Supabase.instance.client.functions.invoke(
+        'get-article-viewer-data',
+        body: {'article_id': article.id},
+      );
+      
+      if (mounted) {
+          Navigator.pop(context); // Hide loader
+
+          final fullArticle = Article.fromSupabase(response.data);
+          
+          // Find current index
+          final currentIndex = allArticles.indexWhere((a) => a.id == article.id);
+          final Article? nextArticle = (currentIndex != -1 && currentIndex < allArticles.length - 1)
+            ? allArticles[currentIndex + 1]
+            : null;
+          final Article? previousArticle = (currentIndex > 0)
+            ? allArticles[currentIndex - 1]
+            : null;
+
+          void navigateToArticle(String id) {
+            // Pop current viewer
+            Navigator.pop(context);
+            
+            // Find new article summary
+            final newArticle = allArticles.firstWhere((a) => a.id == id, orElse: () => Article.empty());
+            if (newArticle.id.isEmpty) return;
+
+            // Trigger selection logic again
+            _selectArticle(context, newArticle, allArticles);
+          }
+
+          Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ArticleViewerScreen(
+              article: fullArticle,
+              nextArticle: nextArticle,
+              previousArticle: previousArticle,
+              onNavigate: navigateToArticle,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Hide loader
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading article: $e')),
         );
       }
     }
@@ -141,41 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
           else
             ArticleFeed(
               articles: filteredArticles,
-              onSelect: (article) async {
-                // Fetch full article details including sections
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => const Center(child: CircularProgressIndicator()),
-                );
-
-                try {
-                  final response = await Supabase.instance.client.functions.invoke(
-                    'get-article-viewer-data',
-                    body: {'article_id': article.id},
-                  );
-                  
-                  if (mounted) {
-                     Navigator.pop(context); // Hide loader
-
-                     final fullArticle = Article.fromSupabase(response.data);
-                     
-                     Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ArticleViewerScreen(article: fullArticle),
-                      ),
-                    );
-                  }
-                } catch (e) {
-                  if (mounted) {
-                    Navigator.pop(context); // Hide loader
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error loading article: $e')),
-                    );
-                  }
-                }
-              },
+              onSelect: (article) => _selectArticle(context, article, filteredArticles),
             ),
           SliverToBoxAdapter(
             child: BreakingNewsListWidget(languageCode: _selectedLanguage),

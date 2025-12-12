@@ -215,14 +215,7 @@ export default function BreakingNewsModal({
                             </div>
                         )}
 
-                        {/* 3. Section Complete Checkmark */}
-                        {showCheckmark && (
-                            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                                <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center animate-[ping_0.5s_ease-out] shadow-lg">
-                                    <Check className="w-10 h-10 text-white" strokeWidth={3} />
-                                </div>
-                            </div>
-                        )}
+
 
                         {/* 4. Vertical Scroll Progress (Right Side - RED THEME) */}
                         <div className="fixed right-4 md:right-8 top-32 bottom-32 flex flex-col items-center z-30">
@@ -280,17 +273,7 @@ export default function BreakingNewsModal({
                                         )}
                                     </div>
 
-                                    {/* Video Overlay Logic (If we add video support later) */}
-                                    {showVideo && article.videoFile && (
-                                        <video
-                                            ref={videoRef}
-                                            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
-                                            style={{ opacity: videoReady ? 1 : 0 }}
-                                            autoPlay muted playsInline loop
-                                        >
-                                            <source src={article.videoFile} />
-                                        </video>
-                                    )}
+
 
                                     <div className="absolute inset-0 shimmer pointer-events-none" />
                                     <div className="absolute inset-0 hero-overlay" />

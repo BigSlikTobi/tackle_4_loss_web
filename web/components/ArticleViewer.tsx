@@ -6,9 +6,12 @@ import ReactMarkdown from 'react-markdown';
 interface ArticleViewerProps {
   article: Article;
   onHeroReady?: (el: HTMLDivElement | null) => void;
+  nextArticle?: { id: string; headline: string; image?: string } | null;
+  previousArticle?: { id: string; headline: string; image?: string } | null;
+  onNavigate?: (id: string) => void;
 }
 
-const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) => {
+const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nextArticle, previousArticle, onNavigate }) => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [sectionScrollProgress, setSectionScrollProgress] = useState(0);
   const [showCheckmark, setShowCheckmark] = useState(false);
@@ -171,11 +174,10 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
       {article.audioFile && (
         <button
           onClick={handleToggleAudio}
-          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${
-            isPlaying
-              ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
-              : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
-          }`}
+          className={`fixed bottom-4 right-4 z-40 flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wide shadow-sm border transition-colors backdrop-blur-sm ${isPlaying
+            ? 'bg-red-500 text-white border-red-600 hover:bg-red-600'
+            : 'bg-white/90 text-zinc-800 border-zinc-200 hover:bg-white'
+            }`}
           title={isPlaying ? 'Stop audio' : 'Play audio'}
         >
           {isPlaying ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
@@ -361,8 +363,74 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady }) =
             </div>
           </div>
         </main>
+
+        {/* --- PREV/NEXT ARTICLE NAVIGATION --- */}
+        {(nextArticle || previousArticle) && onNavigate && (
+          <div className="pt-16 mt-16 border-t border-zinc-100/50 flex items-center justify-between pb-32">
+
+            {/* Previous Article Link */}
+            <div>
+              {previousArticle ? (
+                <button
+                  onClick={() => onNavigate(previousArticle.id)}
+                  className="group flex items-center gap-4 transition-all duration-300 hover:-translate-x-1"
+                >
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden shadow-sm group-hover:shadow-[0_4px_12px_rgba(153,27,27,0.3)] transition-shadow">
+                    {previousArticle.image ? (
+                      <img src={previousArticle.image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Previous" />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-300">
+                        <ChevronLeft size={16} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-lg" />
+                  </div>
+                  <div className="flex flex-col items-start gap-0.5">
+                    <span className="flex items-center gap-1 text-[10px] font-black tracking-[0.2em] uppercase text-zinc-300 group-hover:text-red-800 transition-colors">
+                      <ChevronLeft size={10} strokeWidth={4} />
+                      Previous
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <div className="w-12 h-12" /> /* Spacer */
+              )}
+            </div>
+
+            {/* Next Article Link */}
+            <div>
+              {nextArticle ? (
+                <button
+                  onClick={() => onNavigate(nextArticle.id)}
+                  className="group flex flex-row-reverse items-center gap-4 transition-all duration-300 hover:translate-x-1"
+                >
+                  <div className="relative w-12 h-12 rounded-lg overflow-hidden shadow-sm group-hover:shadow-[0_4px_12px_rgba(153,27,27,0.3)] transition-shadow">
+                    {nextArticle.image ? (
+                      <img src={nextArticle.image} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Next" />
+                    ) : (
+                      <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-300">
+                        <ChevronRight size={16} />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-lg" />
+                  </div>
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span className="flex items-center gap-1 text-[10px] font-black tracking-[0.2em] uppercase text-zinc-300 group-hover:text-red-800 transition-colors">
+                      Next
+                      <ChevronRight size={10} strokeWidth={4} />
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <div className="w-12 h-12" /> /* Spacer */
+              )}
+            </div>
+
+          </div>
+        )}
+
       </div>
-    </div>
+    </div >
   );
 };
 
