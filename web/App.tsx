@@ -56,7 +56,7 @@ export default function App() {
     const fetchArticles = async () => {
       setLoading(true); // Ensure loading state is true when refetching
       try {
-        const { data, error } = await supabase.functions.invoke('get-all-deepdives', {
+        const { data, error } = await supabase.functions.invoke('get-latest-deepdive', {
           body: { language_code: selectedLanguage }
         });
 
@@ -66,7 +66,7 @@ export default function App() {
         }
 
         if (data) {
-          setArticles(data as SupabaseArticle[]);
+          setArticles([data] as SupabaseArticle[]);
         }
       } catch (error) {
         console.error('Failed to fetch articles:', error);
@@ -134,6 +134,22 @@ export default function App() {
         ) : selectedArticle ? (
           <ArticleViewer
             article={selectedArticle}
+            nextArticle={(() => {
+              const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
+              if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
+              const next = filteredArticles[currentIndex + 1];
+              return { id: next.id, headline: next.title, image: next.hero_image_url };
+            })()}
+            previousArticle={(() => {
+              const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
+              if (currentIndex <= 0) return null;
+              const prev = filteredArticles[currentIndex - 1];
+              return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
+            })()}
+            onNavigate={(id) => {
+              const article = filteredArticles.find(a => a.id === id);
+              if (article) handleSelectArticle(article);
+            }}
           />
         ) : (
           <>
