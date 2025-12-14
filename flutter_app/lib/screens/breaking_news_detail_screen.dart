@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models.dart';
 import '../services/breaking_news_service.dart';
 import '../design_tokens.dart';
@@ -138,6 +139,22 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                           ),
                         ),
                       ),
+
+                      // Image Source
+                      if (_detail?.imageSource != null)
+                        Positioned(
+                          bottom: 12,
+                          right: 16,
+                          child: Text(
+                            "Image: ${_detail!.imageSource}",
+                            style: const TextStyle(
+                              color: Colors.white38,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -180,6 +197,51 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                           blockSpacing: 24.0,
                         ),
                       ),
+
+                      // Source Link
+                      if (_detail?.sourceUrl != null) ...[
+                        const SizedBox(height: 32),
+                        const Divider(height: 1, color: AppColors.neutralBorder),
+                        const SizedBox(height: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "SOURCE",
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.neutralTextLight,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            InkWell(
+                              onTap: () async {
+                                final uri = Uri.parse(_detail!.sourceUrl!);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri);
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    Uri.parse(_detail!.sourceUrl!).host.replaceFirst('www.', ''),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.neutralText,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(LucideIcons.externalLink, size: 12, color: AppColors.neutralTextLight),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
 
                       const SizedBox(height: 64),
 
