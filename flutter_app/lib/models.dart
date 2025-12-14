@@ -127,6 +127,8 @@ class BreakingNews {
 class BreakingNewsDetail extends BreakingNews {
   final String content;
   final String introduction;
+  final String? sourceUrl;
+  final String? imageSource;
 
   BreakingNewsDetail({
     required super.id,
@@ -135,6 +137,8 @@ class BreakingNewsDetail extends BreakingNews {
     required super.createdAt,
     required this.content,
     required this.introduction,
+    this.sourceUrl,
+    this.imageSource,
   });
 
   factory BreakingNewsDetail.fromJson(Map<String, dynamic> json) {
@@ -145,6 +149,8 @@ class BreakingNewsDetail extends BreakingNews {
       createdAt: DateTime.parse(json['created_at']),
       content: json['content'] ?? '',
       introduction: json['introduction'] ?? '',
+      sourceUrl: json['source_url'],
+      imageSource: json['image_source'],
     );
   }
 }

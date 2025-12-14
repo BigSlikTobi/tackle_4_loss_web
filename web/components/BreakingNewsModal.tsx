@@ -27,6 +27,8 @@ interface MappedArticle {
         content: string[];
         image?: string;
     }[];
+    sourceUrl?: string;
+    imageSource?: string;
 }
 
 export default function BreakingNewsModal({
@@ -81,6 +83,8 @@ export default function BreakingNewsModal({
                     heroImage: data.image_url || '',
                     videoFile: undefined, // Breaking news video support can be added here
                     audioFile: undefined, // Breaking news audio support can be added here
+                    sourceUrl: data.source_url,
+                    imageSource: data.image_source,
                     sections: [
                         {
                             headline: '', // Single section flow for breaking news
@@ -279,6 +283,13 @@ export default function BreakingNewsModal({
                                     <div className="absolute inset-0 hero-overlay" />
                                     <div className="absolute inset-x-0 bottom-0 h-1/2 hero-text-veil" />
 
+                                    {/* Image Source Caption */}
+                                    {article.imageSource && (
+                                        <div className="absolute bottom-2 right-4 z-20 text-[10px] text-white/40 font-medium tracking-wide">
+                                            Image: {article.imageSource}
+                                        </div>
+                                    )}
+
                                     {/* Hero Text Content - Headline Only if no Subtitle */}
                                     {true && (
                                         <div className="absolute inset-0 flex flex-col justify-end p-8">
@@ -324,6 +335,28 @@ export default function BreakingNewsModal({
                                         {currentSection.content.join('\n\n')}
                                     </ReactMarkdown>
                                 </div>
+
+                                {/* Source URL Link */}
+                                {article.sourceUrl && (
+                                    <div className="mt-8 pt-4 border-t border-zinc-100">
+                                        <p className="text-xs text-zinc-400 font-medium uppercase tracking-wider mb-1">Source</p>
+                                        <a
+                                            href={article.sourceUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-sm font-semibold text-zinc-600 hover:text-red-800 transition-colors inline-flex items-center gap-1"
+                                        >
+                                            {(() => {
+                                                try {
+                                                    return new URL(article.sourceUrl).hostname.replace('www.', '');
+                                                } catch {
+                                                    return 'Link';
+                                                }
+                                            })()}
+                                            <span className="text-zinc-400 font-normal ml-1">↗</span>
+                                        </a>
+                                    </div>
+                                )}
 
                                 {/* --- PREV/NEXT ARTICLE NAVIGATION (Redesigned) --- */}
                                 <div className="pt-16 mt-16 border-t border-zinc-100/50 flex items-center justify-between">
