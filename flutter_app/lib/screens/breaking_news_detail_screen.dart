@@ -216,18 +216,20 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                               ),
                             ),
                             const SizedBox(height: 4),
+                            // Parse the source URL once and extract the host
+                            final Uri? sourceUri = _detail!.sourceUrl != null ? Uri.tryParse(_detail!.sourceUrl!) : null;
+                            final String sourceHost = sourceUri?.host.replaceFirst('www.', '') ?? '';
                             InkWell(
                               onTap: () async {
-                                final uri = Uri.parse(_detail!.sourceUrl!);
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri);
+                                if (sourceUri != null && await canLaunchUrl(sourceUri)) {
+                                  await launchUrl(sourceUri);
                                 }
                               },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    Uri.parse(_detail!.sourceUrl!).host.replaceFirst('www.', ''),
+                                    sourceHost,
                                     style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w700,
