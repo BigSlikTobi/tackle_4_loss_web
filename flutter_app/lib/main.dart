@@ -230,7 +230,15 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     } catch(e) {
-        if(mounted) Navigator.pop(context);
+        if(mounted) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to load breaking news. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         debugPrint("Error loading breaking news: $e");
     }
   }
