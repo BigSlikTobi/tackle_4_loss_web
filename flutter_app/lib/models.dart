@@ -104,6 +104,8 @@ class Article {
 class BreakingNews {
   final String id;
   final String headline;
+  final String? xPost;
+  final String? audioFile;
   final String? imageUrl;
   final DateTime createdAt;
 
@@ -112,6 +114,8 @@ class BreakingNews {
     required this.headline,
     this.imageUrl,
     required this.createdAt,
+    this.xPost,
+    this.audioFile,
   });
 
   factory BreakingNews.fromJson(Map<String, dynamic> json) {
@@ -120,6 +124,8 @@ class BreakingNews {
       headline: json['headline'],
       imageUrl: json['image_url'] ?? json['hero_image_url'],
       createdAt: DateTime.parse(json['created_at']),
+      xPost: json['x_post'],
+      audioFile: json['audio_file'],
     );
   }
 }
@@ -135,6 +141,8 @@ class BreakingNewsDetail extends BreakingNews {
     required super.headline,
     super.imageUrl,
     required super.createdAt,
+    super.xPost,
+    super.audioFile,
     required this.content,
     required this.introduction,
     this.sourceUrl,
@@ -147,6 +155,8 @@ class BreakingNewsDetail extends BreakingNews {
       headline: json['headline'],
       imageUrl: json['image_url'] ?? json['hero_image_url'],
       createdAt: DateTime.parse(json['created_at']),
+      xPost: json['x_post'],
+      audioFile: json['audio_file'],
       content: json['content'] ?? '',
       introduction: json['introduction'] ?? '',
       sourceUrl: json['source_url'],

@@ -28,7 +28,7 @@ serve(async (req) => {
         const { data, error } = await supabaseClient
             .schema('content')
             .from('deepdive_article')
-            .select('id, language_code, hero_image_url, published_at, author, title, subtitle')
+            .select('id, language_code, hero_image_url, published_at, author, title, subtitle, audio_file')
             .eq('language_code', language_code)
             .order('published_at', { ascending: false })
             .limit(1)

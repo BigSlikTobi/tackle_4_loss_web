@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../models.dart';
 import '../design_tokens.dart';
+import '../services/audio_service.dart';
 
 class ArticleFeed extends StatelessWidget {
   final List<Article> articles;
@@ -149,11 +150,41 @@ class FeaturedArticleCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.space3),
-                  const Row(
+                  const SizedBox(height: AppSpacing.space3),
+                  Row(
                     children: [
-                      Text('Read', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.neutralText)),
-                      SizedBox(width: 4),
-                      Icon(LucideIcons.chevronRight, size: 16, color: AppColors.neutralText),
+                      // Read Button
+                      Row(
+                        children: [
+                          const Text('Read', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.neutralText)),
+                          const SizedBox(width: 4),
+                          const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.neutralText),
+                        ],
+                      ),
+                      
+                      const SizedBox(width: 24),
+
+                      // Listen Button (if audioFile exists)
+                      if (article.audioFile != null)
+                        GestureDetector(
+                          onTap: () {
+                            AudioService().play(article.audioFile!, title: article.title);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.neutralSoft,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.headphones, size: 14, color: AppColors.neutralText),
+                                const SizedBox(width: 6),
+                                const Text('Listen', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.neutralText)),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ],

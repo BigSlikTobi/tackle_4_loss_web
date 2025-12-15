@@ -6,6 +6,9 @@ import { MOCK_SUPABASE_DATA } from './constants';
 import { Article, ArticleSection, SupabaseArticle } from './types';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from './lib/supabase';
+import { AudioProvider } from './context/AudioContext';
+import BreakingNewsOverviewModal from './components/BreakingNewsOverviewModal';
+import { useBreakingNews } from './hooks/useBreakingNews';
 
 // --- Helper: Parse Supabase Section Format ---
 function parseArticle(supabaseArticle: SupabaseArticle): Article {
@@ -51,6 +54,10 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>('de');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  // Breaking News Logic
+  const { news: breakingNews, hasUnread: hasBreakingNewsUnread, markAsRead: markBreakingNewsRead } = useBreakingNews(selectedLanguage);
+  const [isBreakingNewsOpen, setIsBreakingNewsOpen] = useState(false);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -107,80 +114,94 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header
-        selectedLanguage={selectedLanguage}
-        onChangeLanguage={(lang) => setSelectedLanguage(lang)}
-      />
+    <AudioProvider>
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header
+          selectedLanguage={selectedLanguage}
+          onChangeLanguage={(lang) => setSelectedLanguage(lang)}
+          onOpenBreakingNews={() => {
+            setIsBreakingNewsOpen(true);
+            markBreakingNewsRead();
+          }}
+          hasUnread={hasBreakingNewsUnread}
+        />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
+        <BreakingNewsOverviewModal
+          isOpen={isBreakingNewsOpen}
+          onClose={() => setIsBreakingNewsOpen(false)}
+          news={breakingNews}
+          languageCode={selectedLanguage}
+        />
 
-        {/* Back Button (If Reading) */}
-        {selectedArticle && (
-          <button
-            onClick={handleBackToFeed}
-            className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent"
-          >
-            <ArrowLeft size={14} /> Back
-          </button>
-        )}
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
 
-        {/* Content Area */}
-        {loading ? (
-          <div className="h-[50vh] flex flex-col items-center justify-center gap-4 fade-in">
-            <Loader2 className="w-12 h-12 animate-spin text-[var(--brand)]" />
-            <p className="text-sm font-medium text-zinc-500">Loading</p>
-          </div>
-        ) : selectedArticle ? (
-          <ArticleViewer
-            article={selectedArticle}
-            nextArticle={(() => {
-              const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-              if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
-              const next = filteredArticles[currentIndex + 1];
-              return { id: next.id, headline: next.title, image: next.hero_image_url };
-            })()}
-            previousArticle={(() => {
-              const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-              if (currentIndex <= 0) return null;
-              const prev = filteredArticles[currentIndex - 1];
-              return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
-            })()}
-            onNavigate={(id) => {
-              const article = filteredArticles.find(a => a.id === id);
-              if (article) handleSelectArticle(article);
-            }}
-          />
-        ) : (
-          <>
-            {filteredArticles.length === 0 ? (
-              <div className="text-center py-20 fade-in">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🔍</span>
+          {/* Back Button (If Reading) */}
+          {selectedArticle && (
+            <button
+              onClick={handleBackToFeed}
+              className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent"
+            >
+              <ArrowLeft size={14} /> Back
+            </button>
+          )}
+
+          {/* Content Area */}
+          {loading ? (
+            <div className="h-[50vh] flex flex-col items-center justify-center gap-4 fade-in">
+              <Loader2 className="w-12 h-12 animate-spin text-[var(--brand)]" />
+              <p className="text-sm font-medium text-zinc-500">Loading</p>
+            </div>
+          ) : selectedArticle ? (
+            <ArticleViewer
+              article={selectedArticle}
+              nextArticle={(() => {
+                const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
+                if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
+                const next = filteredArticles[currentIndex + 1];
+                return { id: next.id, headline: next.title, image: next.hero_image_url };
+              })()}
+              previousArticle={(() => {
+                const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
+                if (currentIndex <= 0) return null;
+                const prev = filteredArticles[currentIndex - 1];
+                return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
+              })()}
+              onNavigate={(id) => {
+                const article = filteredArticles.find(a => a.id === id);
+                if (article) handleSelectArticle(article);
+              }}
+            />
+          ) : (
+            <>
+              {filteredArticles.length === 0 ? (
+                <div className="text-center py-20 fade-in">
+                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">🔍</span>
+                  </div>
+                  <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
+                  <p className="text-sm text-zinc-500">Check later</p>
                 </div>
-                <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
-                <p className="text-sm text-zinc-500">Check later</p>
-              </div>
-            ) : (
-              <ArticleFeed
-                articles={filteredArticles}
-                onSelect={handleSelectArticle}
-                selectedLanguage={selectedLanguage}
-              />
-            )}
-          </>
-        )}
-      </main>
+              ) : (
+                <ArticleFeed
+                  articles={filteredArticles}
+                  onSelect={handleSelectArticle}
+                  selectedLanguage={selectedLanguage}
+                />
+              )}
+            </>
+          )}
+        </main>
 
-      {/* Transitional video overlay removed; inline hero handles video playback */}
+        {/* Transitional video overlay removed; inline hero handles video playback */}
 
-      <footer className="py-8 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p className="text-sm text-zinc-500">
-            &copy; {new Date().getFullYear()} Tackle4Loss. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </div>
+        <footer className="py-8 border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p className="text-sm text-zinc-500">
+              &copy; {new Date().getFullYear()} Tackle4Loss. All rights reserved.
+            </p>
+          </div>
+        </footer>
+      </div>
+    </AudioProvider>
   );
 }

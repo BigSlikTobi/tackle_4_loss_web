@@ -38,6 +38,8 @@ export interface BreakingNews {
   headline: string;
   created_at: string;
   image_url?: string;
+  x_post?: string; // Content for notifications
+  audio_file?: string; // URL to audio file
 }
 
 export interface BreakingNewsDetail extends BreakingNews {

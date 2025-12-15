@@ -27,4 +27,23 @@ class BreakingNewsService {
     
     return BreakingNewsDetail.fromJson(response.data);
   }
+
+  Future<Article> fetchBreakingNewsAsArticle(String id, String languageCode) async {
+    final detail = await fetchBreakingNewsDetail(id);
+    
+    final content = detail.content ?? '';
+    final sections = [ArticleSection(id: 'main', headline: 'Breaking', content: [content])];
+
+    return Article(
+        id: detail.id,
+        title: detail.headline,
+        subtitle: detail.introduction ?? '',
+        author: 'Breaking News',
+        date: detail.createdAt.toIso8601String(),
+        heroImage: detail.imageUrl ?? '',
+        languageCode: languageCode,
+        sections: sections,
+        audioFile: detail.audioFile, 
+    );
+  }
 }

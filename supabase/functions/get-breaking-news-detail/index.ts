@@ -28,11 +28,13 @@ serve(async (req: Request) => {
     const { data, error } = await supabaseClient
       .schema('content')
       .from('breaking_news')
-      .select('id, headline, created_at, content, introduction, source_url, article_images(image_url, source)')
+      .select('id, headline, created_at, content, introduction, source_url, tts_file, article_images(image_url, source)')
       .eq('id', id)
       .single()
 
     if (error) throw error
+
+    const images = Array.isArray(data.article_images) ? data.article_images[0] : data.article_images
 
     const mappedData = {
       id: data.id,
@@ -41,8 +43,9 @@ serve(async (req: Request) => {
       content: data.content,
       introduction: data.introduction,
       source_url: data.source_url,
-      image_url: data.article_images?.image_url,
-      image_source: data.article_images?.source
+      image_url: images?.image_url,
+      image_source: images?.source,
+      audio_file: data.tts_file
     }
 
     return new Response(JSON.stringify(mappedData), {

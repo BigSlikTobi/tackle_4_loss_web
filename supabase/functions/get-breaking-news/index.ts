@@ -25,7 +25,7 @@ serve(async (req) => {
         let query = supabaseClient
             .schema('content')
             .from('breaking_news')
-            .select('id, headline, created_at, article_images(image_url)')
+            .select('id, headline, created_at, tts_file, article_images(image_url)')
             .gt('created_at', oneDayAgo)
             .eq('is_reviewed', true)
             .order('created_at', { ascending: false })
@@ -42,7 +42,8 @@ serve(async (req) => {
             id: item.id,
             headline: item.headline,
             created_at: item.created_at,
-            image_url: item.article_images?.image_url
+            image_url: item.article_images?.image_url,
+            audio_file: item.tts_file
         }))
 
         if (error) throw error

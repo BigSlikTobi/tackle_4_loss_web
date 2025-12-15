@@ -1,0 +1,2 @@
+# Ignore Supabase temp files containing sensitive configuration
+supabase/.temp/pooler-url
