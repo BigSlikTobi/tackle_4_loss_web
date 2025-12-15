@@ -1,1 +1,2 @@
-postgresql://postgres.yqtiuzhedkfacwgormhn:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres
+# Ignore Supabase temp files containing sensitive configuration
+supabase/.temp/pooler-url
