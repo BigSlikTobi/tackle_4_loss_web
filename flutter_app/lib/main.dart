@@ -10,6 +10,7 @@ import 'widgets/article_feed.dart';
 import 'widgets/breaking_news_button.dart'; // Import Button
 import 'widgets/mini_audio_player.dart';
 import 'screens/article_viewer.dart';
+import 'services/breaking_news_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -174,49 +175,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Navigate to Detail from Chip
   Future<void> _handleBreakingNewsNavigation(String id) async {
-      // For simplicity, we reuse the same _selectArticle logic if possible, 
-      // but breaking news might need a different detail view.
-      // However, usually they share the same viewer or have a specialized one.
-      // The previous web implementation had a specific BreakingNewsModal.
-      // In Flutter, we might reuse ArticleViewerScreen or create a specialized one.
-      // For now, let's assume we fetch it via 'get-breaking-news-detail' and show it.
-      
-      showDialog(
+    showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
     try {
-       final response = await Supabase.instance.client.functions.invoke(
-        'get-breaking-news-detail',
-        body: {'id': id},
-      );
-      
+      final article = await BreakingNewsService().fetchBreakingNewsAsArticle(id, _selectedLanguage);
+
       if (mounted) {
         Navigator.pop(context); // Hide loader
-        final data = response.data;
-        
-        // MAPPING: We need to map BreakingNewsDetail to Article for ArticleViewer to work,
-        // OR use a dedicated screen. Given the time, reuse ArticleViewer is best if compatible.
-        // But Breaking News structure is simpler. 
-        // Let's quickly map it to a format ArticleViewer accepts.
-        
-        final content = (data['content'] as String?) ?? '';
-        final sections = [ArticleSection(id: 'main', headline: 'Breaking', content: [content])];
-
-        final article = Article(
-            id: data['id'],
-            title: data['headline'],
-            subtitle: data['introduction'] ?? '',
-            author: 'Breaking News',
-            date: DateTime.parse(data['created_at']).toIso8601String(),
-            heroImage: data['image_url'] ?? '',
-            languageCode: _selectedLanguage,
-            sections: sections,
-            audioFile: data['audio_file'], 
-        );
-
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -224,22 +193,22 @@ class _HomeScreenState extends State<HomeScreen> {
               article: article,
               nextArticle: null,
               previousArticle: null,
-              onNavigate: (id) {}, // No prev/next for now in simplified flow
+              onNavigate: (id) {},
             ),
           ),
         );
       }
-    } catch(e) {
-        if(mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to load breaking news. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        debugPrint("Error loading breaking news: $e");
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Hide loader
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load breaking news. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      debugPrint("Error loading breaking news: $e");
     }
   }
 
