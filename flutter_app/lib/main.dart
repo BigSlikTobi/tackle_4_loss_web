@@ -7,7 +7,8 @@ import 'design_tokens.dart';
 import 'models.dart';
 import 'widgets/header.dart';
 import 'widgets/article_feed.dart';
-import 'widgets/breaking_news_list_widget.dart';
+import 'widgets/breaking_news_button.dart'; // Import Button
+import 'widgets/mini_audio_player.dart';
 import 'screens/article_viewer.dart';
 
 void main() async {
@@ -85,8 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
           debugPrint('Error parsing article: $e');
         }
       }
-
-      debugPrint('Parsed ${articles.length} articles');
 
       if (mounted) {
         setState(() {
@@ -173,38 +172,156 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Navigate to Detail from Chip
+  Future<void> _handleBreakingNewsNavigation(String id) async {
+      // For simplicity, we reuse the same _selectArticle logic if possible, 
+      // but breaking news might need a different detail view.
+      // However, usually they share the same viewer or have a specialized one.
+      // The previous web implementation had a specific BreakingNewsModal.
+      // In Flutter, we might reuse ArticleViewerScreen or create a specialized one.
+      // For now, let's assume we fetch it via 'get-breaking-news-detail' and show it.
+      
+      showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+       final response = await Supabase.instance.client.functions.invoke(
+        'get-breaking-news-detail',
+        body: {'id': id},
+      );
+      
+      if (mounted) {
+        Navigator.pop(context); // Hide loader
+        final data = response.data;
+        
+        // MAPPING: We need to map BreakingNewsDetail to Article for ArticleViewer to work,
+        // OR use a dedicated screen. Given the time, reuse ArticleViewer is best if compatible.
+        // But Breaking News structure is simpler. 
+        // Let's quickly map it to a format ArticleViewer accepts.
+        
+        final content = (data['content'] as String?) ?? '';
+        final sections = [ArticleSection(id: 'main', headline: 'Breaking', content: [content])];
+
+        final article = Article(
+            id: data['id'],
+            title: data['headline'],
+            subtitle: data['introduction'] ?? '',
+            author: 'Breaking News',
+            date: DateTime.parse(data['created_at']).toIso8601String(),
+            heroImage: data['image_url'] ?? '',
+            languageCode: _selectedLanguage,
+            sections: sections,
+            audioFile: data['audio_file'], 
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ArticleViewerScreen(
+              article: article,
+              nextArticle: null,
+              previousArticle: null,
+              onNavigate: (id) {}, // No prev/next for now in simplified flow
+            ),
+          ),
+        );
+      }
+    } catch(e) {
+        if(mounted) Navigator.pop(context);
+        debugPrint("Error loading breaking news: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Filtering is now done on server side via the edge function parameter
     final filteredArticles = _articles; 
     
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          AppHeader(
-            selectedLanguage: _selectedLanguage,
-            onLanguageChanged: (lang) {
-              setState(() {
-                _selectedLanguage = lang;
-                _isLoading = true;
-                _articles = []; // Clear current list while loading new language
-              });
-              _fetchArticles(); // Refetch with new language
-            },
+      body: Stack(
+        children: [
+          // Main Scroll View
+          CustomScrollView(
+            slivers: [
+              AppHeader(
+                selectedLanguage: _selectedLanguage,
+                onLanguageChanged: (lang) {
+                  setState(() {
+                    _selectedLanguage = lang;
+                    _isLoading = true;
+                    _articles = []; 
+                  });
+                  _fetchArticles(); 
+                },
+              ),
+              if (_isLoading)
+                const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              else
+                ArticleFeed(
+                  articles: filteredArticles,
+                  onSelect: (article) => _selectArticle(context, article, filteredArticles),
+                ),
+                
+              // Add padding at bottom for MiniPlayer + Bottom Bar
+              const SliverToBoxAdapter(
+                 child: SizedBox(height: 120),
+              ),
+            ],
           ),
-          if (_isLoading)
-            const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else
-            ArticleFeed(
-              articles: filteredArticles,
-              onSelect: (article) => _selectArticle(context, article, filteredArticles),
-            ),
-          SliverToBoxAdapter(
-            child: BreakingNewsListWidget(languageCode: _selectedLanguage),
+
+          // Global Mini Player - Moved up slightly if needed, or placed above bottom bar
+          // Positioned(bottom: 80, left: 0, right: 0, child: const MiniAudioPlayer()), 
+          // Actually MiniAudioPlayer handles its own specific position usually or is just at bottom.
+          // Let's align it above the footer manually if it's fixed, OR integrate into footer?
+          // For now, let's keep it fixed at bottom of screen, but elevate it.
+          // Assuming MiniAudioPlayer has its own positioning logic or is a simple widget.
+          // The previous code had it in a Stack. Let's wrap it in Positioned.
+          const Positioned(
+              left: 0, 
+              right: 0, 
+              bottom: 80, // Space for bottom bar
+              child: MiniAudioPlayer()
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.grey[200]!)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            )
+          ]
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Left: Copyright or Home Icon?
+            Text(
+              'T4L',
+              style: GoogleFonts.blackOpsOne(
+                color: AppColors.brandBase,
+                fontSize: 24,
+              ),
+            ),
+            
+            // Right: Breaking News Button
+            BreakingNewsButton(
+              languageCode: _selectedLanguage,
+              onNavigateToDetail: _handleBreakingNewsNavigation,
+            ),
+          ],
+        ),
       ),
     );
   }

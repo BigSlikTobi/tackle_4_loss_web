@@ -1,7 +1,7 @@
 import React from 'react';
 import { SupabaseArticle } from '../types';
-import { Calendar, ChevronRight } from 'lucide-react';
-import BreakingNewsList from './BreakingNewsList';
+import { Calendar, ChevronRight, Headphones } from 'lucide-react';
+import { useAudio } from '../context/AudioContext';
 
 interface ArticleFeedProps {
   articles: SupabaseArticle[];
@@ -16,6 +16,8 @@ const DeepDiveGlyph = () => (
 );
 
 const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect, selectedLanguage }) => {
+  const { play } = useAudio();
+
   return (
     <div className="space-y-6">
       {/* Featured Article */}
@@ -56,9 +58,26 @@ const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect, selectedL
                 </p>
               </div>
 
-              <div className="read-link micro-press">
-                <span>Read</span>
-                <ChevronRight className="w-4 h-4" />
+              <div className="flex items-center gap-4 pt-2">
+                <div className="read-link micro-press">
+                  <span>Read</span>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+
+                {articles[0].audio_file && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (articles[0].audio_file) {
+                        play(articles[0].audio_file, articles[0].title);
+                      }
+                    }}
+                    className="flex items-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+                  >
+                    <Headphones className="w-4 h-4" />
+                    <span>Listen</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -110,8 +129,7 @@ const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect, selectedL
         ))}
       </div>
 
-      {/* Breaking News Section */}
-      <BreakingNewsList languageCode={selectedLanguage} />
+      {/* Breaking News Section - MOVED TO GLOBAL CHIP */}
     </div>
   );
 };
