@@ -12,6 +12,10 @@ import 'widgets/mini_audio_player.dart';
 import 'screens/article_viewer.dart';
 import 'services/breaking_news_service.dart';
 
+import 'services/global.dart';
+import 'services/audio_handler.dart';
+import 'package:audio_service/audio_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -21,6 +25,15 @@ void main() async {
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
+
+  audioHandler = await AudioService.init(
+    builder: () => AudioPlayerHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.tackle4loss.channel.audio',
+      androidNotificationChannelName: 'Detail Deep Dive',
+      androidNotificationOngoing: true,
+    ),
   );
 
   runApp(const MyApp());
@@ -46,6 +59,19 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.interTextTheme(),
       ),
       home: const HomeScreen(),
+      builder: (context, child) {
+        return Stack(
+          children: [
+            if (child != null) child,
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 24, // Floats above bottom content
+              child: SafeArea(child: MiniAudioPlayer()),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -258,12 +284,6 @@ class _HomeScreenState extends State<HomeScreen> {
           // For now, let's keep it fixed at bottom of screen, but elevate it.
           // Assuming MiniAudioPlayer has its own positioning logic or is a simple widget.
           // The previous code had it in a Stack. Let's wrap it in Positioned.
-          const Positioned(
-              left: 0, 
-              right: 0, 
-              bottom: 80, // Space for bottom bar
-              child: MiniAudioPlayer()
-          ),
         ],
       ),
       bottomNavigationBar: Container(

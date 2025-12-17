@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../models.dart';
-import '../services/audio_service.dart';
+import '../services/global.dart';
+import 'package:audio_service/audio_service.dart';
 import '../design_tokens.dart';
 
 class BreakingNewsOverview extends StatefulWidget {
@@ -22,8 +23,7 @@ class BreakingNewsOverview extends StatefulWidget {
 }
 
 class _BreakingNewsOverviewState extends State<BreakingNewsOverview> {
-  final AudioService _audioService = AudioService();
-
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -143,37 +143,51 @@ class _BreakingNewsOverviewState extends State<BreakingNewsOverview> {
                           ),
                         ),
                         if (isAudioAvailable)
-                          StreamBuilder(
-                            stream: _audioService.playerStateStream,
-                            builder: (context, snapshot) {
-                              final isPlayingThis = _audioService.isPlaying && 
-                                                  _audioService.currentUrl == item.audioFile;
+                          StreamBuilder<MediaItem?>(
+                            stream: audioHandler.mediaItem,
+                            builder: (context, mediaSnapshot) {
+                              final currentMediaId = mediaSnapshot.data?.id;
 
-                              return GestureDetector(
-                                onTap: () {
-                                  if (isPlayingThis) {
-                                    _audioService.pause();
-                                  } else {
-                                    _audioService.play(item.audioFile!, title: item.headline);
-                                  }
+                              return StreamBuilder<PlaybackState>(
+                                stream: audioHandler.playbackState,
+                                builder: (context, playbackSnapshot) {
+                                  final playbackState = playbackSnapshot.data;
+                                  final isPlaying = playbackState?.playing ?? false;
+                                  final isPlayingThis = isPlaying && currentMediaId == item.audioFile;
+
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      if (isPlayingThis) {
+                                        await audioHandler.pause();
+                                      } else {
+                                        final mediaItem = MediaItem(
+                                          id: item.audioFile!,
+                                          album: 'Breaking News',
+                                          title: item.headline,
+                                          extras: {'url': item.audioFile},
+                                        );
+                                        await audioHandler.playMediaItem(mediaItem);
+                                      }
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(left: 12),
+                                      width: 36,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: isPlayingThis ? Colors.red[600] : Colors.grey[100],
+                                        shape: BoxShape.circle,
+                                        boxShadow: isPlayingThis
+                                            ? [BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))]
+                                            : null,
+                                      ),
+                                      child: Icon(
+                                        isPlayingThis ? LucideIcons.pause : LucideIcons.headphones,
+                                        size: 16,
+                                        color: isPlayingThis ? Colors.white : Colors.grey[600],
+                                      ),
+                                    ),
+                                  );
                                 },
-                                child: Container(
-                                  margin: const EdgeInsets.only(left: 12),
-                                  width: 36,
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    color: isPlayingThis ? Colors.red[600] : Colors.grey[100],
-                                    shape: BoxShape.circle,
-                                    boxShadow: isPlayingThis 
-                                        ? [BoxShadow(color: Colors.red.withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))]
-                                        : null,
-                                  ),
-                                  child: Icon(
-                                    isPlayingThis ? LucideIcons.pause : LucideIcons.headphones,
-                                    size: 16,
-                                    color: isPlayingThis ? Colors.white : Colors.grey[600],
-                                  ),
-                                ),
                               );
                             },
                           )
