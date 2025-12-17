@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
+import HeroSection from './components/HeroSection';
+import LiveOnAirBanner from './components/LiveOnAirBanner';
+import PickedForYouSection from './components/PickedForYouSection';
+import TrendingNowSection from './components/TrendingNowSection';
+import BottomNavigation from './components/BottomNavigation';
 import ArticleViewer from './components/ArticleViewer';
-import ArticleFeed from './components/ArticleFeed';
-import { MOCK_SUPABASE_DATA } from './constants';
-import { Article, ArticleSection, SupabaseArticle } from './types';
-import { Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from './lib/supabase';
-import { AudioProvider } from './context/AudioContext';
-import BreakingNewsOverviewModal from './components/BreakingNewsOverviewModal';
-import { useBreakingNews } from './hooks/useBreakingNews';
+import { Article, ArticleSection, SupabaseArticle } from './types';
+import { Loader2 } from 'lucide-react';
+import { MOCK_SUPABASE_DATA } from './constants';
 
 // --- Helper: Parse Supabase Section Format ---
 function parseArticle(supabaseArticle: SupabaseArticle): Article {
@@ -49,31 +50,23 @@ function parseArticle(supabaseArticle: SupabaseArticle): Article {
   };
 }
 
+
 export default function App() {
   const [articles, setArticles] = useState<SupabaseArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>('de');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-
-  // Breaking News Logic
-  const { news: breakingNews, hasUnread: hasBreakingNewsUnread, markAsRead: markBreakingNewsRead } = useBreakingNews(selectedLanguage);
-  const [isBreakingNewsOpen, setIsBreakingNewsOpen] = useState(false);
 
   useEffect(() => {
     const fetchArticles = async () => {
-      setLoading(true); // Ensure loading state is true when refetching
+      setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('get-latest-deepdive', {
-          body: { language_code: selectedLanguage }
-        });
+        const { data, error } = await supabase.functions.invoke('get-latest-deepdive');
 
-        if (error) {
+        if (error || !data) {
           console.error('Supabase function error:', error);
-          throw error;
-        }
-
-        if (data) {
-          setArticles([data] as SupabaseArticle[]);
+          setArticles(MOCK_SUPABASE_DATA);
+        } else {
+          setArticles(data as SupabaseArticle[]);
         }
       } catch (error) {
         console.error('Failed to fetch articles:', error);
@@ -84,14 +77,10 @@ export default function App() {
     };
 
     fetchArticles();
-  }, [selectedLanguage]); // Add selectedLanguage dependency
-
-  // No longer need client-side filtering since we filter on the server
-  const filteredArticles = articles;
+  }, []);
 
   const handleSelectArticle = async (rawArticle: SupabaseArticle) => {
     try {
-      // Fetch full details including sections
       const { data, error } = await supabase.functions.invoke('get-article-viewer-data', {
         body: { article_id: rawArticle.id }
       });
@@ -104,8 +93,8 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       console.error("Error fetching article details", e);
-      // Fallback or show error? For now, try to parse what we have if possible, or do nothing.
-      // If sections are missing, parseArticle might fail if not updated to handle optional sections.
+      const parsed = parseArticle(rawArticle);
+      setSelectedArticle(parsed);
     }
   };
 
@@ -113,95 +102,33 @@ export default function App() {
     setSelectedArticle(null);
   };
 
-  return (
-    <AudioProvider>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header
-          selectedLanguage={selectedLanguage}
-          onChangeLanguage={(lang) => setSelectedLanguage(lang)}
-          onOpenBreakingNews={() => {
-            setIsBreakingNewsOpen(true);
-            markBreakingNewsRead();
-          }}
-          hasUnread={hasBreakingNewsUnread}
-        />
-
-        <BreakingNewsOverviewModal
-          isOpen={isBreakingNewsOpen}
-          onClose={() => setIsBreakingNewsOpen(false)}
-          news={breakingNews}
-          languageCode={selectedLanguage}
-        />
-
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
-
-          {/* Back Button (If Reading) */}
-          {selectedArticle && (
-            <button
-              onClick={handleBackToFeed}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent"
-            >
-              <ArrowLeft size={14} /> Back
-            </button>
-          )}
-
-          {/* Content Area */}
-          {loading ? (
-            <div className="h-[50vh] flex flex-col items-center justify-center gap-4 fade-in">
-              <Loader2 className="w-12 h-12 animate-spin text-[var(--brand)]" />
-              <p className="text-sm font-medium text-zinc-500">Loading</p>
-            </div>
-          ) : selectedArticle ? (
-            <ArticleViewer
-              article={selectedArticle}
-              nextArticle={(() => {
-                const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-                if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
-                const next = filteredArticles[currentIndex + 1];
-                return { id: next.id, headline: next.title, image: next.hero_image_url };
-              })()}
-              previousArticle={(() => {
-                const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-                if (currentIndex <= 0) return null;
-                const prev = filteredArticles[currentIndex - 1];
-                return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
-              })()}
-              onNavigate={(id) => {
-                const article = filteredArticles.find(a => a.id === id);
-                if (article) handleSelectArticle(article);
-              }}
-            />
-          ) : (
-            <>
-              {filteredArticles.length === 0 ? (
-                <div className="text-center py-20 fade-in">
-                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-3xl">🔍</span>
-                  </div>
-                  <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
-                  <p className="text-sm text-zinc-500">Check later</p>
-                </div>
-              ) : (
-                <ArticleFeed
-                  articles={filteredArticles}
-                  onSelect={handleSelectArticle}
-                  selectedLanguage={selectedLanguage}
-                />
-              )}
-            </>
-          )}
-        </main>
-
-        {/* Transitional video overlay removed; inline hero handles video playback */}
-
-        <footer className="py-8 border-t border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-sm text-zinc-500">
-              &copy; {new Date().getFullYear()} Tackle4Loss. All rights reserved.
-            </p>
-          </div>
-        </footer>
+  if (loading) {
+    return (
+      <div className="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
-    </AudioProvider>
+    );
+  }
+
+  if (selectedArticle) {
+    return <ArticleViewer article={selectedArticle} onBack={handleBackToFeed} />;
+  }
+
+  return (
+    <div className="bg-background-light dark:bg-background-dark font-sans antialiased text-text-main-light dark:text-text-main-dark min-h-screen pb-24 selection:bg-secondary selection:text-primary">
+      <Header />
+      <HeroSection article={articles[0]} onReadMore={() => articles[0] && handleSelectArticle(articles[0])} />
+      <main className="relative z-20 -mt-10 bg-background-light dark:bg-background-dark rounded-t-3xl min-h-[500px] shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)] border-t border-white/50 dark:border-white/5">
+        <div className="w-full flex justify-center pt-3 pb-1">
+          <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full opacity-50"></div>
+        </div>
+        <div className="px-6 py-6 space-y-10">
+          <LiveOnAirBanner />
+          <PickedForYouSection />
+          <TrendingNowSection articles={articles.slice(1)} onSelectArticle={handleSelectArticle} />
+        </div>
+      </main>
+      <BottomNavigation />
+    </div>
   );
 }
