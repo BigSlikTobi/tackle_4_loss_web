@@ -146,8 +146,8 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
     final double maxScroll = _scrollController.position.maxScrollExtent;
     
     // User requested 40% slower speed. 
-    // This means we might not reach the bottom by end of audio, unless we have large bottom padding.
-    final double targetOffset = maxScroll * progress * 0.7;
+    // To keep full content reachable, we use the full scroll range here and can adjust speed via layout (e.g. bottom padding).
+    final double targetOffset = maxScroll * progress;
     
     // debugPrint("Syncing scroll: pos=$position dur=$_audioDuration prog=${progress.toStringAsFixed(2)} target=$targetOffset");
 
