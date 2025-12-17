@@ -3,7 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../models.dart';
 import '../design_tokens.dart';
-import '../services/audio_service.dart';
+import '../services/global.dart';
+import 'package:audio_service/audio_service.dart';
 
 class ArticleFeed extends StatelessWidget {
   final List<Article> articles;
@@ -167,8 +168,16 @@ class FeaturedArticleCard extends StatelessWidget {
                       // Listen Button (if audioFile exists)
                       if (article.audioFile != null)
                         GestureDetector(
-                          onTap: () {
-                            AudioService().play(article.audioFile!, title: article.title);
+                          onTap: () async {
+                              final item = MediaItem(
+                                id: article.audioFile!,
+                                album: 'Deep Dive',
+                                title: article.title,
+                                artist: article.author,
+                                artUri: Uri.parse(article.heroImage),
+                                extras: {'url': article.audioFile},
+                              );
+                              await audioHandler.playMediaItem(item);
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

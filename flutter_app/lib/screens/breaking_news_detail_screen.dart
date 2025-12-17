@@ -6,6 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models.dart';
 import '../services/breaking_news_service.dart';
 import '../design_tokens.dart';
+import '../services/global.dart'; // Access global audioHandler
+import 'package:audio_service/audio_service.dart';
+import '../services/audio_handler.dart';
 
 class BreakingNewsDetailScreen extends StatefulWidget {
   final String initialNewsId;
@@ -27,6 +30,9 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
   BreakingNewsDetail? _detail;
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
+  
+  // Audio State
+  bool _isPlayingThisArticle = false;
 
   @override
   void initState() {
@@ -62,6 +68,33 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
   void _navigateTo(String id) {
     setState(() => _currentId = id);
     _fetchDetail(id);
+  }
+
+  void _toggleAudio() async {
+    final detail = _detail;
+    if (detail == null || detail.audioFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No audio available for this news.")));
+      return; 
+    }
+
+    if (_isPlayingThisArticle) {
+       await audioHandler.pause();
+    } else {
+       // Play new item
+       final mediaItem = MediaItem(
+         id: detail.audioFile!,
+         album: "Breaking News",
+         title: detail.headline,
+         artist: "Tackle4Loss",
+         artUri: Uri.parse(detail.imageUrl ?? ''),
+         extras: {'url': detail.audioFile},
+       );
+       
+       if (audioHandler is AudioPlayerHandler) {
+         await (audioHandler as AudioPlayerHandler).setMediaItem(mediaItem);
+         await audioHandler.play();
+       }
+    }
   }
 
   @override
@@ -362,42 +395,63 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
           ),
 
           // Floating Audio Button
-          Positioned(
-            right: 20,
-            bottom: 40,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(100),
-                boxShadow: AppShadows.lg,
-                border: Border.all(color: AppColors.neutralBorder),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                     // TODO: Implement audio playback for breaking news, or remove this button if not supported.
-                     // Placeholder action
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Audio playback mock trigger")));
-                  },
-                  borderRadius: BorderRadius.circular(100),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.volume2, size: 18, color: Colors.black),
-                        SizedBox(width: 8),
-                        Text(
-                          "AUDIO",
-                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.0),
+          // Use StreamBuilder to update state dynamically
+          if (_detail?.audioFile != null)
+          StreamBuilder<MediaItem?>(
+            stream: audioHandler.mediaItem,
+            builder: (context, mediaSnapshot) {
+              return StreamBuilder<PlaybackState>(
+                stream: audioHandler.playbackState,
+                builder: (context, playbackSnapshot) {
+                   final mediaItem = mediaSnapshot.data;
+                   final playbackState = playbackSnapshot.data;
+                   final isPlaying = playbackState?.playing ?? false;
+                   
+                   // Check if currently playing THIS article
+                   final isThisItem = mediaItem?.id == _detail?.audioFile;
+                   final isPlayingThis = isPlaying && isThisItem;
+                   _isPlayingThisArticle = isPlayingThis;
+
+                   return Positioned(
+                    right: 20,
+                    bottom: 40,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(100),
+                        boxShadow: AppShadows.lg,
+                        border: Border.all(color: AppColors.neutralBorder),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: _toggleAudio,
+                          borderRadius: BorderRadius.circular(100),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isPlayingThis ? LucideIcons.pause : LucideIcons.volume2, // Volume icon usually means "Play audio" if not playing
+                                  size: 18, 
+                                  color: Colors.black
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isPlayingThis ? "PAUSE" : "AUDIO",
+                                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.0),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
-            ),
+                  );
+                }
+              );
+            }
           ),
         ],
       ),

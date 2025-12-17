@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
@@ -6,6 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../models.dart';
 import '../design_tokens.dart';
+import 'article_text_reader.dart';
+
+import '../services/global.dart'; // To access global audioHandler
+import 'package:audio_service/audio_service.dart';
+import '../services/audio_handler.dart';
 
 class ArticleViewerScreen extends StatefulWidget {
   final Article article;
@@ -26,15 +32,28 @@ class ArticleViewerScreen extends StatefulWidget {
 }
 
 class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
-  int _currentSectionIndex = 0;
   VideoPlayerController? _videoController;
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final ScrollController _scrollController = ScrollController();
+  
+  // Use global audioHandler instead of local _audioPlayer
+  // Local state to track "playing" UI
   bool _isPlayingAudio = false;
   bool _isVideoInitialized = false;
+  bool _showControls = true;
+  
+  Duration _audioDuration = Duration.zero;
+  Duration _audioPosition = Duration.zero; // Local tracking for scroll
+  
+  // StreamSubscriptions for AudioHandler/AudioService
+  StreamSubscription? _durationSubscription;
+  StreamSubscription? _positionSubscription;
+  StreamSubscription? _playerStateSubscription;
 
   @override
   void initState() {
     super.initState();
+
+    // Video Setup
     if (widget.article.videoFile != null) {
       _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.article.videoFile!))
         ..initialize().then((_) {
@@ -42,351 +61,347 @@ class _ArticleViewerScreenState extends State<ArticleViewerScreen> {
             setState(() {
               _isVideoInitialized = true;
             });
-            _videoController!.setLooping(false);
-            _videoController!.setVolume(0);
+            _videoController!.setLooping(true); // Loop background video
+            _videoController!.setVolume(0); // Muted background
             _videoController!.play();
           }
         });
     }
+
+    _initAudioService();
+  }
+
+  Future<void> _initAudioService() async {
+    // 1. Set Media Item (Reset player with new content)
+    if (widget.article.audioFile != null) {
+       final mediaItem = MediaItem(
+         id: widget.article.audioFile!,
+         album: "Deep Dive",
+         title: widget.article.title,
+         artist: "Tackle4Loss",
+         artUri: Uri.parse(widget.article.heroImage),
+         extras: {'url': widget.article.audioFile},
+       );
+       
+       // Cast to our handler to access custom setMediaItem if base doesn't suffice (it doesn't have setMediaItem in base?)
+       // Actually AudioHandler doesn't have setMediaItem, we added it to OUR implementation.
+       // But global 'audioHandler' is abstract AudioHandler. We need to cast or just use custom method if exposed, 
+       // OR simpler: Just play URL? 
+       // Our implementation handles setMediaItem.
+       if (audioHandler is AudioPlayerHandler) {
+         await (audioHandler as AudioPlayerHandler).setMediaItem(mediaItem);
+         // Don't auto-play yet, wait for user.
+       }
+    }
+
+    // 2. Listen to streams
+    // Duration
+    // BaseAudioHandler doesn't expose duration stream directly usually, but we exposed it in our class.
+    if (audioHandler is AudioPlayerHandler) {
+       _durationSubscription = (audioHandler as AudioPlayerHandler).onDurationChanged.listen((d) {
+          debugPrint("Audio Duration Changed: $d");
+          setState(() => _audioDuration = d);
+       });
+
+       _positionSubscription = (audioHandler as AudioPlayerHandler).onPositionChanged.listen((p) {
+          _audioPosition = p; 
+          _syncScrollToAudio(p);
+       });
+    }
+
+    // Playback State
+    _playerStateSubscription = audioHandler.playbackState.listen((state) {
+      final isPlaying = state.playing;
+      final processingState = state.processingState;
+      
+      if (mounted) {
+         setState(() {
+           _isPlayingAudio = isPlaying;
+           if (processingState == AudioProcessingState.completed) {
+             _isPlayingAudio = false;
+             _showControls = true;
+           }
+           if (isPlaying) {
+             _showControls = false;
+           } else {
+             _showControls = true; // Show controls if paused
+           }
+         });
+      }
+    });
+  }
+
+  void _syncScrollToAudio(Duration position) {
+    if (!_scrollController.hasClients) {
+      debugPrint("ScrollController has no clients");
+      return;
+    } 
+    if (_audioDuration.inMilliseconds == 0) {
+      debugPrint("Audio Duration is 0, cannot sync scroll");
+      return;
+    }
+    
+    // Calculate progress (0.0 to 1.0)
+    final double progress = position.inMilliseconds / _audioDuration.inMilliseconds;
+    final double maxScroll = _scrollController.position.maxScrollExtent;
+    
+    // User requested 40% slower speed. 
+    // To keep full content reachable, we use the full scroll range here and can adjust speed via layout (e.g. bottom padding).
+    final double targetOffset = maxScroll * progress;
+    
+    // debugPrint("Syncing scroll: pos=$position dur=$_audioDuration prog=${progress.toStringAsFixed(2)} target=$targetOffset");
+
+    // jumpTo is more reliable for frequent updates than animateTo which might conflict
+    _scrollController.jumpTo(targetOffset);
   }
 
   @override
   void dispose() {
     _videoController?.dispose();
-    _audioPlayer.stop(); // Ensure audio stops
-    _audioPlayer.dispose();
+    // Do NOT stop audioHandler if we want background play? 
+    // User asked "control audio ... even if the app is on sleep".
+    // Usually deep dive audio implies we want to keep listening if we back out? 
+    // "On bottom of screen we see link read article... redirects to screen where user can read". 
+    // If we leave this screen, should audio stop?
+    // If we go to "text reader", we probably want audio to stop or continue? 
+    // Let's NOT stop it automatically on dispose if we want background play capability generally. 
+    // BUT if the user backs out to Home, maybe we should stop? 
+    // For now, let's keep it playing (background/miniplayer style).
+    
+    // HOWEVER, if we open another article, we reset content. 
+    // Let's leave it running.
+    
+    _scrollController.dispose();
+    _durationSubscription?.cancel();
+    _positionSubscription?.cancel();
+    _playerStateSubscription?.cancel();
     super.dispose();
   }
 
   void _toggleAudio() async {
-    debugPrint('Audio button tapped');
     HapticFeedback.lightImpact();
-    try {
-      if (_isPlayingAudio) {
-        await _audioPlayer.pause();
-      } else {
-        if (widget.article.audioFile != null) {
-          debugPrint('Playing audio from: ${widget.article.audioFile}');
-          await _audioPlayer.play(UrlSource(widget.article.audioFile!));
-        }
-      }
-      if (mounted) {
-        setState(() {
-          _isPlayingAudio = !_isPlayingAudio;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error playing audio: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error playing audio: $e')),
-        );
-      }
-    }
-  }
-
-  void _nextSection() {
-    HapticFeedback.lightImpact();
-    if (_currentSectionIndex < widget.article.sections.length - 1) {
-      setState(() {
-        _currentSectionIndex++;
-      });
+    if (_isPlayingAudio) {
+      await audioHandler.pause();
     } else {
-      Navigator.pop(context);
+      await audioHandler.play();
+      
+      // Fallback duration check
+       if (_audioDuration.inMilliseconds == 0 && audioHandler is AudioPlayerHandler) {
+         final d = await (audioHandler as AudioPlayerHandler).getDuration();
+         if (d != null) {
+           setState(() => _audioDuration = d);
+         }
+      }
     }
   }
 
-  void _prevSection() {
-    HapticFeedback.lightImpact();
-    if (_currentSectionIndex > 0) {
-      setState(() {
-        _currentSectionIndex--;
-      });
-    }
+  void _navigateToReadMode() {
+    HapticFeedback.selectionClick();
+    audioHandler.pause(); 
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ArticleTextReaderScreen(
+          article: widget.article,
+          nextArticle: widget.nextArticle,
+          previousArticle: widget.previousArticle,
+          onNavigate: widget.onNavigate,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final section = widget.article.sections[_currentSectionIndex];
-    final isFirstSection = _currentSectionIndex == 0;
-    final isLastSection = _currentSectionIndex == widget.article.sections.length - 1;
+    if (widget.article.languageCode != 'de') {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(LucideIcons.x, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            "This content is only available in German.", 
+            style: TextStyle(color: Colors.white)
+          )
+        ),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: AppColors.neutralBase,
+      backgroundColor: Colors.black,
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 300,
-                pinned: true,
-                backgroundColor: Colors.black,
-                leading: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Icon(LucideIcons.arrowLeft, color: Colors.white, size: 20),
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: widget.article.heroImage,
-                        fit: BoxFit.cover,
-                      ),
-                      if (_isVideoInitialized && _videoController != null)
-                        SizedBox.expand(
-                          child: FittedBox(
-                            fit: BoxFit.cover,
-                            child: SizedBox(
-                              width: _videoController!.value.size.width,
-                              height: _videoController!.value.size.height,
-                              child: VideoPlayer(_videoController!),
-                            ),
-                          ),
-                        ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.8),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (isFirstSection)
-                        Positioned(
-                          bottom: 20,
-                          left: 20,
-                          right: 20,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.article.title,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: AppTypography.fontFamilyPrimary,
-                                  height: 1.1,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    width: 4,
-                                    height: 40,
-                                    color: AppColors.brandBase,
-                                    margin: const EdgeInsets.only(top: 4),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      widget.article.subtitle,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 16,
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.all(AppSpacing.space4),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    Text(
-                      section.headline,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.neutralText,
-                        fontFamily: AppTypography.fontFamilyPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.space3),
-                    ...section.content.map((paragraph) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.space3),
-                      child: Text(
-                        paragraph,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          height: 1.6,
-                          color: AppColors.neutralText,
-                          fontFamily: 'Merriweather', // Assuming we might add this later, or fallback
-                        ),
-                      ),
-                    )),
-                    const SizedBox(height: AppSpacing.space4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (!isFirstSection)
-                          TextButton.icon(
-                            onPressed: _prevSection,
-                            icon: const Icon(LucideIcons.chevronLeft),
-                            label: const Text('Prev'),
-                            style: TextButton.styleFrom(foregroundColor: AppColors.neutralText),
-                          )
-                        else
-                          const SizedBox(),
-                        TextButton.icon(
-                          onPressed: _nextSection,
-                          icon: Icon(isLastSection ? LucideIcons.check : LucideIcons.chevronRight),
-                          label: Text(isLastSection ? 'Done' : 'Next'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.neutralText,
-                            textStyle: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 80), // Space for FAB
-                    
-                    // --- Navigation Footer ---
-                    if ((widget.nextArticle != null || widget.previousArticle != null) && widget.onNavigate != null) ...[
-                      const Divider(height: 1, color: AppColors.neutralBorder),
-                      const SizedBox(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Previous Button
-                          if (widget.previousArticle != null)
-                             InkWell(
-                               onTap: () => widget.onNavigate!(widget.previousArticle!.id),
-                               borderRadius: BorderRadius.circular(8),
-                               child: Row(
-                                 children: [
-                                   // Thumbnail
-                                   Container(
-                                     width: 48,
-                                     height: 48,
-                                     decoration: BoxDecoration(
-                                       borderRadius: BorderRadius.circular(8),
-                                       color: AppColors.neutralSoft,
-                                       image: widget.previousArticle!.heroImage.isNotEmpty ? DecorationImage(
-                                         image: CachedNetworkImageProvider(widget.previousArticle!.heroImage),
-                                         fit: BoxFit.cover,
-                                       ) : null,
-                                     ),
-                                     child: widget.previousArticle!.heroImage.isEmpty ? const Icon(LucideIcons.chevronLeft, size: 16, color: Colors.grey) : null,
-                                   ),
-                                   const SizedBox(width: 12),
-                                   Column(
-                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                     children: [
-                                       const Text(
-                                         "PREVIOUS",
-                                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1.2),
-                                       ),
-                                     ],
-                                   ),
-                                 ],
-                               ),
-                             )
-                          else
-                             const SizedBox(width: 48),
-
-                          // Next Button
-                          if (widget.nextArticle != null)
-                             InkWell(
-                               onTap: () => widget.onNavigate!(widget.nextArticle!.id),
-                               borderRadius: BorderRadius.circular(8),
-                               child: Row(
-                                 children: [
-                                   Column(
-                                     crossAxisAlignment: CrossAxisAlignment.end,
-                                     children: [
-                                       const Text(
-                                         "NEXT",
-                                         style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey, letterSpacing: 1.2),
-                                       ),
-                                     ],
-                                   ),
-                                   const SizedBox(width: 12),
-                                   // Thumbnail
-                                   Container(
-                                     width: 48,
-                                     height: 48,
-                                     decoration: BoxDecoration(
-                                       borderRadius: BorderRadius.circular(8),
-                                       color: AppColors.neutralSoft,
-                                       image: widget.nextArticle!.heroImage.isNotEmpty ? DecorationImage(
-                                          image: CachedNetworkImageProvider(widget.nextArticle!.heroImage),
-                                          fit: BoxFit.cover,
-                                       ) : null,
-                                     ),
-                                     child: widget.nextArticle!.heroImage.isEmpty ? const Icon(LucideIcons.chevronRight, size: 16, color: Colors.grey) : null,
-                                   ),
-                                 ],
-                               ),
-                             )
-                          else
-                             const SizedBox(width: 48),
-                        ],
-                      ),
-                      const SizedBox(height: 100), // Bottom padding
-                    ],
-                  ]),
-                ),
-              ),
-            ],
+          // 1. Background Image
+          CachedNetworkImage(
+             imageUrl: widget.article.heroImage,
+             fit: BoxFit.cover,
           ),
-          if (widget.article.audioFile != null)
-            Positioned(
-              bottom: 32,
-              right: 24,
-              child: GestureDetector(
-                onTap: _toggleAudio,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: _isPlayingAudio ? AppColors.brandBase : Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+          
+          // 2. Background Video (Layered on top if available)
+          if (_isVideoInitialized && _videoController != null)
+             SizedBox.expand(
+               child: FittedBox(
+                 fit: BoxFit.cover,
+                 child: SizedBox(
+                   width: _videoController!.value.size.width,
+                   height: _videoController!.value.size.height,
+                   child: VideoPlayer(_videoController!),
+                 ),
+               ),
+             ),
+
+          // 3. Dark Overlay for readability
+          Container(
+             color: Colors.black.withOpacity(0.6), // Adjust opacity as needed
+          ),
+
+          // 4. Scrolling Text Content (Credit Roll)
+          // Only visible/scrolling effectively when audio plays, but we can show it always.
+          // User said "when ... button clicks ... text is running".
+          // If stopped, text stays still? 
+          if (_isPlayingAudio || _audioPosition > Duration.zero)
+            Positioned.fill(
+              top: 100, // Leave space for header/controls if needed
+              bottom: 100,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const NeverScrollableScrollPhysics(), // Disable manual scroll during playback? Or allow user to override?
+                  // User said "user can read as well as listen". 
+                  // If "running in the speed of audio", manual scroll fights with auto-scroll.
+                  // I'll disable manual scroll for the auto-sync effect to work perfectly, or make it "bouncy" but resetting. 
+                  // Let's stick to auto-scroll (NeverScrollable) for "credit roll" feel.
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 300), // Initial buffer to start text lower
+                      Text(
+                        widget.article.title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
                       ),
+                      const SizedBox(height: 16),
+                      Text(
+                        widget.article.subtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      // Combine all sections
+                      ...widget.article.sections.map((section) => Padding(
+                        padding: const EdgeInsets.only(bottom: 32),
+                        child: Column(
+                          children: [
+                            Text(
+                              section.headline,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: AppColors.brandBase,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              section.content.join('\n\n'),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                height: 1.6,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
+                      const SizedBox(height: 400), // End buffer
                     ],
-                    border: Border.all(
-                      color: _isPlayingAudio ? AppColors.brandBase : AppColors.neutralBorder,
-                      width: 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      LucideIcons.headphones,
-                      color: _isPlayingAudio ? Colors.white : AppColors.brandBase,
-                      size: 24,
-                    ),
                   ),
                 ),
               ),
             ),
+          
+          // 5. Big Center Audio Button
+          if (!_isPlayingAudio)
+            Center(
+              child: GestureDetector(
+                onTap: _toggleAudio,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: const Icon(
+                    LucideIcons.headphones,
+                    color: Colors.white,
+                    size: 64,
+                  ),
+                ),
+              ),
+            )
+          else 
+            // Optional: Pause handler, tapping screen anywhere pauses?
+            GestureDetector(
+              onTap: _toggleAudio,
+              behavior: HitTestBehavior.translucent,
+              child: Container(), // Invisible overlay to catch taps to pause?
+            ),
+
+          // 6. Top Header (Back Button)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            left: 16,
+            child: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(LucideIcons.arrowLeft, color: Colors.white, size: 20),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+
+          // 7. Bottom Link "Read Article"
+          Positioned(
+            bottom: 40,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: TextButton.icon(
+                onPressed: _navigateToReadMode,
+                icon: const Icon(LucideIcons.volumeX, color: Colors.white70, size: 20), // Silent sign
+                label: const Text(
+                  "READ ARTICLE", 
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  )
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
