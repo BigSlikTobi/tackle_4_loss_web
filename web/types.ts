@@ -46,3 +46,10 @@ export interface BreakingNewsDetail extends BreakingNews {
   content: string;
   introduction: string;
 }
+
+export interface Team {
+  team_name: string;
+  team_conference: string;
+  team_division: string;
+  logo_url: string;
+}

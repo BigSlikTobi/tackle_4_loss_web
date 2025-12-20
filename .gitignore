@@ -66,3 +66,9 @@ flutter_app/ios/Flutter/flutter_export_environment.sh
 flutter_app/ios/Runner.xcworkspace/xcuserdata
 flutter_app/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata
 flutter_app/ios/Runner.xcodeproj/xcuserdata
+
+# ToDos
+ToDos/
+
+# Logos
+flutter_app/assets/logos/

@@ -1,0 +1,11 @@
+{
+  "@@locale": "de",
+  "navHome": "Startseite",
+  "navAppStore": "App Store",
+  "navHistory": "Letzte App",
+  "navSettings": "Einstellungen",
+  "settingsTitle": "Einstellungen",
+  "settingsLanguage": "Sprache",
+  "settingsClose": "Schließen",
+  "historyEmpty": "Noch kein App-Verlauf."
+}

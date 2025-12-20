@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Navigation bar label for the Home screen"
+  },
+  "navAppStore": "App Store",
+  "navHistory": "Last App",
+  "navSettings": "Settings",
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsClose": "Close",
+  "historyEmpty": "No app history yet."
+}

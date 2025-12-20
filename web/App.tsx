@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
+import TransparentHeader from './components/TransparentHeader';
+import Hero from './components/Hero';
 import ArticleViewer from './components/ArticleViewer';
 import ArticleFeed from './components/ArticleFeed';
 import { MOCK_SUPABASE_DATA } from './constants';
@@ -9,6 +10,11 @@ import { supabase } from './lib/supabase';
 import { AudioProvider } from './context/AudioContext';
 import BreakingNewsOverviewModal from './components/BreakingNewsOverviewModal';
 import { useBreakingNews } from './hooks/useBreakingNews';
+import FloatingNavBar from './components/FloatingNavBar';
+import { useTeamTheme } from './hooks/useTeamTheme';
+import OSAppGrid from './components/OSAppGrid';
+import AppStore from './components/AppStore';
+import Settings from './components/Settings';
 
 // --- Helper: Parse Supabase Section Format ---
 function parseArticle(supabaseArticle: SupabaseArticle): Article {
@@ -52,8 +58,17 @@ function parseArticle(supabaseArticle: SupabaseArticle): Article {
 export default function App() {
   const [articles, setArticles] = useState<SupabaseArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>('de');
+  const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>(() => {
+    if (typeof window !== 'undefined' && navigator.language) {
+      return navigator.language.startsWith('de') ? 'de' : 'en';
+    }
+    return 'de';
+  });
+
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  // Initialize Team Theme
+  useTeamTheme();
 
   // Breaking News Logic
   const { news: breakingNews, hasUnread: hasBreakingNewsUnread, markAsRead: markBreakingNewsRead } = useBreakingNews(selectedLanguage);
@@ -86,6 +101,9 @@ export default function App() {
     fetchArticles();
   }, [selectedLanguage]); // Add selectedLanguage dependency
 
+  const [view, setView] = useState<'home' | 'app_store' | 'settings'>('home');
+  const [lastAppId, setLastAppId] = useState<string>('deep_dives'); // Default to Deep Dives
+
   // No longer need client-side filtering since we filter on the server
   const filteredArticles = articles;
 
@@ -104,8 +122,6 @@ export default function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       console.error("Error fetching article details", e);
-      // Fallback or show error? For now, try to parse what we have if possible, or do nothing.
-      // If sections are missing, parseArticle might fail if not updated to handle optional sections.
     }
   };
 
@@ -113,17 +129,70 @@ export default function App() {
     setSelectedArticle(null);
   };
 
+  // Navigation Handlers
+  const goHome = () => {
+    setSelectedArticle(null);
+    setView('home');
+  };
+
+  const goAppStore = () => {
+    setSelectedArticle(null);
+    setView('app_store');
+  };
+
+  const goSettings = () => {
+    setSelectedArticle(null);
+    setView('settings');
+  };
+
+  const customOpenApp = (appId: string) => {
+    setLastAppId(appId);
+    if (appId === 'breaking_news') {
+      setIsBreakingNewsOpen(true);
+      markBreakingNewsRead();
+      // Stay on current view or go Home? Let's stay.
+    } else if (appId === 'radio') {
+      // Logic to play radio? For now just log or basic alert
+      // Or maybe just ensure audio context is active.
+      // But we don't have a specific radio screen yet, so just go Home and play?
+      // The prompt says "when selecting the last apps, the last app the user had open opens."
+      // If it's radio, maybe it just plays.
+      goHome(); // Radio is usually overlay/background.
+    } else if (appId === 'deep_dives') {
+      goHome(); // Deep dives is basically the home screen hero + list
+    }
+  };
+
+  const goHistory = () => {
+    customOpenApp(lastAppId);
+  };
+
+  // App Installation State
+  const [installedApps, setInstalledApps] = useState<string[]>(['deep_dives', 'breaking_news', 'radio']);
+
+  const toggleInstallApp = (appId: string) => {
+    setInstalledApps(prev => {
+      if (prev.includes(appId)) {
+        return prev.filter(id => id !== appId);
+      } else {
+        return [...prev, appId];
+      }
+    });
+  };
+
+
   return (
     <AudioProvider>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header
-          selectedLanguage={selectedLanguage}
-          onChangeLanguage={(lang) => setSelectedLanguage(lang)}
-          onOpenBreakingNews={() => {
-            setIsBreakingNewsOpen(true);
-            markBreakingNewsRead();
-          }}
-          hasUnread={hasBreakingNewsUnread}
+      <div
+        className="min-h-screen flex flex-col transition-colors duration-500 ease-in-out"
+        style={{ backgroundColor: 'var(--app-bg)' }}
+      >
+        <TransparentHeader />
+
+        {/* Watermark - Focused on lower area */}
+        <div
+          className="fixed bottom-0 left-0 right-0 h-[60vh] pointer-events-none z-0 bg-no-repeat bg-center bg-contain opacity-40 transition-all duration-1000 transform translate-y-12"
+          style={{ backgroundImage: 'var(--team-logo-url)' }}
         />
 
         <BreakingNewsOverviewModal
@@ -133,75 +202,104 @@ export default function App() {
           languageCode={selectedLanguage}
         />
 
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4">
-
-          {/* Back Button (If Reading) */}
-          {selectedArticle && (
+        {/* Route Content */}
+        {/* 1. Article Viewer (Highest Priority if selected) */}
+        {selectedArticle ? (
+          <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 z-10">
             <button
               onClick={handleBackToFeed}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent"
+              className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent mt-20"
             >
               <ArrowLeft size={14} /> Back
             </button>
-          )}
-
-          {/* Content Area */}
-          {loading ? (
-            <div className="h-[50vh] flex flex-col items-center justify-center gap-4 fade-in">
-              <Loader2 className="w-12 h-12 animate-spin text-[var(--brand)]" />
-              <p className="text-sm font-medium text-zinc-500">Loading</p>
+            <div className="mt-4">
+              <ArticleViewer
+                article={selectedArticle}
+                nextArticle={(() => {
+                  const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
+                  if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
+                  const next = filteredArticles[currentIndex + 1];
+                  return { id: next.id, headline: next.title, image: next.hero_image_url };
+                })()}
+                previousArticle={(() => {
+                  const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
+                  if (currentIndex <= 0) return null;
+                  const prev = filteredArticles[currentIndex - 1];
+                  return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
+                })()}
+                onNavigate={(id) => {
+                  const article = filteredArticles.find(a => a.id === id);
+                  if (article) handleSelectArticle(article);
+                }}
+              />
             </div>
-          ) : selectedArticle ? (
-            <ArticleViewer
-              article={selectedArticle}
-              nextArticle={(() => {
-                const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-                if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
-                const next = filteredArticles[currentIndex + 1];
-                return { id: next.id, headline: next.title, image: next.hero_image_url };
-              })()}
-              previousArticle={(() => {
-                const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-                if (currentIndex <= 0) return null;
-                const prev = filteredArticles[currentIndex - 1];
-                return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
-              })()}
-              onNavigate={(id) => {
-                const article = filteredArticles.find(a => a.id === id);
-                if (article) handleSelectArticle(article);
-              }}
-            />
-          ) : (
-            <>
-              {filteredArticles.length === 0 ? (
-                <div className="text-center py-20 fade-in">
-                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-3xl">🔍</span>
-                  </div>
-                  <p className="text-lg font-semibold text-zinc-900 mb-2">No articles</p>
-                  <p className="text-sm text-zinc-500">Check later</p>
-                </div>
-              ) : (
-                <ArticleFeed
-                  articles={filteredArticles}
-                  onSelect={handleSelectArticle}
-                  selectedLanguage={selectedLanguage}
-                />
-              )}
-            </>
-          )}
-        </main>
+          </main>
+        ) : (
+          <>
+            {/* 2. App Store */}
+            {view === 'app_store' && (
+              <AppStore
+                onOpenApp={customOpenApp}
+                installedApps={installedApps}
+                onToggleInstall={toggleInstallApp}
+              />
+            )}
 
-        {/* Transitional video overlay removed; inline hero handles video playback */}
+            {/* 3. Settings */}
+            {view === 'settings' && (
+              <Settings
+                selectedLanguage={selectedLanguage}
+                onChangeLanguage={setSelectedLanguage}
+              />
+            )}
 
-        <footer className="py-8 border-t border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-sm text-zinc-500">
-              &copy; {new Date().getFullYear()} Tackle4Loss. All rights reserved.
-            </p>
-          </div>
-        </footer>
+            {/* 4. Home (Hero + Grid) */}
+            {view === 'home' && (
+              <div className="w-full md:max-w-7xl md:mx-auto md:px-8 md:pt-24 z-0 flex flex-col items-center animate-fade-in">
+                {!loading && filteredArticles[0] && (
+                  <>
+                    <Hero article={filteredArticles[0]} onSelect={handleSelectArticle} tag="Deep Dive" />
+
+                    {/* iOS App Grid placed naturally below Hero */}
+                    <div className="w-full max-w-md mt-1 z-10">
+                      <OSAppGrid
+                        onOpenNews={() => {
+                          setIsBreakingNewsOpen(true);
+                          markBreakingNewsRead();
+                          setLastAppId('breaking_news');
+                        }}
+                        hasUnreadNews={hasBreakingNewsUnread}
+                        installedApps={installedApps}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+
+        <FloatingNavBar
+          onOpenBreakingNews={() => {
+            setIsBreakingNewsOpen(true);
+            markBreakingNewsRead();
+          }}
+          hasUnread={hasBreakingNewsUnread}
+          onHome={goHome}
+          onAppStore={goAppStore}
+          onHistory={goHistory}
+          onSettings={goSettings}
+        />
       </div>
     </AudioProvider>
   );
 }
+
+// Import new components at top (I can't edit top in this chunk, so I must rely on auto-imports or do a separate add. 
+// Wait, I can't do auto imports. I must add imports at top first. 
+// I will split this into two calls or ensure imports are added. 
+// Actually I can just add imports at the top of this file using a replace on top lines first? 
+// No, I'll assume I can edit the whole file or do top lines separately. 
+// I'll do imports first.)
+
