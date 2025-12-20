@@ -12,23 +12,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: designTokens.colors.primary,
-        secondary: designTokens.colors.secondary,
-        accent: designTokens.colors.accent,
+        primary: designTokens.colors.brand.base,
+        secondary: designTokens.colors.brand.light,
+        accent: designTokens.colors.accent.line,
         neutral: designTokens.colors.neutral,
-        football: designTokens.colors.football,
       },
       fontFamily: {
-        headline: designTokens.typography.fontFamilies.headline.split(','),
-        subheadline: designTokens.typography.fontFamilies.subheadline.split(','),
+        heading: designTokens.typography.fontFamilies.primary.split(','),
         body: designTokens.typography.fontFamilies.body.split(','),
-        mono: designTokens.typography.fontFamilies.mono.split(','),
-        accent: designTokens.typography.fontFamilies.accent.split(','),
       },
       fontSize: designTokens.typography.fontSizes,
       fontWeight: designTokens.typography.fontWeights,
-      lineHeight: designTokens.typography.lineHeights,
-      letterSpacing: designTokens.typography.letterSpacing,
       spacing: designTokens.spacing,
       borderRadius: designTokens.borders.radius,
       borderWidth: designTokens.borders.width,
