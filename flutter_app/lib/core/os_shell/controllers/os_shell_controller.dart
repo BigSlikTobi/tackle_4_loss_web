@@ -13,9 +13,17 @@ class OSShellController extends ChangeNotifier {
   DeepDiveArticle? get featuredArticle => _featuredArticle;
   bool get isLoadingFeatured => _isLoadingFeatured;
 
+  bool _mounted = true;
+
+  @override
+  void dispose() {
+    _mounted = false;
+    super.dispose();
+  }
+
   Future<void> loadFeaturedContent(String languageCode) async {
     _isLoadingFeatured = true;
-    notifyListeners();
+    if (_mounted) notifyListeners();
 
     try {
       final response = await Supabase.instance.client.functions.invoke(
@@ -23,14 +31,16 @@ class OSShellController extends ChangeNotifier {
         body: {'language_code': languageCode},
       );
 
-      if (response.data != null) {
+      if (_mounted && response.data != null) {
         _featuredArticle = DeepDiveArticle.fromJson(response.data);
       }
     } catch (e) {
       debugPrint('Error loading featured content: $e');
     } finally {
-      _isLoadingFeatured = false;
-      notifyListeners();
+      if (_mounted) {
+        _isLoadingFeatured = false;
+        notifyListeners();
+      }
     }
   }
 

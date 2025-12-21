@@ -34,9 +34,6 @@ class T4LScaffold extends StatelessWidget {
     final settings = Provider.of<SettingsService>(context);
 
     // Determine text color based on background luminance or dark mode
-    // Simple heuristic: if dark mode, white text. Else dark text.
-    // If we want more robust contrast check we'd need to analyze the gradient colors.
-    // For now, relying on isDarkMode is safer than hardcoding.
     final headerTextColor = settings.isDarkMode ? Colors.white : AppColors.textPrimary;
 
     return Scaffold(
@@ -61,10 +58,6 @@ class T4LScaffold extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(
                     bottom: (showNavBar || bottomNavBarOverride != null) ? 80 : 0,
-                    // Add top padding if title is present to prevent overlap, 
-                    // unless the body handles it (like a ScrollView). 
-                    // But T4LHeader is floating.
-                    // Let's assume consumer handles top padding or uses Slivers.
                   ),
                   child: body,
                 ),

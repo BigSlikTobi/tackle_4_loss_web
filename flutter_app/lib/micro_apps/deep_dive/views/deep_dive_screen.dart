@@ -28,12 +28,13 @@ class DeepDiveScreen extends StatefulWidget {
 
 class _DeepDiveScreenState extends State<DeepDiveScreen> {
   late final DeepDiveDetailController _controller;
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _controller = widget.controller ?? DeepDiveDetailController();
     _controller.loadArticleDetails(widget.article.id);
   }

@@ -54,8 +54,6 @@ class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
             
             return CustomScrollView(
               slivers: [
-                // Header Space (Implicitly handled by T4LHeader, but we need padding for list to not go under)
-                // User requested extra padding of 8 on top. Previous height was 100. Let's make it 108.
                 const SliverToBoxAdapter(
                   child: SizedBox(height: 120), // Height of Header + SafeArea + 8px padding
                 ),
