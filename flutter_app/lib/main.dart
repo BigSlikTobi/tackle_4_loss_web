@@ -12,10 +12,24 @@ import 'micro_apps/deep_dive/deep_dive_app.dart';
 import 'micro_apps/breaking_news/breaking_news_app.dart';
 
 import 'core/services/installed_apps_service.dart';
+import 'core/services/audio_player_service.dart';
+import 'core/adk/widgets/mini_player.dart';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   // 1. Initialize Bindings
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load Env
+  await dotenv.load(fileName: ".env");
+
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
 
   // 2. Register MicroApps
   // In a real app we might load these dynamically or via reflection, 
@@ -26,6 +40,7 @@ Future<void> main() async {
   
   // 3. Initialize Services
   await InstalledAppsService().init();
+  await AudioPlayerService().init(); // Initialize Audio Service
   
   runApp(
     ChangeNotifierProvider(
@@ -71,6 +86,14 @@ class Tackle4LossApp extends StatelessWidget {
               surface: AppColors.surface,
             ),
           ),
+          builder: (context, child) {
+            return Stack(
+              children: [
+                child!, // The main app content
+                const MiniPlayer(), // Global Audio Player Overlay
+              ],
+            );
+          },
           home: const OSShellView(),
         );
       },

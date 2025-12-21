@@ -1,23 +1,71 @@
+class ArticleSection {
+  final String id;
+  final String content;
+
+  ArticleSection({required this.id, required this.content});
+}
+
 class DeepDiveArticle {
   final String id;
   final String title;
   final String summary;
-  final String content; // Markdown support
+  final String? content; // Full content for fallback
+  final List<ArticleSection>? sections; // New field for structured content
   final String imageUrl;
+  final String? videoUrl;
   final String? audioUrl;
   final DateTime publishedAt;
   final String author;
+  final String languageCode;
 
   DeepDiveArticle({
     required this.id,
     required this.title,
     required this.summary,
-    required this.content,
+    this.content,
+    this.sections,
     required this.imageUrl,
     this.audioUrl,
+    this.videoUrl,
     required this.publishedAt,
     required this.author,
+    required this.languageCode,
   });
+
+  factory DeepDiveArticle.fromJson(Map<String, dynamic> json) {
+    List<ArticleSection>? parsedSections;
+    if (json['sections'] != null && json['sections'] is Map) {
+      final sectionsMap = json['sections'] as Map<String, dynamic>;
+      final sortedKeys = sectionsMap.keys.toList()..sort();
+      parsedSections = sortedKeys.map((key) {
+        return ArticleSection(
+          id: key,
+          content: sectionsMap[key] as String,
+        );
+      }).toList();
+    }
+
+    String? content = json['content'] as String?;
+    
+    // Fallback: If content is missing but sections exist, concatenate them
+    if ((content == null || content.isEmpty) && parsedSections != null) {
+      content = parsedSections.map((s) => s.content).join('\n\n');
+    }
+
+    return DeepDiveArticle(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      summary: json['subtitle'] as String,
+      content: content,
+      sections: parsedSections,
+      imageUrl: json['hero_image_url'] as String,
+      audioUrl: json['audio_file'] as String?,
+      videoUrl: json['video_file'] as String?,
+      publishedAt: DateTime.parse(json['published_at'] as String),
+      author: json['author'] as String,
+      languageCode: json['language_code'] as String,
+    );
+  }
 
   // Mock Factory
   factory DeepDiveArticle.mock() {
@@ -42,6 +90,7 @@ This Deep Dive explores the mathematical principles behind the modern spread and
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Free test audio
       publishedAt: DateTime.now(),
       author: 'Tobias Latta',
+      languageCode: 'en',
     );
   }
 }

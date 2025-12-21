@@ -1,32 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/deep_dive_article.dart';
 
 class DeepDiveController extends ChangeNotifier {
-  DeepDiveArticle? _article;
+  List<DeepDiveArticle> _articles = [];
   bool _isLoading = false;
-  bool _isPlayingAudio = false;
 
-  DeepDiveArticle? get article => _article;
+  List<DeepDiveArticle> get articles => _articles;
   bool get isLoading => _isLoading;
-  bool get isPlayingAudio => _isPlayingAudio;
 
-  Future<void> loadLatestArticle() async {
+  Future<void> loadAllArticles(String languageCode, {bool forceRefresh = false}) async {
+    if (_articles.isNotEmpty && !forceRefresh) return;
+
     _isLoading = true;
     notifyListeners();
 
-    // Simulate Network Delay
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // Load Mock Data
-    _article = DeepDiveArticle.mock();
-    _isLoading = false;
-    notifyListeners();
+    try {
+      _articles = await fetchDeepDives(languageCode);
+    } catch (e) {
+      debugPrint('Error fetching deep dives: $e');
+      // In a real app, handle error state
+      _articles = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  void toggleAudio() {
-    // Basic state toggle for now. 
-    // Real implementation will use AudioService later.
-    _isPlayingAudio = !_isPlayingAudio;
-    notifyListeners();
+  @visibleForTesting
+  Future<List<DeepDiveArticle>> fetchDeepDives(String languageCode) async {
+    final response = await Supabase.instance.client.functions.invoke(
+      'get-all-deepdives',
+      body: {'language_code': languageCode},
+    );
+
+    final data = response.data as List<dynamic>;
+    return data.map((json) => DeepDiveArticle.fromJson(json)).toList();
   }
 }

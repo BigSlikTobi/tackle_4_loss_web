@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
 
 class T4LHeader extends StatelessWidget {
-  const T4LHeader({super.key});
+  final String? title;
+  final Color? textColor;
+
+  const T4LHeader({
+    super.key, 
+    this.title, 
+    this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +45,17 @@ class T4LHeader extends StatelessWidget {
                 ),
               ),
             ),
+            
+            if (title != null) ...[
+              const SizedBox(width: 16),
+              Text(
+                title!,
+                style: AppTextStyles.h2.copyWith(
+                  color: textColor ?? AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ],
         ),
       ),
