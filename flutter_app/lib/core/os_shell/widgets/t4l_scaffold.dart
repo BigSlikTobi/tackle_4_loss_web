@@ -16,6 +16,7 @@ class T4LScaffold extends StatelessWidget {
   final bool showNavBar;
   final VoidCallback? onClose;
   final Widget? bottomNavBarOverride;
+  final String? title; // New title param
 
   const T4LScaffold({
     super.key,
@@ -24,12 +25,16 @@ class T4LScaffold extends StatelessWidget {
     this.showNavBar = true,
     this.bottomNavBarOverride,
     this.onClose,
+    this.title,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final settings = Provider.of<SettingsService>(context);
+
+    // Determine text color based on background luminance or dark mode
+    final headerTextColor = settings.isDarkMode ? Colors.white : AppColors.textPrimary;
 
     return Scaffold(
       backgroundColor: settings.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight,
@@ -50,7 +55,6 @@ class T4LScaffold extends StatelessWidget {
             child: Stack(
               children: [
                 // Body (Full Screen, behind header)
-                // We add bottom padding for NavBar, but top is 0 to allow bleed
                 Padding(
                   padding: EdgeInsets.only(
                     bottom: (showNavBar || bottomNavBarOverride != null) ? 80 : 0,
@@ -59,23 +63,26 @@ class T4LScaffold extends StatelessWidget {
                 ),
                 
                 // Header (Floating on top)
-                const Positioned(
+                Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  child: T4LHeader(),
+                  child: T4LHeader(
+                    title: title,
+                    textColor: headerTextColor,
+                  ),
                 ),
               ],
             ),
           ),
 
-          // 3. Optional Close Button (Top Left)
+          // 3. Optional Close Button (Top RIGHT now)
           if (showCloseButton)
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Align(
-                  alignment: Alignment.topLeft,
+                  alignment: Alignment.topRight, // Changed to topRight
                   child: IconButton(
                     icon: Container(
                       padding: const EdgeInsets.all(8),

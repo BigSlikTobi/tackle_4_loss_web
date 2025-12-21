@@ -5,17 +5,24 @@ import '../../micro_app.dart';
 import '../../services/navigation_service.dart';
 import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
+import '../../../../micro_apps/deep_dive/models/deep_dive_article.dart';
 
 class FeaturedAppHero extends StatelessWidget {
   final MicroApp app;
+  final DeepDiveArticle? article;
 
-  const FeaturedAppHero({super.key, required this.app});
+  const FeaturedAppHero({super.key, required this.app, this.article});
 
   @override
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsService>(context);
     // Use Team Color if selected, otherwise fallback to App's Theme Color
     final brandingColor = settings.selectedTeam?.primaryColor ?? app.themeColor;
+
+    // Dynamic data logic
+    final displayTitle = article?.title ?? app.name.toUpperCase();
+    final displaySubtitle = article?.summary ?? 'APP OF THE MONTH';
+    final displayImageUrl = article?.imageUrl;
 
     // Golden Ratio: approx 0.382 of screen height (The smaller side)
     final double heroHeight = MediaQuery.of(context).size.height * 0.381966;
@@ -59,17 +66,28 @@ class FeaturedAppHero extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                    // Background Image
-                  Image.network(
-                    'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2938&auto=format&fit=crop',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                       return Image.asset(
-                         app.storeImageAsset, 
-                         fit: BoxFit.cover,
-                         errorBuilder: (_, __, ___) => Container(color: brandingColor),
-                       );
-                    },
-                  ),
+                  if (displayImageUrl != null)
+                    Image.network(
+                      displayImageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        app.storeImageAsset,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(color: brandingColor),
+                      ),
+                    )
+                  else
+                    Image.network(
+                      'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2938&auto=format&fit=crop',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                         return Image.asset(
+                           app.storeImageAsset, 
+                           fit: BoxFit.cover,
+                           errorBuilder: (_, __, ___) => Container(color: brandingColor),
+                         );
+                      },
+                    ),
                   
                   // Grounded Gradient Overlay (Cinematic Depth)
                   Container(
@@ -141,8 +159,27 @@ class FeaturedAppHero extends StatelessWidget {
                       children: [
                         const SizedBox(width: 8),
                         const Text(
-                          'APP OF THE MONTH',
+                          'FEATURED APP',
                           style: TextStyle(
+                            color: Color(0xFF0f3d2e),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Container(
+                          width: 4, 
+                          height: 4, 
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF0f3d2e),
+                            shape: BoxShape.circle
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          app.name.toUpperCase(),
+                          style: const TextStyle(
                             color: Color(0xFF0f3d2e),
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
@@ -155,11 +192,11 @@ class FeaturedAppHero extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Title (More intense 3D shadow)
-                  const Text(
-                    'THE UNTOLD STORY OF THE JETS DEFENSE', 
-                    style: TextStyle(
+                  Text(
+                    displayTitle.toUpperCase(), 
+                    style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 44, // Slightly smaller to prevent overflow
+                      fontSize: 40, // Slightly smaller to prevent overflow
                       fontWeight: FontWeight.w900, 
                       height: 0.95,
                       letterSpacing: -1.0,
@@ -172,15 +209,17 @@ class FeaturedAppHero extends StatelessWidget {
                         ),
                       ],
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 10),
 
                   // Subtitle
-                  const Text(
-                    'An exclusive look into the strategies that defined a generation of defensive play.', 
+                  Text(
+                    displaySubtitle, 
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white, 
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

@@ -1,44 +1,52 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/controllers/deep_dive_controller.dart';
+import 'package:tackle4loss_mobile/micro_apps/deep_dive/models/deep_dive_article.dart';
+
+class TestDeepDiveController extends DeepDiveController {
+  @override
+  Future<List<DeepDiveArticle>> fetchDeepDives(String languageCode) async {
+    // Mock network delay to verify loading state logic
+    await Future.delayed(const Duration(milliseconds: 10));
+    return [
+      DeepDiveArticle(
+        id: '1',
+        title: 'Test Article',
+        summary: 'Summary',
+        content: 'Content',
+        imageUrl: 'url',
+        publishedAt: DateTime.now(),
+        author: 'Author',
+        languageCode: 'en',
+      )
+    ];
+  }
+}
 
 void main() {
+  late TestDeepDiveController controller;
+
+  setUp(() {
+    controller = TestDeepDiveController();
+  });
+
   group('DeepDiveController', () {
-    late DeepDiveController controller;
-
-    setUp(() {
-      controller = DeepDiveController();
+    test('initial state is correct', () {
+      expect(controller.articles, isEmpty);
+      expect(controller.isLoading, false);
     });
 
-    test('Initial state is correct', () {
-      expect(controller.article, isNull);
-      expect(controller.isLoading, isFalse);
-      expect(controller.isPlayingAudio, isFalse);
-    });
-
-    test('loadLatestArticle fetches data and updates state', () async {
-      // Act
-      final future = controller.loadLatestArticle();
+    test('loadAllArticles updates internal state', () async {
+      final future = controller.loadAllArticles('en');
       
-      // Assert Loading (sync)
-      expect(controller.isLoading, isTrue);
-
-      // Await completion
+      // Loading should be true while future is pending
+      expect(controller.isLoading, true);
+      
       await future;
-
-      // Assert Loaded
-      expect(controller.isLoading, isFalse);
-      expect(controller.article, isNotNull);
-      expect(controller.article!.title, isNotEmpty);
-    });
-
-    test('toggleAudio switches playback state', () {
-      expect(controller.isPlayingAudio, isFalse);
       
-      controller.toggleAudio();
-      expect(controller.isPlayingAudio, isTrue);
-      
-      controller.toggleAudio();
-      expect(controller.isPlayingAudio, isFalse);
+      // Loading should be false after completion
+      expect(controller.isLoading, false);
+      expect(controller.articles.length, 1);
+      expect(controller.articles.first.id, '1');
     });
   });
 }

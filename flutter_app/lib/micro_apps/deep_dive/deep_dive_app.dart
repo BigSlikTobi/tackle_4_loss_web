@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
-import 'views/deep_dive_screen.dart';
+import 'views/deep_dive_list_screen.dart';
 
 class DeepDiveApp implements MicroApp {
   @override
@@ -25,5 +25,5 @@ class DeepDiveApp implements MicroApp {
   String get descriptionAsset => 'lib/micro_apps/deep_dive/store_assets/description.md';
 
   @override
-  WidgetBuilder get page => (context) => const DeepDiveScreen();
+  WidgetBuilder get page => (context) => const DeepDiveListScreen();
 }

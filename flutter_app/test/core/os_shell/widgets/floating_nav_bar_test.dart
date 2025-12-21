@@ -32,7 +32,8 @@ void main() {
     expect(find.byIcon(LucideIcons.layoutGrid), findsOneWidget);
     expect(find.byIcon(LucideIcons.history), findsOneWidget);
     expect(find.byIcon(LucideIcons.user), findsOneWidget);
-    expect(find.byIcon(LucideIcons.trophy), findsOneWidget);
+    // Center button uses Image, not Icon
+    expect(find.byType(Image), findsOneWidget);
 
     // Test Taps
     await tester.tap(find.text('H'));
@@ -47,7 +48,7 @@ void main() {
     await tester.tap(find.byIcon(LucideIcons.user));
     expect(settingsPressed, isTrue);
 
-    await tester.tap(find.byIcon(LucideIcons.trophy));
+    await tester.tap(find.byType(Image));
     expect(teamPressed, isTrue);
   });
 }

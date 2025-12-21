@@ -30,13 +30,14 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
   AnimationController? _rotationController;
   AnimationController? _sheenController;
   bool _isDragging = false;
+  String? _currentLanguageCode;
 
   @override
   void initState() {
     super.initState();
     _controller = OSShellController(context);
     _loadApps(); // Initial load
-    
+
     // Subtle pulsating animation (breathing/sway effect) - Linear loop for Sine wave
     _rotationController = AnimationController(
         duration: const Duration(seconds: 6),
@@ -51,7 +52,18 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final settings = Provider.of<SettingsService>(context);
+    if (_currentLanguageCode != settings.locale.languageCode) {
+      _currentLanguageCode = settings.locale.languageCode;
+      _controller.loadFeaturedContent(_currentLanguageCode!);
+    }
+  }
+
+  @override
   void dispose() {
+    _controller.dispose();
     _rotationController?.dispose();
     _sheenController?.dispose();
     super.dispose();
@@ -80,135 +92,139 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
        vsync: this,
     )..repeat();
 
-    return T4LScaffold(
-      showCloseButton: false, // Shell is the root
-      bottomNavBarOverride: AnimatedCrossFade(
-        duration: const Duration(milliseconds: 200),
-        crossFadeState: _isDragging 
-            ? CrossFadeState.showSecond 
-            : CrossFadeState.showFirst,
-        
-         // State 1: Dock
-        firstChild: T4LFloatingNavBar(
-          homeTooltip: AppLocalizations.of(context)!.navHome,
-          appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
-          historyTooltip: AppLocalizations.of(context)!.navHistory,
-          settingsTooltip: AppLocalizations.of(context)!.navSettings,
-          favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-          onHome: () => NavigationService().goHome(context),
-          onAppStore: () => NavigationService().openAppStore(context),
-          onHistory: () => NavigationService().reopenLastApp(context),
-          onSettings: () {
-            showDialog(
-              context: context,
-              builder: (context) => UserSettingsDialog(),
-            );
-          },
-          onTeamLogo: () {
-            if (settings.selectedTeam == null) {
+    return ChangeNotifierProvider.value(
+      value: _controller,
+      child: T4LScaffold(
+        showCloseButton: false, // Shell is the root
+        bottomNavBarOverride: AnimatedCrossFade(
+          duration: const Duration(milliseconds: 200),
+          crossFadeState: _isDragging 
+              ? CrossFadeState.showSecond 
+              : CrossFadeState.showFirst,
+          
+           // State 1: Dock
+          firstChild: T4LFloatingNavBar(
+            homeTooltip: AppLocalizations.of(context)!.navHome,
+            appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
+            historyTooltip: AppLocalizations.of(context)!.navHistory,
+            settingsTooltip: AppLocalizations.of(context)!.navSettings,
+            favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
+            onHome: () => NavigationService().goHome(context),
+            onAppStore: () => NavigationService().openAppStore(context),
+            onHistory: () => NavigationService().reopenLastApp(context),
+            onSettings: () {
               showDialog(
                 context: context,
-                builder: (context) => TeamSelectorDialog(),
+                builder: (context) => UserSettingsDialog(),
               );
-            }
-          },
+            },
+            onTeamLogo: () {
+              if (settings.selectedTeam == null) {
+                showDialog(
+                  context: context,
+                  builder: (context) => TeamSelectorDialog(),
+                );
+              }
+            },
+          ),
+          
+          // State 2: Remove Zone (Trash)
+          secondChild: RemoveDropZone(
+            onRemove: (fromIndex) {
+              final app = InstalledAppsService().gridApps[fromIndex];
+              if (app != null) {
+                 InstalledAppsService().uninstall(app.id);
+              }
+            },
+          ),
         ),
-        
-        // State 2: Remove Zone (Trash)
-        secondChild: RemoveDropZone(
-          onRemove: (fromIndex) {
-            final app = InstalledAppsService().gridApps[fromIndex];
-            if (app != null) {
-               InstalledAppsService().uninstall(app.id);
-            }
-          },
-        ),
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // 0. Ambient Watermark (Behind Grid, Below Hero)
-            if (settings.selectedTeam != null)
-              Positioned(
-                top: MediaQuery.of(context).size.height * 0.45, // Start below Hero
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Center(
-                  child: Opacity(
-                    opacity: 0.12,
-                    child: AnimatedBuilder(
-                      animation: Listenable.merge([_rotationController!, _sheenController!]),
-                      builder: (context, child) {
-                        // Use Sine wave for perfect continuous loop without "stops"
-                        // oscillations between -0.22 and 0.22 radians
-                        final angle = 0.22 * math.sin(2 * math.pi * _rotationController!.value);
-                        
-                        final sheenValue = _sheenController!.value;
-                        
-                        return Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.001) // Perspective
-                            ..rotateY(angle),      // Sway left/right
-                          child: ShaderMask(
-                            shaderCallback: (rect) {
-                                // Create sliding gradient window
-                                return LinearGradient(
-                                  begin: Alignment.bottomLeft,
-                                  end: Alignment.topRight,
-                                  colors: [
-                                    Colors.transparent, 
-                                    Colors.white.withOpacity(0.4), // The Glow
-                                    Colors.transparent
-                                  ],
-                                  // Move the stops from -0.3 (before start) to 1.3 (after end)
-                                  stops: [
-                                    sheenValue * 1.6 - 0.6,
-                                    sheenValue * 1.6 - 0.3, 
-                                    sheenValue * 1.6
-                                  ],
-                                ).createShader(rect);
-                            },
-                            blendMode: BlendMode.srcATop, // Paint sheen ON TOP of existing pixels
-                            child: child,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // 0. Ambient Watermark (Behind Grid, Below Hero)
+              if (settings.selectedTeam != null)
+                Positioned(
+                  top: MediaQuery.of(context).size.height * 0.45, // Start below Hero
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Opacity(
+                      opacity: 0.12,
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([_rotationController!, _sheenController!]),
+                        builder: (context, child) {
+                          // Use Sine wave for perfect continuous loop without "stops"
+                          // oscillations between -0.22 and 0.22 radians
+                          final angle = 0.22 * math.sin(2 * math.pi * _rotationController!.value);
+                          
+                          final sheenValue = _sheenController!.value;
+                          
+                          return Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.001) // Perspective
+                              ..rotateY(angle),      // Sway left/right
+                            child: ShaderMask(
+                              shaderCallback: (rect) {
+                                  // Create sliding gradient window
+                                  return LinearGradient(
+                                    begin: Alignment.bottomLeft,
+                                    end: Alignment.topRight,
+                                    colors: [
+                                      Colors.transparent, 
+                                      Colors.white.withOpacity(0.4), // The Glow
+                                      Colors.transparent
+                                    ],
+                                    // Move the stops from -0.3 (before start) to 1.3 (after end)
+                                    stops: [
+                                      sheenValue * 1.6 - 0.6,
+                                      sheenValue * 1.6 - 0.3, 
+                                      sheenValue * 1.6
+                                    ],
+                                  ).createShader(rect);
+                              },
+                              blendMode: BlendMode.srcATop, // Paint sheen ON TOP of existing pixels
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: SizedBox(
+                          width: 300,
+                          height: 300,
+                          child: Image.asset(
+                             settings.selectedTeam!.logoUrl,
+                             errorBuilder: (_,__,___) => const SizedBox(),
                           ),
-                        );
-                      },
-                      child: SizedBox(
-                        width: 300,
-                        height: 300,
-                        child: Image.asset(
-                           settings.selectedTeam!.logoUrl,
-                           errorBuilder: (_,__,___) => const SizedBox(),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-
-            // 1. Scrollable Content (Hero + Grid)
-            ListenableBuilder(
-              listenable: InstalledAppsService(),
-              builder: (context, child) {
-                final gridApps = InstalledAppsService().gridApps; // Sparse list (16)
-                final installedApps = gridApps.whereType<MicroApp>().toList(); // Dense list for logic
-                
-                // App of the Month Logic
-                final featuredId = AppRegistry().featuredAppId;
-                // Always show featured hero if one is defined in registry, regardless of grid status
-                final showFeatured = featuredId != null;
-    
-                return CustomScrollView(
-                  slivers: [
-                    // 1. Featured App Hero (As a Sliver)
-                    if (showFeatured)
-                       SliverToBoxAdapter(
-                         child: FeaturedAppHero(
-                           app: AppRegistry().getApp(featuredId!)!,
-                         ),
-                       ),
+  
+              // 1. Scrollable Content (Hero + Grid)
+              Consumer<OSShellController>(
+                builder: (context, shellController, child) {
+                  return ListenableBuilder(
+                    listenable: InstalledAppsService(),
+                    builder: (context, child) {
+                      final gridApps = InstalledAppsService().gridApps; // Sparse list (16)
+                      
+                      // App of the Month Logic
+                      final featuredId = AppRegistry().featuredAppId;
+                      // Always show featured hero if one is defined in registry, regardless of grid status
+                      final showFeatured = featuredId != null;
+          
+                      return CustomScrollView(
+                        slivers: [
+                          // 1. Featured App Hero (As a Sliver)
+                          if (showFeatured)
+                             SliverToBoxAdapter(
+                               child: FeaturedAppHero(
+                                 app: AppRegistry().getApp(featuredId!)!,
+                                 article: shellController.featuredArticle,
+                               ),
+                             ),
     
                     // 2. Padding/Spacer between Hero and Grid
                     const SliverPadding(padding: EdgeInsets.only(top: 24)),
@@ -289,22 +305,23 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
                               },
                             );
                           },
-                          childCount: 16, // Always 16 slots
+                          childCount: 16,
                         ),
                       ),
                     ),
-    
-                    // 4. Bottom Padding for Floating Nav Bar
                     const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
                   ],
                 );
               },
-            ),
-          ],
+            );
+          },
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  ),
+),
+);
+}
 }
 
 class _DockIcon extends StatelessWidget {

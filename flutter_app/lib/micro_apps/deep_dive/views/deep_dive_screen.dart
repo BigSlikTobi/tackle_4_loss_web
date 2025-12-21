@@ -1,159 +1,288 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:audio_service/audio_service.dart'; // New import
 import '../../../../design_tokens.dart';
 import '../../../core/os_shell/widgets/t4l_scaffold.dart';
+import '../../../core/os_shell/widgets/t4l_header.dart';
+import '../../../core/services/settings_service.dart'; // New import
+import '../../../core/services/audio_player_service.dart';
 import '../../../core/adk/widgets/t4l_hero_header.dart';
-import '../controllers/deep_dive_controller.dart';
+import '../controllers/deep_dive_detail_controller.dart';
+import '../models/deep_dive_article.dart';
 
 class DeepDiveScreen extends StatefulWidget {
-  const DeepDiveScreen({super.key});
+  final DeepDiveArticle article;
+  final DeepDiveDetailController? controller;
+
+  const DeepDiveScreen({
+    super.key, 
+    required this.article,
+    this.controller,
+  });
 
   @override
   State<DeepDiveScreen> createState() => _DeepDiveScreenState();
 }
 
 class _DeepDiveScreenState extends State<DeepDiveScreen> {
-  final DeepDiveController _controller = DeepDiveController();
+  late final DeepDiveDetailController _controller;
+  late final PageController _pageController;
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller.loadLatestArticle();
+    _pageController = PageController();
+    _controller = widget.controller ?? DeepDiveDetailController();
+    _controller.loadArticleDetails(widget.article.id);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsService>(context);
+    final isDarkMode = settings.isDarkMode;
+    final primaryTextColor = isDarkMode ? Colors.white : AppColors.textPrimary;
+    final secondaryTextColor = isDarkMode ? Colors.white.withOpacity(0.7) : AppColors.textSecondary;
+    final surfaceColor = isDarkMode ? AppColors.cardDark : AppColors.cardLight;
+
     return ChangeNotifierProvider.value(
       value: _controller,
       child: T4LScaffold(
-        body: Consumer<DeepDiveController>(
+        body: Consumer<DeepDiveDetailController>(
           builder: (context, controller, child) {
-            if (controller.isLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+            final article = controller.article ?? widget.article;
+            final sections = article.sections ?? [];
+            final content = article.content;
 
-            final article = controller.article;
-            if (article == null) {
-              return const Center(
-                  child: Text('No article found',
-                      style: TextStyle(color: Colors.white)));
-            }
+            return Stack(
+              children: [
+                NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) {
+                    return [
+                      T4LHeroHeader(
+                        title: article.title,
+                        subtitle: article.summary,
+                        imageUrl: article.imageUrl,
+                        videoUrl: article.videoUrl,
+                        isDarkMode: isDarkMode,
+                        heroTag: 'hero-${article.id}',
+                        floatingAction: article.audioUrl == null
+                            ? null
+                            : StreamBuilder<PlaybackState>(
+                                stream: AudioPlayerService().playbackStateStream,
+                                builder: (context, snapshot) {
+                                  final playing = snapshot.data?.playing ?? false;
+                                  final currentMediaStr = AudioPlayerService()
+                                      .currentMediaItem
+                                      ?.id;
+                                  final isIsActiveArticle =
+                                      currentMediaStr == article.audioUrl;
+                                  final showPause = playing && isIsActiveArticle;
 
-            return CustomScrollView(
-              slivers: [
-                // 1. ADK Hero Header
-                T4LHeroHeader(
-                  title: 'DEEP DIVE',
-                  imageUrl: article.imageUrl,
-                ),
-
-                // 2. Article Content
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Category / Tag
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'TACTICAL ANALYSIS',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.background,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Title
-                        Text(
-                          article.title,
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Summary
-                        Text(
-                          article.summary,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: AppColors.textSecondary,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Audio Player Row (Placeholder)
-                        GestureDetector(
-                          onTap: controller.toggleAudio,
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: AppColors.textPrimary.withOpacity(0.1)),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  controller.isPlayingAudio
-                                      ? Icons.pause_circle_filled
-                                      : Icons.play_circle_fill,
-                                  color: AppColors.primary,
-                                  size: 40,
-                                ),
-                                const SizedBox(width: 16),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Listen to this article',
-                                      style: TextStyle(
-                                          color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      '4 min listen • ${article.author}',
-                                      style: TextStyle(
-                                        color: AppColors.textSecondary.withOpacity(0.7),
-                                        fontSize: 12,
+                                  return GestureDetector(
+                                    onTap: () {
+                                      if (showPause) {
+                                        AudioPlayerService().pause();
+                                      } else {
+                                        if (article.audioUrl != null) {
+                                          AudioPlayerService().play(
+                                              article.audioUrl!,
+                                              article.title,
+                                              article.author,
+                                              article.imageUrl);
+                                        }
+                                      }
+                                    },
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: surfaceColor,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: primaryTextColor.withOpacity(0.1),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        showPause
+                                            ? Icons.pause_rounded
+                                            : Icons.play_arrow_rounded,
+                                        color: AppColors.primary,
+                                        size: 32,
                                       ),
                                     ),
-                                  ],
-                                )
-                              ],
+                                  );
+                                }),
+                      ),
+                    ];
+                  },
+                  body: controller.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : (sections.isNotEmpty)
+                          ? PageView.builder(
+                              controller: _pageController,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentPage = index;
+                                });
+                              },
+                              itemCount: sections.length,
+                              itemBuilder: (context, index) {
+                                final section = sections[index];
+                                return MediaQuery.removePadding(
+                                  context: context,
+                                  removeTop: true,
+                                  child: SingleChildScrollView(
+                                    physics: const BouncingScrollPhysics(),
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          24, 32, 24, 120),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "CHAPTER ${index + 1}".toUpperCase(),
+                                            style: AppTextStyles.caption.copyWith(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 2.0,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16),
+                                          MarkdownBody(
+                                            data: section.content,
+                                            styleSheet: MarkdownStyleSheet(
+                                              p: TextStyle(
+                                                  color: secondaryTextColor,
+                                                  fontSize: 16,
+                                                  height: 1.6),
+                                              h2: TextStyle(
+                                                  color: primaryTextColor,
+                                                  fontSize: 24,
+                                                  fontWeight: FontWeight.bold),
+                                              h3: TextStyle(
+                                                  color: primaryTextColor,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w600),
+                                              blockquote: const TextStyle(
+                                                  color: AppColors.accent,
+                                                  fontStyle: FontStyle.italic),
+                                              code: TextStyle(
+                                                  backgroundColor: surfaceColor,
+                                                  color: primaryTextColor),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : SingleChildScrollView(
+                              padding: const EdgeInsets.all(24.0),
+                              child: content != null
+                                  ? MarkdownBody(
+                                      data: content,
+                                      styleSheet: MarkdownStyleSheet(
+                                        p: TextStyle(
+                                            color: secondaryTextColor,
+                                            fontSize: 16,
+                                            height: 1.6),
+                                        h2: TextStyle(
+                                            color: primaryTextColor,
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold),
+                                        h3: TextStyle(
+                                            color: primaryTextColor,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w600),
+                                        blockquote: const TextStyle(
+                                            color: AppColors.accent,
+                                            fontStyle: FontStyle.italic),
+                                        code: TextStyle(
+                                            backgroundColor: surfaceColor,
+                                            color: primaryTextColor),
+                                      ),
+                                    )
+                                  : Center(
+                                      child: Text("No content available",
+                                          style: TextStyle(
+                                              color: secondaryTextColor))),
+                            ),
+                ),
+
+                // Progress Overlay
+                if (sections.isNotEmpty && !controller.isLoading)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            (isDarkMode
+                                ? AppColors.backgroundDark
+                                : AppColors.backgroundLight),
+                            (isDarkMode
+                                    ? AppColors.backgroundDark
+                                    : AppColors.backgroundLight)
+                                .withOpacity(0),
+                          ],
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 20),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: LinearProgressIndicator(
+                                value: (sections.length > 1)
+                                    ? _currentPage / (sections.length - 1)
+                                    : 1.0,
+                                backgroundColor: primaryTextColor.withOpacity(0.1),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                    AppColors.primary),
+                                minHeight: 2,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 32),
-
-                        // Markdown Body
-                        MarkdownBody(
-                          data: article.content,
-                          styleSheet: MarkdownStyleSheet(
-                            p: const TextStyle(color: AppColors.textSecondary, fontSize: 16, height: 1.6),
-                            h2: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
-                            h3: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.w600),
-                            blockquote: const TextStyle(color: AppColors.accent, fontStyle: FontStyle.italic),
+                          const SizedBox(width: 16),
+                          Text(
+                            "${_currentPage + 1} / ${sections.length}",
+                            style: AppTextStyles.caption.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: secondaryTextColor,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 100), // Bottom padding
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
               ],
             );
           },
