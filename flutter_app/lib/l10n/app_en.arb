@@ -10,5 +10,27 @@
   "settingsTitle": "Settings",
   "settingsLanguage": "Language",
   "settingsClose": "Close",
-  "historyEmpty": "No app history yet."
+  "historyEmpty": "No app history yet.",
+  "breakingNewsTitle": "Breaking News",
+  "breakingNewsRefused": "REFUSED",
+  "breakingNewsSaved": "SAVED",
+  "breakingNewsReadHistory": "READ HISTORY",
+  "breakingNewsRestore": "RESTORE?",
+  "breakingNewsHistory": "HISTORY",
+  "breakingNewsBackTitle": "Full Story",
+  "breakingNewsTag": "BREAKING",
+  "breakingNewsSavedLabel": "Saved",
+  "deepDiveChapter": "CHAPTER {index}",
+  "@deepDiveChapter": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "deepDiveNoContent": "No content available",
+  "appStoreTitle": "T4L Apps",
+  "appStoreFeaturedTitle": "App of the Month",
+  "appStoreFeaturedSubtitle": "Deeply immersive reading.",
+  "appStoreAllApps": "All Apps"
 }

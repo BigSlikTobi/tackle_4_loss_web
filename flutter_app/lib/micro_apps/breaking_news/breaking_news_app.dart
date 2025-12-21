@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
 import 'views/breaking_news_list_screen.dart';
+import 'views/widgets/breaking_news_widget.dart';
 
 class BreakingNewsApp implements MicroApp {
   @override
@@ -26,4 +27,13 @@ class BreakingNewsApp implements MicroApp {
 
   @override
   WidgetBuilder get page => (context) => const BreakingNewsListScreen();
+
+  @override
+  bool get hasWidget => true;
+
+  @override
+  Size get widgetSize => const Size(2, 2);
+
+  @override
+  WidgetBuilder get widgetBuilder => (context) => const BreakingNewsWidget();
 }

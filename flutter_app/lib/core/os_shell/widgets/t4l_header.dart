@@ -4,11 +4,13 @@ import '../../../../design_tokens.dart';
 class T4LHeader extends StatelessWidget {
   final String? title;
   final Color? textColor;
+  final List<Widget>? actions;
 
   const T4LHeader({
     super.key, 
     this.title, 
     this.textColor,
+    this.actions,
   });
 
   @override
@@ -55,6 +57,11 @@ class T4LHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ],
+
+            if (actions != null) ...[
+              const Spacer(),
+              ...actions!,
             ],
           ],
         ),

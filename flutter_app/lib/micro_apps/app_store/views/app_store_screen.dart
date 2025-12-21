@@ -6,6 +6,8 @@ import '../../../core/micro_app.dart';
 import '../widgets/featured_card.dart';
 import '../widgets/app_list_item.dart';
 import '../widgets/app_info_dialog.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../core/theme/t4l_theme.dart';
 
 class AppStoreScreen extends StatefulWidget {
   const AppStoreScreen({super.key});
@@ -31,9 +33,60 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
     );
   }
 
+  void _showInstallOptions(BuildContext context, MicroApp app) {
+    showDialog(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text('Install ${app.name}'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _controller.toggleInstall(app.id, asWidget: false);
+              });
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                   Icon(Icons.app_shortcut, size: 24),
+                   SizedBox(width: 12),
+                   Text('Standard Icon', style: TextStyle(fontSize: 16)),
+                ],
+              ),
+            ),
+          ),
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                 _controller.toggleInstall(app.id, asWidget: true);
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                   Icon(Icons.widgets, size: 24, color: AppColors.accent),
+                   const SizedBox(width: 12),
+                   Text('Home Screen Widget (${app.widgetSize.width.toInt()}x${app.widgetSize.height.toInt()})',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Logic Delegated to Controller
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
+    
     final featuredApp = _controller.getFeaturedApp();
     final otherApps = _controller.getOtherApps();
 
@@ -48,13 +101,13 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                    Text(
-                    'T4L Apps',
-                    style: AppTextStyles.display,
+                    l10n.appStoreTitle,
+                    style: AppTextStyles.display.copyWith(color: colors.textPrimary),
                   ),
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: AppColors.primary,
-                    child: Text('TL', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    backgroundColor: colors.brand,
+                    child: const Text('TL', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -69,9 +122,9 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
                 children: [
                    // Featured Card
                    AppStoreFeaturedCard(
-                     category: 'App of the Month',
+                     category: l10n.appStoreFeaturedTitle,
                      title: featuredApp.name,
-                     subtitle: 'Deeply immersive reading.', // Could also be metadata
+                     subtitle: l10n.appStoreFeaturedSubtitle,
                      imagePath: featuredApp.storeImageAsset,
                      isInstalled: _controller.isInstalled(featuredApp.id),
                      onInfo: () => _showAppInfo(context, featuredApp),
@@ -93,10 +146,10 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
               child: Row(
                 children: [
                   Text(
-                    'All Apps',
-                    style: AppTextStyles.h2,
+                    l10n.appStoreAllApps,
+                    style: AppTextStyles.h2.copyWith(color: colors.textPrimary),
                   ),
-                  const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                  Icon(Icons.chevron_right, color: colors.textSecondary),
                 ],
               ),
             ),
@@ -123,9 +176,19 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
                       _showAppInfo(context, app); // Show info/assets on tap
                     },
                     onAction: () {
-                      setState(() {
-                         _controller.toggleInstall(app.id);
-                      });
+                      if (isInstalled) {
+                         setState(() {
+                           _controller.toggleInstall(app.id);
+                         });
+                      } else {
+                         if (app.hasWidget) {
+                           _showInstallOptions(context, app);
+                         } else {
+                           setState(() {
+                             _controller.toggleInstall(app.id);
+                           });
+                         }
+                      }
                     },
                   );
                 },

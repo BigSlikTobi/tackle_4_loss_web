@@ -1,28 +1,43 @@
 class BreakingNewsArticle {
   final String id;
-  final String title;
-  final String description;
-  final String source;
-  final DateTime publishedAt;
-  final String imageUrl;
+  final String headline;
+  final String? subHeader;
+  final String? introductionParagraph;
+  final String? content;
+  final String? imageUrl;
+  final DateTime createdAt;
+  final List<dynamic>? teams; // List of team objects from JSON
+  final List<dynamic>? players; // List of player ID objects from JSON
+  final String? url;
+  final String? audioFile;
 
   BreakingNewsArticle({
     required this.id,
-    required this.title,
-    required this.description,
-    required this.source,
-    required this.publishedAt,
-    required this.imageUrl,
+    required this.headline,
+    this.subHeader,
+    this.introductionParagraph,
+    this.content,
+    this.imageUrl,
+    required this.createdAt,
+    this.teams,
+    this.players,
+    this.url,
+    this.audioFile,
   });
 
-  factory BreakingNewsArticle.mock(int index) {
+  factory BreakingNewsArticle.fromJson(Map<String, dynamic> json) {
     return BreakingNewsArticle(
-      id: 'news-$index',
-      title: 'Star QB Agrees to Record-Breaking Extension: \$275 Million Deal',
-      description: 'The franchise quarterback has secured his future with the team, setting a new market standard for the position.',
-      source: 'NFL Network',
-      publishedAt: DateTime.now().subtract(Duration(hours: index * 2)),
-      imageUrl: 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?q=80&w=3426&auto=format&fit=crop', // Stadium/Football generic
+      id: json['id'] as String,
+      headline: json['headline'] as String,
+      subHeader: json['subHeader'] as String?,
+      introductionParagraph: json['introductionParagraph'] as String?,
+      content: json['content'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      teams: json['teams'] as List<dynamic>?,
+      players: json['players'] as List<dynamic>?,
+      url: json['url'] as String?,
+      audioFile: json['audioFile'] as String?,
     );
   }
 }

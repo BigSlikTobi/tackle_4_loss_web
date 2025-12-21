@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
-import 'design_tokens.dart';
+import 'design_tokens.dart'; // Still needed for some constants or legacy usage if any
+import 'core/theme/t4l_theme.dart'; // New Theme
 import 'core/os_shell/views/os_shell_view.dart';
 import 'core/app_registry.dart';
 import 'core/services/settings_service.dart';
@@ -77,15 +78,12 @@ class Tackle4LossApp extends StatelessWidget {
             Locale('en'),
             Locale('de'),
           ],
-          theme: ThemeData(
-            useMaterial3: true,
-            scaffoldBackgroundColor: AppColors.background,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.primary,
-              brightness: Brightness.dark,
-              surface: AppColors.surface,
-            ),
-          ),
+          
+          // Use our standardized T4LTheme
+          themeMode: settings.themeMode,
+          theme: T4LTheme.light,
+          darkTheme: T4LTheme.dark,
+          
           builder: (context, child) {
             return Stack(
               children: [

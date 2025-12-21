@@ -22,11 +22,11 @@ class AppStoreController {
   }
 
   /// Toggles the install state of an app.
-  void toggleInstall(String appId) {
+  void toggleInstall(String appId, {bool asWidget = false}) {
     if (isInstalled(appId)) {
       _installedAppsService.uninstall(appId);
     } else {
-      _installedAppsService.install(appId);
+      _installedAppsService.install(appId, asWidget: asWidget);
     }
   }
 

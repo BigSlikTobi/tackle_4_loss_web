@@ -26,4 +26,13 @@ class AppStoreApp implements MicroApp {
 
   @override
   WidgetBuilder get page => (context) => const AppStoreScreen();
+
+  @override
+  bool get hasWidget => false;
+
+  @override
+  Size get widgetSize => const Size(1, 1);
+
+  @override
+  WidgetBuilder get widgetBuilder => (context) => const SizedBox();
 }

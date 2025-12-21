@@ -9,111 +9,247 @@ class InstalledAppsService with ChangeNotifier {
   factory InstalledAppsService() => _instance;
   InstalledAppsService._internal();
 
-  static const String _storageKey = 'installed_app_ids_grid';
-  // Fixed 16-slot grid. Null means empty slot.
-  final List<String?> _grid = List<String?>.filled(16, null);
+  static const String _storageKey = 'installed_app_ids_grid_v4'; // Bump version
+  static const int _gridCols = 4;
+  static const int _gridRows = 5;
+  static const int _gridSize = _gridCols * _gridRows;
+  
+  static const String _emptySlot = '__EMPTY__';
+  static const String _occupiedSlot = '__OCCUPIED__';
+  
+  // Fixed list of 20 items 
+  final List<String> _installedItems = List.filled(_gridSize, _emptySlot, growable: false);
 
   // Initialize persistence & migrate old data
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    final storedIds = prefs.getStringList(_storageKey);
+    final storedItems = prefs.getStringList(_storageKey);
 
-    if (storedIds != null && storedIds.length == 16) {
-      // Load existing grid
-      for (int i = 0; i < 16; i++) {
-        final val = storedIds[i];
-        _grid[i] = (val.isEmpty || val == '__EMPTY__') ? null : val;
+    // Reset to empty
+    _installedItems.fillRange(0, _gridSize, _emptySlot);
+
+    if (storedItems != null && storedItems.length == _gridSize) {
+      for (int i = 0; i < _gridSize; i++) {
+        _installedItems[i] = storedItems[i];
       }
     } else {
-      // Migration / First Run: Load dense list or default
-      final oldIds = prefs.getStringList('installed_app_ids') ?? []; // Default to empty (App Store is in Dock)
-      
-      // Clear grid first
-      _grid.fillRange(0, 16, null);
-      
-      // Fill sequentially
-      int gridIndex = 0;
-      for (final id in oldIds) {
-        if (gridIndex >= 16) break;
-        if (id == 'app_store') continue; // Skip App Store
-        
-        _grid[gridIndex++] = id;
-      }
+       // Reset defaults if migration is hard
+       // Or try to place sequentially
+       resetDefaults();
     }
     
-    // CLEANUP: Ensure App Store and Featured Article are NOT in the grid
-    // (They are shown in Dock and Hero respectively)
-    final featuredAppId = AppRegistry().featuredAppId;
-    
-    // Remove 'app_store' if present
-    final storeIndex = _grid.indexOf('app_store');
-    if (storeIndex != -1) {
-      _grid[storeIndex] = null;
-    }
-
-    // Remove Featured App if present
-    if (featuredAppId != null) {
-      final featIndex = _grid.indexOf(featuredAppId);
-      if (featIndex != -1) {
-        _grid[featIndex] = null;
-      }
-    }
+    // Safety check for featured/store removal - This logic is now handled by resetDefaults or install/uninstall
+    // The old migration logic is removed, so this safety check is no longer needed in init().
+    // It's assumed that `resetDefaults` or `install` will correctly place items.
     
     notifyListeners();
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    // Serialize: null -> "__EMPTY__"
-    final storageList = _grid.map((id) => id ?? '__EMPTY__').toList();
-    await prefs.setStringList(_storageKey, storageList);
+    await prefs.setStringList(_storageKey, _installedItems);
   }
 
-  /// Returns the sparse list of apps (16 slots). Null means empty.
-  List<MicroApp?> get gridApps {
-    final registry = AppRegistry();
-    return _grid.map((id) {
-      if (id == null) return null;
-      return registry.getApp(id);
-    }).toList();
+  /// Returns the raw item at index (or empty marker)
+  String getItemAt(int index) {
+    if (index < 0 || index >= _gridSize) return _emptySlot;
+    return _installedItems[index];
   }
   
-  // Backwards compatibility getter (Dense list)
+  /// Returns the full list of items including empty slots (as null microapps? or filtered?)
+  /// For the UI we need the full grid representation. 
+  /// Let's expose the raw list or a helper.
+  List<String> get rawItems => List.unmodifiable(_installedItems);
+
+  /// Returns ONLY installed apps for logic that iterates real apps
   List<MicroApp> get installedApps {
-     return gridApps.whereType<MicroApp>().toList();
+    final registry = AppRegistry();
+    return _installedItems
+      .where((item) => item != _emptySlot && item != _occupiedSlot)
+      .map((item) {
+        final id = item.split('|').first;
+        return registry.getApp(id);
+      })
+      .whereType<MicroApp>()
+      .toList();
+  }
+  
+  bool isOccupySlot(int index) {
+     if (index < 0 || index >= _gridSize) return false;
+     return _installedItems[index] == _occupiedSlot;
+  }
+  
+  bool isEmpty(int index) {
+    if (index < 0 || index >= _gridSize) return true;
+    return _installedItems[index] == _emptySlot;
+  }
+  
+  bool isWidget(int index) {
+    if (index < 0 || index >= _gridSize) return false;
+    return _installedItems[index].endsWith('|widget');
   }
 
-  bool isInstalled(String appId) => _grid.contains(appId);
+  bool isInstalled(String appId) {
+    return _installedItems.any((item) => item.split('|').first == appId);
+  }
 
-  void install(String appId) {
-    if (!isInstalled(appId)) {
-      final emptyIndex = _grid.indexOf(null);
-      if (emptyIndex != -1) {
-        _grid[emptyIndex] = appId;
-        _persist();
-        notifyListeners();
-      }
+  bool isInstalledAsWidget(String appId) {
+    return _installedItems.contains('$appId|widget');
+  }
+
+  // Find 2x2 clean space
+  int _findSpaceForWidget() {
+    for (int i = 0; i < _gridSize; i++) {
+       if (_canPlaceWidgetAt(i)) return i;
     }
+    return -1;
+  }
+
+  bool _canPlaceWidgetAt(int index, {int ignoreIndex = -1}) {
+     // Check bounds (2x2)
+     int row = index ~/ _gridCols;
+     int col = index % _gridCols;
+     
+     if (col + 1 >= _gridCols) return false; // Crosses right edge
+     if (row + 1 >= _gridRows) return false; // Crosses bottom edge
+     
+     // Indices to check: i, i+1, i+cols, i+cols+1
+     List<int> slots = [
+       index, 
+       index + 1, 
+       index + _gridCols, 
+       index + _gridCols + 1
+     ];
+     
+     for (final s in slots) {
+       // If ignoring "self" (during move)
+       if (s == ignoreIndex || (ignoreIndex != -1 && _installedItems[s] == _occupiedSlot)) { // Simple hack: treat occupied as free if we are moving? 
+         // Actually if we look at _moveApp, we clear first.
+       }
+       
+       if (_installedItems[s] != _emptySlot) return false;
+     }
+     return true;
+  }
+
+  void install(String appId, {bool asWidget = false}) {
+    uninstall(appId); 
+    
+    if (asWidget) {
+       // Logic for 2x2 widget
+       int slot = _findSpaceForWidget();
+       if (slot != -1) {
+         _installedItems[slot] = '$appId|widget';
+         _installedItems[slot+1] = _occupiedSlot;
+         _installedItems[slot+_gridCols] = _occupiedSlot;
+         _installedItems[slot+_gridCols+1] = _occupiedSlot;
+       } else {
+         debugPrint('No space for widget $appId');
+       }
+    } else {
+       // Logic for 1x1 app
+       int slot = _installedItems.indexOf(_emptySlot);
+       if (slot != -1) {
+         _installedItems[slot] = appId;
+       } else {
+         debugPrint('Grid full, cannot install $appId');
+       }
+    }
+    _persist();
+    notifyListeners();
   }
 
   void uninstall(String appId) {
-    if (appId == 'app_store') return; 
-    final index = _grid.indexOf(appId);
-    if (index != -1) {
-      _grid[index] = null;
-      _persist();
-      notifyListeners();
+    if (appId == 'app_store') return;
+    
+    // Clear ALL occurrences (master + occupied)
+    // Actually we need to find the master to know which occupieds are his?
+    // Simplified: Just clear master and ALL occupieds? No, occupieds are generic.
+    
+    // Better: Search for master.
+    for (int i = 0; i < _gridSize; i++) {
+      if (_installedItems[i].split('|').first == appId) {
+        if (_installedItems[i].contains('|widget')) {
+           // Clear 2x2
+           _installedItems[i] = _emptySlot;
+           if (i+1 < _gridSize) _installedItems[i+1] = _emptySlot;
+           if (i+_gridCols < _gridSize) _installedItems[i+_gridCols] = _emptySlot;
+           if (i+_gridCols+1 < _gridSize) _installedItems[i+_gridCols+1] = _emptySlot;
+        } else {
+           _installedItems[i] = _emptySlot;
+        }
+      }
     }
+    _persist();
+    notifyListeners();
   }
   
-  /// Swaps app at [fromIndex] to [toIndex].
+  /// Swap items (Fixed Grid Logic)
   void moveApp(int fromIndex, int toIndex) {
-    if (fromIndex < 0 || fromIndex >= 16 || toIndex < 0 || toIndex >= 16) return;
+    if (fromIndex < 0 || fromIndex >= _gridSize) return;
+    if (toIndex < 0 || toIndex >= _gridSize) return;
+    if (fromIndex == toIndex) return;
+
+    final item = _installedItems[fromIndex];
+    final isWidget = item.contains('|widget');
     
-    final temp = _grid[fromIndex];
-    _grid[fromIndex] = _grid[toIndex];
-    _grid[toIndex] = temp;
+    if (isWidget) {
+       // Moving a Widget (2x2)
+       // 1. Temporarily clear old space
+       _installedItems[fromIndex] = _emptySlot;
+       _installedItems[fromIndex+1] = _emptySlot;
+       _installedItems[fromIndex+_gridCols] = _emptySlot;
+       _installedItems[fromIndex+_gridCols+1] = _emptySlot;
+       
+       // 2. Check if target is valid
+       if (_canPlaceWidgetAt(toIndex)) {
+          _installedItems[toIndex] = item;
+          _installedItems[toIndex+1] = _occupiedSlot;
+          _installedItems[toIndex+_gridCols] = _occupiedSlot;
+          _installedItems[toIndex+_gridCols+1] = _occupiedSlot;
+       } else {
+          // Revert!
+          _installedItems[fromIndex] = item;
+          _installedItems[fromIndex+1] = _occupiedSlot;
+          _installedItems[fromIndex+_gridCols] = _occupiedSlot;
+          _installedItems[fromIndex+_gridCols+1] = _occupiedSlot;
+       }
+    } else {
+       // Moving 1x1 App
+       // Check target type
+       if (_installedItems[toIndex] == _emptySlot) {
+          // Simple move
+          _installedItems[toIndex] = item;
+          _installedItems[fromIndex] = _emptySlot;
+       } else if (!_installedItems[toIndex].contains('|widget') && _installedItems[toIndex] != _occupiedSlot) {
+          // Swap with another 1x1
+          _installedItems[fromIndex] = _installedItems[toIndex];
+          _installedItems[toIndex] = item;
+       }
+    }
     
+    _persist();
+    notifyListeners();
+  }
+
+  /// Restoration for debugging
+  void resetDefaults() {
+    _installedItems.fillRange(0, _gridSize, _emptySlot);
+    
+    // Place defaults
+    // 0: Breaking News Widget (2x2) - Occupies 0, 1, 4, 5
+    // 2: Settings
+    // 3: Empty
+    // 6: Deep Dive
+    
+    _installedItems[0] = 'breaking_news|widget';
+    _installedItems[1] = _occupiedSlot;
+    _installedItems[4] = _occupiedSlot;
+    _installedItems[5] = _occupiedSlot;
+    
+    _installedItems[2] = 'settings';
+    _installedItems[6] = 'deep_dive';
+
     _persist();
     notifyListeners();
   }

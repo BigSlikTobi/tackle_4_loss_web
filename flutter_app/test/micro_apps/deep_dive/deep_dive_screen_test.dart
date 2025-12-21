@@ -12,6 +12,7 @@ import 'package:tackle4loss_mobile/l10n/app_localizations.dart'; // Added
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/controllers/deep_dive_detail_controller.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/models/deep_dive_article.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/views/deep_dive_screen.dart';
+import 'package:tackle4loss_mobile/core/theme/t4l_theme.dart'; // Added
 
 class MockAudioPlayerService extends AudioPlayerService {
   MockAudioPlayerService() : super.testing();
@@ -63,8 +64,9 @@ void main() {
              ChangeNotifierProvider.value(value: SettingsService()),
           ],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates, // Added
-            supportedLocales: AppLocalizations.supportedLocales, // Added
+            localizationsDelegates: AppLocalizations.localizationsDelegates, 
+            supportedLocales: AppLocalizations.supportedLocales, 
+            theme: T4LTheme.light, // Added to provide T4LThemeColors extension
             home: DeepDiveScreen(article: mockArticle, controller: mockController),
           ),
         ),

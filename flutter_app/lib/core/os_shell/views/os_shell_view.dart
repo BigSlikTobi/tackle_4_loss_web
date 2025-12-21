@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../design_tokens.dart';
 import '../../app_registry.dart';
 import 'dart:math' as math;
@@ -36,6 +37,13 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
   void initState() {
     super.initState();
     _controller = OSShellController(context);
+    
+    // Auto-restore defaults if grid is empty/too small for testing
+    // This helps if the user accidentally removed everything
+    if (InstalledAppsService().installedApps.length < 2) {
+       InstalledAppsService().resetDefaults();
+    }
+    
     _loadApps(); // Initial load
 
     // Subtle pulsating animation (breathing/sway effect) - Linear loop for Sine wave
@@ -102,43 +110,44 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
               ? CrossFadeState.showSecond 
               : CrossFadeState.showFirst,
           
-           // State 1: Dock
-          firstChild: T4LFloatingNavBar(
-            homeTooltip: AppLocalizations.of(context)!.navHome,
-            appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
-            historyTooltip: AppLocalizations.of(context)!.navHistory,
-            settingsTooltip: AppLocalizations.of(context)!.navSettings,
-            favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-            onHome: () => NavigationService().goHome(context),
-            onAppStore: () => NavigationService().openAppStore(context),
-            onHistory: () => NavigationService().reopenLastApp(context),
-            onSettings: () {
-              showDialog(
-                context: context,
-                builder: (context) => UserSettingsDialog(),
-              );
-            },
-            onTeamLogo: () {
-              if (settings.selectedTeam == null) {
+            // State 1: Dock
+            firstChild: T4LFloatingNavBar(
+              homeTooltip: AppLocalizations.of(context)!.navHome,
+              appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
+              historyTooltip: AppLocalizations.of(context)!.navHistory,
+              settingsTooltip: AppLocalizations.of(context)!.navSettings,
+              favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
+              onHome: () => NavigationService().goHome(context),
+              onAppStore: () => NavigationService().openAppStore(context),
+              onHistory: () => NavigationService().reopenLastApp(context),
+              onSettings: () {
                 showDialog(
                   context: context,
-                  builder: (context) => TeamSelectorDialog(),
+                  builder: (context) => UserSettingsDialog(),
                 );
-              }
-            },
+              },
+              onTeamLogo: () {
+                if (settings.selectedTeam == null) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => TeamSelectorDialog(),
+                  );
+                }
+              },
+            ),
+            
+            // State 2: Remove Zone (Trash)
+            secondChild: RemoveDropZone(
+              onRemove: (fromIndex) {
+                 final rawItem = InstalledAppsService().getItemAt(fromIndex);
+                 if (rawItem != '__EMPTY__') {
+                     final appId = rawItem.split('|').first;
+                     InstalledAppsService().uninstall(appId);
+                 }
+              },
+            ),
           ),
-          
-          // State 2: Remove Zone (Trash)
-          secondChild: RemoveDropZone(
-            onRemove: (fromIndex) {
-              final app = InstalledAppsService().gridApps[fromIndex];
-              if (app != null) {
-                 InstalledAppsService().uninstall(app.id);
-              }
-            },
-          ),
-        ),
-        body: SafeArea(
+          body: SafeArea(
           child: Stack(
             children: [
               // 0. Ambient Watermark (Behind Grid, Below Hero)
@@ -208,7 +217,7 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
                   return ListenableBuilder(
                     listenable: InstalledAppsService(),
                     builder: (context, child) {
-                      final gridApps = InstalledAppsService().gridApps; // Sparse list (16)
+                      // gridApps removed
                       
                       // App of the Month Logic
                       final featuredId = AppRegistry().featuredAppId;
@@ -229,86 +238,126 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
                     // 2. Padding/Spacer between Hero and Grid
                     const SliverPadding(padding: EdgeInsets.only(top: 24)),
     
-                    // 3. App Grid (Fixed 16 Slots)
+                    // 3. Staggered App Grid
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      sliver: SliverGrid(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4, 
+                      sliver: SliverToBoxAdapter(
+                        child: StaggeredGrid.count(
+                          crossAxisCount: 4,
+                          mainAxisSpacing: 24,
                           crossAxisSpacing: 16,
-                          mainAxisSpacing: 24, // increased vertical spacing if needed, but 24 is fine
-                          childAspectRatio: 0.70, // More vertical space for text
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final app = gridApps[index];
-                            
-                            return DragTarget<int>(
-                              onWillAccept: (data) => true,
-                              onAccept: (fromIndex) {
-                                InstalledAppsService().moveApp(fromIndex, index);
-                              },
-                              builder: (context, candidateData, rejectedData) {
-                                final isCandidate = candidateData.isNotEmpty;
-                                
-                                // Empty Slot
-                                if (app == null) {
-                                  return Container(
-                                    decoration: isCandidate ? BoxDecoration(
-                                      border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
-                                      borderRadius: BorderRadius.circular(18),
-                                      color: Colors.white.withOpacity(0.1),
-                                    ) : null,
-                                  );
-                                }
-                                
-                                // Occupied Slot
-                                return LongPressDraggable<int>(
-                                  data: index,
-                                  onDragStarted: () => setState(() => _isDragging = true),
-                                  onDragEnd: (_) => setState(() => _isDragging = false),
-                                  onDraggableCanceled: (_, __) => setState(() => _isDragging = false),
-                                  feedback: Opacity(
-                                    opacity: 0.75, 
-                                    child: SizedBox(
-                                      width: 80, 
-                                      height: 80, 
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: OSShellAppItem(
-                                          app: app, 
-                                          onTap: (){} // Disable tap while dragging
+                          children: [
+                            for (int index = 0; index < 20; index++) ...[
+                              if (!InstalledAppsService().isOccupySlot(index))
+                                Builder(
+                                  builder: (context) {
+                                    final rawItem = InstalledAppsService().getItemAt(index);
+                                    final isEmpty = InstalledAppsService().isEmpty(index);
+                                    
+                                    if (isEmpty) {
+                                      // EMPTY SLOT
+                                      return StaggeredGridTile.count(
+                                        key: ValueKey('empty_$index'),
+                                        crossAxisCellCount: 1,
+                                        mainAxisCellCount: 1,
+                                        child: DragTarget<int>(
+                                          onWillAccept: (data) => true,
+                                          onAccept: (fromIndex) {
+                                              InstalledAppsService().moveApp(fromIndex, index);
+                                          },
+                                          builder: (context, candidateData, rejectedData) {
+                                            final isHovered = candidateData.isNotEmpty;
+                                            return Container(
+                                              decoration: BoxDecoration(
+                                                color: isHovered ? Colors.white.withOpacity(0.1) : Colors.transparent,
+                                                borderRadius: BorderRadius.circular(16),
+                                                border: isHovered 
+                                                    ? Border.all(color: Colors.white.withOpacity(0.3), width: 1)
+                                                    : null,
+                                              ),
+                                            );
+                                          },
                                         ),
+                                      );
+                                    }
+
+                                    // MASTER APP / WIDGET
+                                    final appId = rawItem.split('|').first;
+                                    final isWidget = rawItem.contains('|widget');
+                                    final app = AppRegistry().getApp(appId);
+                                    
+                                    if (app == null) return const SizedBox.shrink();
+
+                                    int crossAxisCount = 1;
+                                    num mainAxisCount = 1.4;
+                                    Widget child;
+
+                                    if (isWidget && app.hasWidget) {
+                                      final size = app.widgetSize;
+                                      crossAxisCount = size.width.toInt();
+                                      mainAxisCount = size.height.toInt();
+                                      child = app.widgetBuilder(context);
+                                    } else {
+                                      child = OSShellAppItem(
+                                        app: app,
+                                        onTap: () => NavigationService().openApp(context, app),
+                                      );
+                                    }
+
+                                    return StaggeredGridTile.count(
+                                      key: ValueKey(app.id), 
+                                      crossAxisCellCount: crossAxisCount,
+                                      mainAxisCellCount: mainAxisCount,
+                                      child: DragTarget<int>(
+                                        onWillAccept: (data) => true,
+                                        onAccept: (fromIndex) {
+                                          if (fromIndex != index) {
+                                            InstalledAppsService().moveApp(fromIndex, index);
+                                          }
+                                        },
+                                        builder: (context, candidateData, rejectedData) {
+                                          final isHovered = candidateData.isNotEmpty;
+                                          
+                                          return LongPressDraggable<int>(
+                                            data: index,
+                                            feedback: _buildDragFeedback(context, child, size: Size(
+                                              ((MediaQuery.of(context).size.width - 48 - 48) / 4) * crossAxisCount + (crossAxisCount - 1) * 16,
+                                              ((MediaQuery.of(context).size.width - 48 - 48) / 4) * mainAxisCount + (mainAxisCount > 1 ? (mainAxisCount - 1) * 24 : 0),
+                                            )),
+                                            childWhenDragging: Opacity(
+                                              opacity: 0.3, 
+                                              child: child
+                                            ),
+                                            onDragStarted: () => setState(() => _isDragging = true),
+                                            onDragEnd: (_) => setState(() => _isDragging = false),
+                                            child: Container(
+                                              color: Colors.transparent, 
+                                              child: isHovered 
+                                                ? Opacity(
+                                                    opacity: 0.6,
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        border: Border.all(color: AppColors.primary, width: 2),
+                                                        borderRadius: BorderRadius.circular(16),
+                                                      ),
+                                                      child: child,
+                                                    ),
+                                                  )
+                                                : child,
+                                            ), 
+                                          );
+                                        },
                                       ),
-                                    ),
-                                  ),
-                                  childWhenDragging: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                  ),
-                                  child: isCandidate 
-                                      // Visual feedback if we are dragging ONTO this app (Swap target)
-                                      ? Opacity(
-                                          opacity: 0.5,
-                                          child: OSShellAppItem(
-                                            app: app, 
-                                            onTap: () => NavigationService().openApp(context, app)
-                                          ),
-                                        )
-                                      : OSShellAppItem(
-                                          app: app, 
-                                          onTap: () => NavigationService().openApp(context, app)
-                                        ),
-                                );
-                              },
-                            );
-                          },
-                          childCount: 16,
+                                    );
+                                  }
+                                )
+                            ]
+                          ],
+
                         ),
                       ),
                     ),
+                    
                     const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
                   ],
                 );
@@ -321,6 +370,34 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
   ),
 ),
 );
+}
+
+Widget _buildDragFeedback(BuildContext context, Widget child, {required Size size}) {
+  // IgnorePointer is crucial to let drag events pass through to the DragTarget below
+  return IgnorePointer(
+    child: Material(
+      color: Colors.transparent,
+      child: SizedBox(
+        width: size.width,
+        height: size.height,
+        child: Transform.scale(
+          scale: 1.05, // Slight pop effect
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                )
+              ],
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    ),
+  );
 }
 }
 
