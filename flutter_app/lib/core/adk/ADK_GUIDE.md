@@ -112,8 +112,6 @@ Every app must have a `store_assets` folder containing:
 3.  **Description**: A `description.md` file explaining the app.
 4.  **Registration**: Must be added to `pubspec.yaml` assets.
 
-4.  **Registration**: Must be added to `pubspec.yaml` assets.
-
 ### Home Screen Widgets (Optional)
 If your app supports a Home Screen Widget (`hasWidget => true`):
 1.  **Size**: Must define `widgetSize` (e.g., `Size(2, 2)` for a large square).
