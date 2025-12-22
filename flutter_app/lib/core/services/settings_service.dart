@@ -14,6 +14,9 @@ class SettingsService with ChangeNotifier {
     _loadPersistedTheme();
   }
 
+  @visibleForTesting
+  SettingsService.testing();
+
   Locale _locale = const Locale('en');
   Team? _selectedTeam;
   ThemeMode _themeMode = ThemeMode.light;

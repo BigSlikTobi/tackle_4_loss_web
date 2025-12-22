@@ -60,8 +60,25 @@ class AudioPlayerService {
     await _audioHandler!.playMediaItem(mediaItem);
   }
 
+  /// Play a list of items (Playlist)
+  Future<void> playPlaylist(List<Map<String, String>> items, {int initialIndex = 0}) async {
+    if (_audioHandler == null) return;
+    
+    final mediaItems = items.map((item) => MediaItem(
+      id: item['url']!,
+      album: "T4L Radio",
+      title: item['title']!,
+      artist: item['author'] ?? "Team T4L",
+      artUri: Uri.parse(item['imageUrl']!),
+    )).toList();
+
+    await _audioHandler!.addQueueItems(mediaItems, initialIndex: initialIndex);
+  }
+
   Future<void> resume() async => await _audioHandler?.play();
   Future<void> pause() async => await _audioHandler?.pause();
   Future<void> stop() async => await _audioHandler?.stop();
   Future<void> seek(Duration position) async => await _audioHandler?.seek(position);
+  Future<void> skipToNext() async => await _audioHandler?.skipToNext();
+  Future<void> skipToPrevious() async => await _audioHandler?.skipToPrevious();
 }

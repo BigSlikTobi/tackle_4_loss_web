@@ -235,6 +235,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All Apps'**
   String get appStoreAllApps;
+
+  /// No description provided for @radioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Radio'**
+  String get radioTitle;
+
+  /// No description provided for @radioCategoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get radioCategoryAll;
+
+  /// No description provided for @radioCategoryDeepDive.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Dives'**
+  String get radioCategoryDeepDive;
+
+  /// No description provided for @radioCategoryNews.
+  ///
+  /// In en, this message translates to:
+  /// **'News'**
+  String get radioCategoryNews;
+
+  /// No description provided for @radioStationLatestDeepDivesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Deep Dives'**
+  String get radioStationLatestDeepDivesTitle;
+
+  /// No description provided for @radioStationLatestDeepDivesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'The freshest analysis from the team.'**
+  String get radioStationLatestDeepDivesDesc;
+
+  /// No description provided for @radioStationDailyBriefingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Briefing'**
+  String get radioStationDailyBriefingTitle;
+
+  /// No description provided for @radioStationDailyBriefingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Catch up on everything in 5 minutes.'**
+  String get radioStationDailyBriefingDesc;
+
+  /// No description provided for @radioStationDeepDiveClassicsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Dive Classics'**
+  String get radioStationDeepDiveClassicsTitle;
+
+  /// No description provided for @radioStationDeepDiveClassicsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeless football philosophy.'**
+  String get radioStationDeepDiveClassicsDesc;
+
+  /// No description provided for @radioStationNewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'News'**
+  String get radioStationNewsTitle;
+
+  /// No description provided for @radioStationNewsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily briefing and latest updates.'**
+  String get radioStationNewsDesc;
+
+  /// No description provided for @radioStationNewsCollectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'News Collection'**
+  String get radioStationNewsCollectionTitle;
+
+  /// No description provided for @radioStationNewsCollectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse and play individual news updates.'**
+  String get radioStationNewsCollectionDesc;
+
+  /// No description provided for @radioCollectionLatestUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Updates'**
+  String get radioCollectionLatestUpdates;
+
+  /// No description provided for @radioCollectionTeamNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Team News'**
+  String get radioCollectionTeamNews;
+
+  /// No description provided for @radioCollectionAllTeams.
+  ///
+  /// In en, this message translates to:
+  /// **'All Teams'**
+  String get radioCollectionAllTeams;
+
+  /// No description provided for @radioPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing: {title}'**
+  String radioPlaying(String title);
 }
 
 class _AppLocalizationsDelegate

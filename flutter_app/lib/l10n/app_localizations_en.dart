@@ -78,4 +78,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appStoreAllApps => 'All Apps';
+
+  @override
+  String get radioTitle => 'Radio';
+
+  @override
+  String get radioCategoryAll => 'All';
+
+  @override
+  String get radioCategoryDeepDive => 'Deep Dives';
+
+  @override
+  String get radioCategoryNews => 'News';
+
+  @override
+  String get radioStationLatestDeepDivesTitle => 'Latest Deep Dives';
+
+  @override
+  String get radioStationLatestDeepDivesDesc =>
+      'The freshest analysis from the team.';
+
+  @override
+  String get radioStationDailyBriefingTitle => 'Daily Briefing';
+
+  @override
+  String get radioStationDailyBriefingDesc =>
+      'Catch up on everything in 5 minutes.';
+
+  @override
+  String get radioStationDeepDiveClassicsTitle => 'Deep Dive Classics';
+
+  @override
+  String get radioStationDeepDiveClassicsDesc =>
+      'Timeless football philosophy.';
+
+  @override
+  String get radioStationNewsTitle => 'News';
+
+  @override
+  String get radioStationNewsDesc => 'Daily briefing and latest updates.';
+
+  @override
+  String get radioStationNewsCollectionTitle => 'News Collection';
+
+  @override
+  String get radioStationNewsCollectionDesc =>
+      'Browse and play individual news updates.';
+
+  @override
+  String get radioCollectionLatestUpdates => 'Latest Updates';
+
+  @override
+  String get radioCollectionTeamNews => 'Team News';
+
+  @override
+  String get radioCollectionAllTeams => 'All Teams';
+
+  @override
+  String radioPlaying(String title) {
+    return 'Playing: $title';
+  }
 }

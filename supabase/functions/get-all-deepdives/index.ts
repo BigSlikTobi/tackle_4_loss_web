@@ -23,7 +23,7 @@ serve(async (req) => {
         let query = supabaseClient
             .schema('content')
             .from('deepdive_article')
-            .select('id, language_code, hero_image_url, published_at, author, title, subtitle')
+            .select('id, language_code, hero_image_url, published_at, author, title, subtitle, audio_file')
             .order('published_at', { ascending: false })
 
         if (language_code) {
