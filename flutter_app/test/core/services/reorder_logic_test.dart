@@ -96,7 +96,7 @@ void main() {
     expect(service.isOccupySlot(13), true);
   });
 
-  test('Move 2x2 Widget fails if space blocked', () async {
+  test('Move 2x2 Widget displaces items if space blocked', () {
       final service = InstalledAppsService();
       service.resetDefaults();
       
@@ -105,18 +105,26 @@ void main() {
       // B -> 7
       // C -> 8
       
-      service.install('A');
-      service.install('B');
-      service.install('C');
+      service.install('A'); // 2
+      service.install('B'); // 3
+      service.install('C'); // 6
+      service.install('D'); // 7 
+      // Wait, let's just FORCE D to be at 8 to be sure.
+      service.moveApp(_findAppIndex(service, 'D'), 8);
+
+      // Expect D at 8.
+      expect(service.getItemAt(8), 'D');
       
-      // Expect C at 8.
-      expect(service.getItemAt(8), 'C');
-      
-      // Try move widget from 0 to 8. Should fail because 8 is occupied.
+      // Try move widget from 0 to 8. 
+      // BEFORE: Should fail.
+      // AFTER: Should succeed and SWAP D to 0.
       service.moveApp(0, 8);
       
-      // Should stay at 0
-      expect(service.getItemAt(0), 'breaking_news|widget');
+      // Widget should be at 8
+      expect(service.getItemAt(8), 'breaking_news|widget');
+      
+      // D should be displaced to Source (0)
+      expect(service.getItemAt(0), 'D');
   });
 }
 
