@@ -17,6 +17,7 @@ class T4LScaffold extends StatelessWidget {
   final VoidCallback? onClose;
   final Widget? bottomNavBarOverride;
   final String? title; // New title param
+  final List<Widget>? actions;
 
   const T4LScaffold({
     super.key,
@@ -26,6 +27,7 @@ class T4LScaffold extends StatelessWidget {
     this.bottomNavBarOverride,
     this.onClose,
     this.title,
+    this.actions,
   });
 
   @override
@@ -70,6 +72,7 @@ class T4LScaffold extends StatelessWidget {
                   child: T4LHeader(
                     title: title,
                     textColor: headerTextColor,
+                    actions: actions,
                   ),
                 ),
               ],

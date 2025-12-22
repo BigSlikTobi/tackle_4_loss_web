@@ -96,6 +96,11 @@ abstract class MicroApp {
   String get descriptionAsset;  // Path to 'lib/micro_apps/<id>/store_assets/description.md'
 
   WidgetBuilder get page;    // The Entry Point Widget
+
+  // Widget Support (Optional)
+  bool get hasWidget => false;      // Default: false
+  Size get widgetSize => const Size(1, 1); // Default: 1x1
+  WidgetBuilder get widgetBuilder => (context) => const SizedBox(); // Default: Empty
 }
 ```
 
@@ -106,6 +111,15 @@ Every app must have a `store_assets` folder containing:
 2.  **Image**: A 16:9 high-quality branding image.
 3.  **Description**: A `description.md` file explaining the app.
 4.  **Registration**: Must be added to `pubspec.yaml` assets.
+
+### Home Screen Widgets (Optional)
+If your app supports a Home Screen Widget (`hasWidget => true`):
+1.  **Size**: Must define `widgetSize` (e.g., `Size(2, 2)` for a large square).
+    *   Supported sizes: 1x1 (Icon), 1x2 (Vertical), 2x2 (Large Square).
+2.  **Builder**: Implement `widgetBuilder` to return your widget UI.
+    *   **Interactive**: Widgets can be tapped to open the app (use `NavigationService().openApp`).
+    *   **Premium**: Widgets must look polished and match the OS aesthetic.
+3.  **Behavior**: Widgets must handle their own data fetching and state.
 
 ### The Scaffolding (Container)
 Wrap your entry point in [T4LScaffold](flutter_app/lib/core/os_shell/widgets/t4l_scaffold.dart).

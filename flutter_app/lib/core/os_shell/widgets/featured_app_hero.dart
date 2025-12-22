@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../design_tokens.dart';
 import '../../micro_app.dart';
 import '../../services/navigation_service.dart';
@@ -67,20 +68,20 @@ class FeaturedAppHero extends StatelessWidget {
                 children: [
                    // Background Image
                   if (displayImageUrl != null)
-                    Image.network(
-                      displayImageUrl,
+                    CachedNetworkImage(
+                      imageUrl: displayImageUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Image.asset(
+                      errorWidget: (_, __, ___) => Image.asset(
                         app.storeImageAsset,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(color: brandingColor),
                       ),
                     )
                   else
-                    Image.network(
-                      'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2938&auto=format&fit=crop',
+                    CachedNetworkImage(
+                      imageUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2938&auto=format&fit=crop',
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                      errorWidget: (context, url, error) {
                          return Image.asset(
                            app.storeImageAsset, 
                            fit: BoxFit.cover,
@@ -192,25 +193,22 @@ class FeaturedAppHero extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Title (More intense 3D shadow)
-                  Text(
-                    displayTitle.toUpperCase(), 
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 40, // Slightly smaller to prevent overflow
-                      fontWeight: FontWeight.w900, 
-                      height: 0.95,
-                      letterSpacing: -1.0,
-                      fontStyle: FontStyle.italic,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black87,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                  Flexible(
+                    child: Text(
+                      displayTitle.toUpperCase(), 
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        height: 0.9,
+                        letterSpacing: -1.5,
+                        shadows: [
+                          Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 4),
+                        ]
+                      ),
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 10),
 

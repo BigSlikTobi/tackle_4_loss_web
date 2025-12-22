@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:tackle4loss_mobile/core/os_shell/widgets/t4l_scaffold.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/controllers/deep_dive_controller.dart';
@@ -160,10 +161,14 @@ class _ImmersiveDeepDiveCard extends StatelessWidget {
               // 1. Background Image (Immersive)
               Hero(
                 tag: 'hero-${article.id}',
-                child: Image.network(
-                  article.imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: article.imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  placeholder: (context, url) => Container(
+                    color: AppColors.surface,
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
                     color: AppColors.surface,
                     child: const Center(
                       child: Icon(Icons.broken_image, color: Colors.white24, size: 32),

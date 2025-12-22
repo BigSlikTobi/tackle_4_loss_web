@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../design_tokens.dart';
 import '../../app_registry.dart';
 import 'dart:math' as math;
@@ -30,12 +31,20 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
   AnimationController? _rotationController;
   AnimationController? _sheenController;
   bool _isDragging = false;
+  int? _draggedIndex; // Track what we are dragging (source index)
+  int? _hoverTargetIndex; // Track where we are hovering
   String? _currentLanguageCode;
 
   @override
   void initState() {
     super.initState();
     _controller = OSShellController(context);
+    
+    // Auto-restore validation logic removed per user request
+    // if (InstalledAppsService().installedApps.length < 2) {
+    //    InstalledAppsService().resetDefaults();
+    // }
+    
     _loadApps(); // Initial load
 
     // Subtle pulsating animation (breathing/sway effect) - Linear loop for Sine wave
@@ -49,6 +58,56 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
         duration: const Duration(seconds: 5),
         vsync: this,
     )..repeat();
+  }
+
+  // ... (didChangeDependencies, dispose, _loadApps unchanged) ...
+
+  /// Determines if a slot is part of the "Phantom" footprint of the dragged item
+  /// Returns: 0 = No, 1 = Valid Phantom, 2 = Invalid Phantom
+  int _getPhantomStatus(int slotIndex) {
+    if (!_isDragging || _draggedIndex == null || _hoverTargetIndex == null) return 0;
+    
+    final service = InstalledAppsService();
+    final item = service.getItemAt(_draggedIndex!);
+    final isWidget = item.contains('|widget');
+    
+    if (isWidget) {
+      // 2x2 Logic
+      // Calculate the 4 slots relative to the hover target
+      final target = _hoverTargetIndex!;
+      final cols = 4; // gridCols
+      final rows = 5; // gridRows
+      
+      // Check bounds of the "phantom widget" placed at target
+      int row = target ~/ cols;
+      int col = target % cols;
+      if (col + 1 >= cols || row + 1 >= rows) {
+         // The phantom itself is out of bounds, so usually we don't show it or show it at the valid slots only
+         // But for simplicity, let's just check if THIS slotIndex is one of the theoretical slots
+         // Actually, if the target is invalid (out of bounds), simply don't show phantom or show red?
+         // Let's rely on the service logic for validity
+      }
+      
+      final phantomSlots = [
+        target, 
+        target + 1, 
+        target + cols, 
+        target + cols + 1
+      ];
+      
+      if (phantomSlots.contains(slotIndex)) {
+        // This slot is part of the phantom
+        // Check validity of the move
+        final isValid = service.canPlaceWidgetAt(target, ignoreIndex: _draggedIndex!);
+        return isValid ? 1 : 2; 
+      }
+    } else {
+      // 1x1 Logic
+      if (slotIndex == _hoverTargetIndex) {
+         return 1; // Always valid to swap/move 1x1
+      }
+    }
+    return 0;
   }
 
   @override
@@ -102,43 +161,44 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
               ? CrossFadeState.showSecond 
               : CrossFadeState.showFirst,
           
-           // State 1: Dock
-          firstChild: T4LFloatingNavBar(
-            homeTooltip: AppLocalizations.of(context)!.navHome,
-            appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
-            historyTooltip: AppLocalizations.of(context)!.navHistory,
-            settingsTooltip: AppLocalizations.of(context)!.navSettings,
-            favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-            onHome: () => NavigationService().goHome(context),
-            onAppStore: () => NavigationService().openAppStore(context),
-            onHistory: () => NavigationService().reopenLastApp(context),
-            onSettings: () {
-              showDialog(
-                context: context,
-                builder: (context) => UserSettingsDialog(),
-              );
-            },
-            onTeamLogo: () {
-              if (settings.selectedTeam == null) {
+            // State 1: Dock
+            firstChild: T4LFloatingNavBar(
+              homeTooltip: AppLocalizations.of(context)!.navHome,
+              appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
+              historyTooltip: AppLocalizations.of(context)!.navHistory,
+              settingsTooltip: AppLocalizations.of(context)!.navSettings,
+              favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
+              onHome: () => NavigationService().goHome(context),
+              onAppStore: () => NavigationService().openAppStore(context),
+              onHistory: () => NavigationService().reopenLastApp(context),
+              onSettings: () {
                 showDialog(
                   context: context,
-                  builder: (context) => TeamSelectorDialog(),
+                  builder: (context) => UserSettingsDialog(),
                 );
-              }
-            },
+              },
+              onTeamLogo: () {
+                if (settings.selectedTeam == null) {
+                  showDialog(
+                    context: context,
+                    builder: (context) => TeamSelectorDialog(),
+                  );
+                }
+              },
+            ),
+            
+            // State 2: Remove Zone (Trash)
+            secondChild: RemoveDropZone(
+              onRemove: (fromIndex) {
+                 final rawItem = InstalledAppsService().getItemAt(fromIndex);
+                 if (rawItem != '__EMPTY__') {
+                     final appId = rawItem.split('|').first;
+                     InstalledAppsService().uninstall(appId);
+                 }
+              },
+            ),
           ),
-          
-          // State 2: Remove Zone (Trash)
-          secondChild: RemoveDropZone(
-            onRemove: (fromIndex) {
-              final app = InstalledAppsService().gridApps[fromIndex];
-              if (app != null) {
-                 InstalledAppsService().uninstall(app.id);
-              }
-            },
-          ),
-        ),
-        body: SafeArea(
+          body: SafeArea(
           child: Stack(
             children: [
               // 0. Ambient Watermark (Behind Grid, Below Hero)
@@ -208,7 +268,7 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
                   return ListenableBuilder(
                     listenable: InstalledAppsService(),
                     builder: (context, child) {
-                      final gridApps = InstalledAppsService().gridApps; // Sparse list (16)
+                      // gridApps removed
                       
                       // App of the Month Logic
                       final featuredId = AppRegistry().featuredAppId;
@@ -229,86 +289,67 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
                     // 2. Padding/Spacer between Hero and Grid
                     const SliverPadding(padding: EdgeInsets.only(top: 24)),
     
-                    // 3. App Grid (Fixed 16 Slots)
+                    // 3. Staggered App Grid + Interaction Overlay
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      sliver: SliverGrid(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 4, 
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 24, // increased vertical spacing if needed, but 24 is fine
-                          childAspectRatio: 0.70, // More vertical space for text
-                        ),
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final app = gridApps[index];
-                            
-                            return DragTarget<int>(
-                              onWillAccept: (data) => true,
-                              onAccept: (fromIndex) {
-                                InstalledAppsService().moveApp(fromIndex, index);
-                              },
-                              builder: (context, candidateData, rejectedData) {
-                                final isCandidate = candidateData.isNotEmpty;
-                                
-                                // Empty Slot
-                                if (app == null) {
-                                  return Container(
-                                    decoration: isCandidate ? BoxDecoration(
-                                      border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
-                                      borderRadius: BorderRadius.circular(18),
-                                      color: Colors.white.withOpacity(0.1),
-                                    ) : null,
-                                  );
-                                }
-                                
-                                // Occupied Slot
-                                return LongPressDraggable<int>(
-                                  data: index,
-                                  onDragStarted: () => setState(() => _isDragging = true),
-                                  onDragEnd: (_) => setState(() => _isDragging = false),
-                                  onDraggableCanceled: (_, __) => setState(() => _isDragging = false),
-                                  feedback: Opacity(
-                                    opacity: 0.75, 
-                                    child: SizedBox(
-                                      width: 80, 
-                                      height: 80, 
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: OSShellAppItem(
-                                          app: app, 
-                                          onTap: (){} // Disable tap while dragging
-                                        ),
+                      sliver: SliverToBoxAdapter(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                             final totalWidth = constraints.maxWidth;
+                             const crossAxisCount = 4;
+                             const crossAxisSpacing = 16.0;
+                             final cellWidth = (totalWidth - (crossAxisSpacing * (crossAxisCount - 1))) / crossAxisCount;
+                             const childAspectRatio = 0.85; 
+                             
+                             return Stack(
+                               children: [
+                                 StaggeredGrid.count(
+                                    crossAxisCount: 4,
+                                    mainAxisSpacing: 24,
+                                    crossAxisSpacing: 16,
+                                    children: [
+                                      for (int index = 0; index < 20; index++) ...[
+                                         if (!InstalledAppsService().isOccupySlot(index))
+                                           _buildGridItem(context, index, cellWidth)
+                                      ]
+                                    ],
+                                 ),
+                                 
+                                 Positioned.fill(
+                                   child: IgnorePointer(
+                                      ignoring: !_isDragging,
+                                      child: GridView.count(
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        crossAxisCount: 4,
+                                        mainAxisSpacing: 0, // Gapless vertical
+                                        crossAxisSpacing: 0, // Gapless horizontal
+                                        childAspectRatio: (totalWidth/4) / (cellWidth/0.85 + 24), // Approx match? 
+                                        // Actually easier: Staggered is complex size.
+                                        // Let's just use aspect ratio 1.0 or similar and let it fill.
+                                        // Since we handle internal padding, exact logic isn't strictly required as long as rows align roughly.
+                                        // But rows must align!
+                                        // Row Height in Staggered = (CellHeight * spans) + (gap * (spans-1))
+                                        // If we set GridView spacing to 0, row height is fixed.
+                                        // We need GridView row height to EQUAL (VisualCellHeight + VisualGap).
+                                        // VisualCellWidth = (Total - 3*16)/4.
+                                        // VisualCellHeight (approx) = VisualCellWidth / 0.85.
+                                        // VisualGap = 24.
+                                        // So GridView Cell Height should be ~ (VisualCellHeight + 24).
+                                        // GridView Cell Width is Total/4.
+                                        // childAspectRatio = Width / Height.
+                                        children: List.generate(20, (index) {
+                                           return _buildDropZone(index);
+                                        }),
                                       ),
-                                    ),
-                                  ),
-                                  childWhenDragging: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                  ),
-                                  child: isCandidate 
-                                      // Visual feedback if we are dragging ONTO this app (Swap target)
-                                      ? Opacity(
-                                          opacity: 0.5,
-                                          child: OSShellAppItem(
-                                            app: app, 
-                                            onTap: () => NavigationService().openApp(context, app)
-                                          ),
-                                        )
-                                      : OSShellAppItem(
-                                          app: app, 
-                                          onTap: () => NavigationService().openApp(context, app)
-                                        ),
-                                );
-                              },
-                            );
-                          },
-                          childCount: 16,
+                                   ),
+                                 ),
+                               ],
+                             );
+                          }
                         ),
                       ),
                     ),
+                    
                     const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
                   ],
                 );
@@ -321,6 +362,145 @@ class _OSShellViewState extends State<OSShellView> with TickerProviderStateMixin
   ),
 ),
 );
+}
+
+  Widget _buildGridItem(BuildContext context, int index, double cellWidth) {
+    final rawItem = InstalledAppsService().getItemAt(index);
+    final isEmpty = InstalledAppsService().isEmpty(index);
+    
+    if (isEmpty) {
+      return StaggeredGridTile.count(
+        crossAxisCellCount: 1,
+        mainAxisCellCount: 1,
+        child: const SizedBox(), 
+      );
+    }
+
+    final appId = rawItem.split('|').first;
+    final isWidget = rawItem.contains('|widget');
+    final app = AppRegistry().getApp(appId);
+    
+    if (app == null) return const SizedBox.shrink();
+
+    int crossAxisCount = 1;
+    num mainAxisCount = 1.4;
+    Widget child;
+
+    if (isWidget && app.hasWidget) {
+      final size = app.widgetSize;
+      crossAxisCount = size.width.toInt();
+      mainAxisCount = size.height.toInt();
+      child = app.widgetBuilder(context);
+    } else {
+      child = OSShellAppItem(
+        app: app,
+        onTap: () => NavigationService().openApp(context, app),
+      );
+    }
+    
+    return StaggeredGridTile.count(
+      key: ValueKey(app.id), 
+      crossAxisCellCount: crossAxisCount,
+      mainAxisCellCount: mainAxisCount,
+      child: LongPressDraggable<int>(
+        data: index,
+        feedback: _buildDragFeedback(context, child, size: Size(
+            cellWidth * crossAxisCount + (16 * (crossAxisCount - 1)),
+            (cellWidth / 0.85) * mainAxisCount + (24 * (mainAxisCount - 1))
+        )),
+        childWhenDragging: Opacity(
+          opacity: 0.3, 
+          child: child
+        ),
+        onDragStarted: () => setState(() {
+            _isDragging = true;
+            _draggedIndex = index;
+        }),
+        onDragEnd: (_) => setState(() {
+            _isDragging = false;
+            _draggedIndex = null;
+            _hoverTargetIndex = null;
+        }),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildDropZone(int index) {
+    final phantomStatus = _getPhantomStatus(index);
+    Color? phantomColor;
+    if (phantomStatus == 1) phantomColor = Colors.green.withOpacity(0.3); 
+    if (phantomStatus == 2) phantomColor = Colors.red.withOpacity(0.3);   
+
+    return DragTarget<int>(
+      onWillAccept: (fromIndex) {
+         if (_hoverTargetIndex != index) {
+            setState(() => _hoverTargetIndex = index);
+         }
+         return true;
+      },
+      onLeave: (_) {
+         if (_hoverTargetIndex == index) {
+            setState(() => _hoverTargetIndex = null);
+         }
+      },
+      onAccept: (fromIndex) {
+          if (fromIndex != index) {
+            InstalledAppsService().moveApp(fromIndex, index);
+            setState(() {
+              _isDragging = false;
+              _draggedIndex = null;
+              _hoverTargetIndex = null;
+           });
+          }
+      },
+      builder: (context, candidateData, rejectedData) {
+        return Container(
+          // Internal padding to match the visual StaggeredGrid spacing
+          // StaggeredGrid has 16 horizontal gap, 24 vertical gap.
+          // Since this overlay is gapless (cells touch), we add margin to the colored box.
+          padding: const EdgeInsets.fromLTRB(0, 0, 16, 24),
+          color: Colors.transparent, // Hit test target fills the whole cell
+          child: Container(
+            decoration: BoxDecoration(
+              color: phantomColor ?? Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              border: phantomColor != null 
+                 ? Border.all(color: phantomStatus == 1 ? Colors.green : Colors.red, width: 2)
+                 : null,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+Widget _buildDragFeedback(BuildContext context, Widget child, {required Size size}) {
+  // IgnorePointer is crucial to let drag events pass through to the DragTarget below
+  return IgnorePointer(
+    child: Material(
+      color: Colors.transparent,
+      child: SizedBox(
+        width: size.width,
+        height: size.height,
+        child: Transform.scale(
+          scale: 1.05, // Slight pop effect
+          child: Container(
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                )
+              ],
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    ),
+  );
 }
 }
 

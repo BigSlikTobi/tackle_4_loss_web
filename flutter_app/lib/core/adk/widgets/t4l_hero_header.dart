@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../design_tokens.dart';
 
 import 'package:video_player/video_player.dart';
@@ -173,15 +174,31 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
             if (widget.heroTag != null)
               Hero(
                 tag: widget.heroTag!,
-                child: Image.network(
-                  widget.imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: widget.imageUrl,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
+                    child: const Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                  ),
                 ),
               )
             else
-              Image.network(
-                widget.imageUrl,
+              CachedNetworkImage(
+                imageUrl: widget.imageUrl,
                 fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
+                  child: const Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                ),
               ),
             
             // 2. Video Player Layer (Fades out when finished)

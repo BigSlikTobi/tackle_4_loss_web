@@ -27,4 +27,15 @@ abstract class MicroApp {
 
   /// The entry point widget for this app.
   WidgetBuilder get page;
+
+  /// Whether this app has a home screen widget.
+  bool get hasWidget => false;
+
+  /// The size of the widget in grid cells (e.g. 1x1, 1x2, 2x2).
+  /// Defaults to 1x1 (Standard Icon).
+  Size get widgetSize => const Size(1, 1);
+
+  /// The widget builder for the home screen widget.
+  /// Returns a SizedBox by default.
+  WidgetBuilder get widgetBuilder => (context) => const SizedBox();
 }

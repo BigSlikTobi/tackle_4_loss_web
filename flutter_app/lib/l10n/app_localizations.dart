@@ -145,6 +145,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No app history yet.'**
   String get historyEmpty;
+
+  /// No description provided for @breakingNewsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Breaking News'**
+  String get breakingNewsTitle;
+
+  /// No description provided for @breakingNewsRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'REFUSED'**
+  String get breakingNewsRefused;
+
+  /// No description provided for @breakingNewsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVED'**
+  String get breakingNewsSaved;
+
+  /// No description provided for @breakingNewsReadHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'READ HISTORY'**
+  String get breakingNewsReadHistory;
+
+  /// No description provided for @breakingNewsRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'RESTORE?'**
+  String get breakingNewsRestore;
+
+  /// No description provided for @breakingNewsHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'HISTORY'**
+  String get breakingNewsHistory;
+
+  /// No description provided for @breakingNewsBackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Story'**
+  String get breakingNewsBackTitle;
+
+  /// No description provided for @breakingNewsTag.
+  ///
+  /// In en, this message translates to:
+  /// **'BREAKING'**
+  String get breakingNewsTag;
+
+  /// No description provided for @breakingNewsSavedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get breakingNewsSavedLabel;
+
+  /// No description provided for @deepDiveChapter.
+  ///
+  /// In en, this message translates to:
+  /// **'CHAPTER {index}'**
+  String deepDiveChapter(int index);
+
+  /// No description provided for @deepDiveNoContent.
+  ///
+  /// In en, this message translates to:
+  /// **'No content available'**
+  String get deepDiveNoContent;
+
+  /// No description provided for @appStoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'T4L Apps'**
+  String get appStoreTitle;
+
+  /// No description provided for @appStoreFeaturedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App of the Month'**
+  String get appStoreFeaturedTitle;
+
+  /// No description provided for @appStoreFeaturedSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deeply immersive reading.'**
+  String get appStoreFeaturedSubtitle;
+
+  /// No description provided for @appStoreAllApps.
+  ///
+  /// In en, this message translates to:
+  /// **'All Apps'**
+  String get appStoreAllApps;
 }
 
 class _AppLocalizationsDelegate

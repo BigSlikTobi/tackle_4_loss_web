@@ -10,6 +10,7 @@ We are building a premium experience that captivates users. The codebase is not 
 - **Simultaneous Delivery**: We function as a single team building two heads of the same beast. Features are implemented simultaneously for:
   - **Flutter** (iOS & Android)
   - **React** (Web)
+- **Premium Widget Experience**: Home screen widgets are not just shortcuts; they are "windows" into the app. They must be live, interactive, and visually stunning. We use a **Fixed Spatial Grid** (4x5) to enforce order and a premium desktop-class feel. Drag-and-drop interactions must be physics-based and solid.
 
 ## 2. Architecture Principles
 We adhere to a strict **MVC (Model-View-Controller)** architecture to ensure scalability and maintainability.

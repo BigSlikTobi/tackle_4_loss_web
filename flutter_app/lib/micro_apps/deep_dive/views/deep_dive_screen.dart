@@ -11,6 +11,8 @@ import '../../../core/services/audio_player_service.dart';
 import '../../../core/adk/widgets/t4l_hero_header.dart';
 import '../controllers/deep_dive_detail_controller.dart';
 import '../models/deep_dive_article.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../core/theme/t4l_theme.dart';
 
 class DeepDiveScreen extends StatefulWidget {
   final DeepDiveArticle article;
@@ -48,11 +50,9 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<SettingsService>(context);
-    final isDarkMode = settings.isDarkMode;
-    final primaryTextColor = isDarkMode ? Colors.white : AppColors.textPrimary;
-    final secondaryTextColor = isDarkMode ? Colors.white.withOpacity(0.7) : AppColors.textSecondary;
-    final surfaceColor = isDarkMode ? AppColors.cardDark : AppColors.cardLight;
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    final l10n = AppLocalizations.of(context)!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return ChangeNotifierProvider.value(
       value: _controller,
@@ -106,7 +106,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                       duration: const Duration(milliseconds: 200),
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: surfaceColor,
+                                        color: colors.surface,
                                         shape: BoxShape.circle,
                                         boxShadow: [
                                           BoxShadow(
@@ -116,7 +116,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                           ),
                                         ],
                                         border: Border.all(
-                                          color: primaryTextColor.withOpacity(0.1),
+                                          color: colors.textPrimary.withOpacity(0.1),
                                           width: 1,
                                         ),
                                       ),
@@ -124,7 +124,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                         showPause
                                             ? Icons.pause_rounded
                                             : Icons.play_arrow_rounded,
-                                        color: AppColors.primary,
+                                        color: colors.brand,
                                         size: 32,
                                       ),
                                     ),
@@ -159,9 +159,9 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "CHAPTER ${index + 1}".toUpperCase(),
+                                            l10n.deepDiveChapter(index + 1).toUpperCase(),
                                             style: AppTextStyles.caption.copyWith(
-                                              color: AppColors.primary,
+                                              color: colors.brand,
                                               fontWeight: FontWeight.bold,
                                               letterSpacing: 2.0,
                                             ),
@@ -171,23 +171,23 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                             data: section.content,
                                             styleSheet: MarkdownStyleSheet(
                                               p: TextStyle(
-                                                  color: secondaryTextColor,
+                                                  color: colors.textSecondary,
                                                   fontSize: 16,
                                                   height: 1.6),
                                               h2: TextStyle(
-                                                  color: primaryTextColor,
+                                                  color: colors.textPrimary,
                                                   fontSize: 24,
                                                   fontWeight: FontWeight.bold),
                                               h3: TextStyle(
-                                                  color: primaryTextColor,
+                                                  color: colors.textPrimary,
                                                   fontSize: 20,
                                                   fontWeight: FontWeight.w600),
-                                              blockquote: const TextStyle(
-                                                  color: AppColors.accent,
+                                              blockquote: TextStyle(
+                                                  color: colors.border,
                                                   fontStyle: FontStyle.italic),
                                               code: TextStyle(
-                                                  backgroundColor: surfaceColor,
-                                                  color: primaryTextColor),
+                                                  backgroundColor: colors.surface,
+                                                  color: colors.textPrimary),
                                             ),
                                           ),
                                         ],
@@ -204,29 +204,29 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                       data: content,
                                       styleSheet: MarkdownStyleSheet(
                                         p: TextStyle(
-                                            color: secondaryTextColor,
+                                            color: colors.textSecondary,
                                             fontSize: 16,
                                             height: 1.6),
                                         h2: TextStyle(
-                                            color: primaryTextColor,
+                                            color: colors.textPrimary,
                                             fontSize: 24,
                                             fontWeight: FontWeight.bold),
                                         h3: TextStyle(
-                                            color: primaryTextColor,
+                                            color: colors.textPrimary,
                                             fontSize: 20,
                                             fontWeight: FontWeight.w600),
-                                        blockquote: const TextStyle(
-                                            color: AppColors.accent,
+                                        blockquote: TextStyle(
+                                            color: colors.border,
                                             fontStyle: FontStyle.italic),
                                         code: TextStyle(
-                                            backgroundColor: surfaceColor,
-                                            color: primaryTextColor),
+                                            backgroundColor: colors.surface,
+                                            color: colors.textPrimary),
                                       ),
                                     )
                                   : Center(
-                                      child: Text("No content available",
+                                      child: Text(l10n.deepDiveNoContent,
                                           style: TextStyle(
-                                              color: secondaryTextColor))),
+                                              color: colors.textSecondary))),
                             ),
                 ),
 
@@ -244,11 +244,11 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                           end: Alignment.topCenter,
                           colors: [
                             (isDarkMode
-                                ? AppColors.backgroundDark
-                                : AppColors.backgroundLight),
+                                ? colors.background 
+                                : colors.background),
                             (isDarkMode
-                                    ? AppColors.backgroundDark
-                                    : AppColors.backgroundLight)
+                                    ? colors.background 
+                                    : colors.background)
                                 .withOpacity(0),
                           ],
                         ),
@@ -264,9 +264,9 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                 value: (sections.length > 1)
                                     ? _currentPage / (sections.length - 1)
                                     : 1.0,
-                                backgroundColor: primaryTextColor.withOpacity(0.1),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                    AppColors.primary),
+                                color: colors.textPrimary.withOpacity(0.1),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    colors.brand),
                                 minHeight: 2,
                               ),
                             ),
@@ -276,7 +276,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                             "${_currentPage + 1} / ${sections.length}",
                             style: AppTextStyles.caption.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: secondaryTextColor,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ],
