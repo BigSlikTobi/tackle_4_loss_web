@@ -70,9 +70,13 @@ class RadioController extends ChangeNotifier {
     try {
       final newsTracks = await fetchNewsTracks(languageCode);
       if (newsTracks.isNotEmpty) {
-        _newsImages = newsTracks.map((e) => e['imageUrl']!).toList();
+        _newsImages = newsTracks
+            .map((e) => (e['imageUrl'] as String?) ??
+                'https://placehold.co/400/1a1a1a/ffffff?text=News')
+            .toList();
         _latestNewsImage = _newsImages.first;
-        _latestNewsHeadline = newsTracks.first['title'];
+        _latestNewsHeadline =
+            (newsTracks.first['title'] as String?) ?? 'News';
       }
     } catch (e) {
       debugPrint("Error loading news images for UI: $e");
