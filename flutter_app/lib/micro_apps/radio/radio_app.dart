@@ -33,10 +33,7 @@ class RadioApp implements MicroApp {
   bool get hasWidget => true;
 
   @override
-  Size get widgetSize => const Size(3, 1); // User confirmed 3x1 (Horizontal).
-  // Actually, standard grid items are usually 1x1, 2x1, 2x2. A 3x1 might break the 4-column layout if not handled.
-  // Let's assume the grid can handle it or we will adjust. I will set it to 4x1 (Full Width) which is safer for "horizontal strip" widgets, OR 2x1.
-  // User asked for "3x1". I'll put Size(3, 1) and we can adjust the grid logic later if needed.
+  Size get widgetSize => const Size(3, 1); 
   
   @override
   WidgetBuilder get widgetBuilder => (context) => const RadioHomeWidget();

@@ -48,18 +48,6 @@ serve(async (req) => {
                 audioUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${audioUrl}`
             }
 
-            // Extract first team logo if available
-            let teamLogoUrl = null;
-            if (item.teams && Array.isArray(item.teams) && item.teams.length > 0) {
-                // Assuming teams structure has a logo_url or similar. 
-                // Based on get-breaking-news, 'teams' is just passed through.
-                // We need to know the structure of a team object. 
-                // Usually it has 'logo_url' or 'logo'. Let's try to find a safe access or just return the object.
-                // User asked for "the first team in the list (to show the logo which team this news is about)".
-                // I'll return the whole first team object for the client to parse, or try to extract a logo if standard.
-                // Let's return the first team object as `primaryTeam`.
-                teamLogoUrl = item.teams[0]?.logo_url; // Tentative guess, client can handle it.
-            }
 
             return {
                 id: item.id,
@@ -76,9 +64,10 @@ serve(async (req) => {
             status: 200,
         })
     } catch (error) {
+        const status = error instanceof SyntaxError ? 400 : 500
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400,
+            status,
         })
     }
 })

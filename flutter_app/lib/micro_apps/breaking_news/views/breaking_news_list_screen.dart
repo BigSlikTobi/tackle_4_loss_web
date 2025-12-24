@@ -78,7 +78,94 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
           children: [
             Column(
               children: [
-                const SizedBox(height: 140), 
+                const SizedBox(height: 130), 
+
+                // Filter & Sort Bar
+                Consumer<BreakingNewsController>(
+                  builder: (context, controller, child) {
+                    final teams = controller.availableTeams;
+                    if (teams.isEmpty && controller.currentTeamFilter == null) return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Dropdown Filter
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: colors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: colors.border.withOpacity(0.3)),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: controller.currentTeamFilter, // null is "All"
+                                hint: Row(
+                                  children: [
+                                    Icon(Icons.public, size: 18, color: colors.textSecondary),
+                                    const SizedBox(width: 8),
+                                    Text(l10n.radioCollectionAllTeams, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                                icon: Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Icon(Icons.filter_list_rounded, color: colors.brand, size: 20),
+                                ),
+                                dropdownColor: colors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                items: [
+                                  // "All" Item
+                                  DropdownMenuItem<String>(
+                                    value: null,
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.public, size: 18, color: colors.textSecondary),
+                                        const SizedBox(width: 8),
+                                        Text(l10n.radioCollectionAllTeams, style: TextStyle(color: colors.textPrimary, fontSize: 13)),
+                                      ],
+                                    ),
+                                  ),
+                                  // Team Items
+                                  ...teams.entries.map((entry) {
+                                    return DropdownMenuItem<String>(
+                                      value: entry.key,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          if (entry.value.isNotEmpty)
+                                            Image.network(entry.value, width: 20, height: 20, errorBuilder: (c, e, s) => const SizedBox(width: 20)),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            entry.key,
+                                            style: TextStyle(color: colors.textPrimary, fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                                onChanged: (value) => controller.setTeamFilter(value),
+                              ),
+                            ),
+                          ),
+                          
+                          // Sort Toggle
+                          IconButton(
+                            icon: Icon(
+                              controller.isNewestFirst ? Icons.arrow_downward : Icons.arrow_upward,
+                              color: colors.brand,
+                              size: 20,
+                            ),
+                            onPressed: () => controller.toggleSort(),
+                            tooltip: controller.isNewestFirst ? 'Newest First' : 'Oldest First',
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
 
                 Expanded(
                   child: Consumer<BreakingNewsController>(

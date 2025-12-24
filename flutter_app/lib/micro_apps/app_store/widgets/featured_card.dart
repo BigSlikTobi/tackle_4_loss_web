@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
+import '../../../../core/theme/t4l_theme.dart';
 
 class AppStoreFeaturedCard extends StatelessWidget {
   final String category;
@@ -29,6 +30,8 @@ class AppStoreFeaturedCard extends StatelessWidget {
     final ImageProvider imageProvider = imagePath.startsWith('http')
         ? NetworkImage(imagePath)
         : AssetImage(imagePath) as ImageProvider;
+    
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,7 +46,7 @@ class AppStoreFeaturedCard extends StatelessWidget {
                 Text(
                   category.toUpperCase(),
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: colors.brand,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -52,7 +55,7 @@ class AppStoreFeaturedCard extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     fontSize: 20,
                     fontFamily: 'RussoOne',
                   ),
@@ -60,7 +63,7 @@ class AppStoreFeaturedCard extends StatelessWidget {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     fontSize: 16,
                   ),
                 ),
@@ -170,13 +173,13 @@ class AppStoreFeaturedCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                           decoration: BoxDecoration(
-                            color: AppColors.neutralBase,
+                            color: colors.surface,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             isInstalled ? 'REMOVE' : 'GET',
                             style: TextStyle(
-                              color: AppColors.brandBase,
+                              color: colors.brand,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
