@@ -146,11 +146,7 @@ class _RadioScreenState extends State<RadioScreen> {
                                 _controller.playStation(_controller.allDeepDives.first, languageCode: settings.locale.languageCode);
                               }
                             } else {
-                              // If it's a regular station, maybe play it? RadioStationCard handles tap on card for play usually for stations
-                              // But if play button exists for regular stations:
-                              // _controller.playStation(station, languageCode: settings.locale.languageCode);
-                              // Actually, RadioStationCard hides play button if onPlayTapped is null?
-                              // Let's look at RadioStationCard later. For now, we only need play button for collections.
+                              // Regular stations are started via the card tap (onTap); the explicit play button is only used for collection stations.
                             }
                           },
                         );
