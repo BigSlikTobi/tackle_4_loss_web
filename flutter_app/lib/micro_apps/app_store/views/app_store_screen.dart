@@ -91,34 +91,17 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
     final otherApps = _controller.getOtherApps();
 
     return T4LScaffold(
+      title: l10n.appStoreTitle,
       body: CustomScrollView(
         slivers: [
-          // 1. Header (T4L Apps + Avatar)
+          // 1. Featured Section (App of the Month)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 60, 24, 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                   Text(
-                    l10n.appStoreTitle,
-                    style: AppTextStyles.display.copyWith(color: colors.textPrimary),
-                  ),
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: colors.brand,
-                    child: const Text('TL', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 2. Featured Section (App of the Month)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.only(top: 130, left: 24, right: 24), // Added top padding for header
               child: Column(
+
+
+
                 children: [
                    // Featured Card
                    AppStoreFeaturedCard(

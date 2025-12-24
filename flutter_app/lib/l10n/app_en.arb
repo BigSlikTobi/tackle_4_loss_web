@@ -32,5 +32,30 @@
   "appStoreTitle": "T4L Apps",
   "appStoreFeaturedTitle": "App of the Month",
   "appStoreFeaturedSubtitle": "Deeply immersive reading.",
-  "appStoreAllApps": "All Apps"
+  "appStoreAllApps": "All Apps",
+  "radioTitle": "Radio",
+  "radioCategoryAll": "All",
+  "radioCategoryDeepDive": "Deep Dives",
+  "radioCategoryNews": "News",
+  "radioStationLatestDeepDivesTitle": "Latest Deep Dives",
+  "radioStationLatestDeepDivesDesc": "The freshest analysis from the team.",
+  "radioStationDailyBriefingTitle": "Daily Briefing",
+  "radioStationDailyBriefingDesc": "Catch up on everything in 5 minutes.",
+  "radioStationDeepDiveClassicsTitle": "Deep Dive Classics",
+  "radioStationDeepDiveClassicsDesc": "Timeless football philosophy.",
+  "radioStationNewsTitle": "News",
+  "radioStationNewsDesc": "Daily briefing and latest updates.",
+  "radioStationNewsCollectionTitle": "News Collection",
+  "radioStationNewsCollectionDesc": "Browse and play individual news updates.",
+  "radioCollectionLatestUpdates": "Latest Updates",
+  "radioCollectionTeamNews": "Team News",
+  "radioCollectionAllTeams": "All Teams",
+  "radioPlaying": "Playing: {title}",
+  "@radioPlaying": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

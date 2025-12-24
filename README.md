@@ -39,6 +39,11 @@ Real-time updates for the die-hard fan.
 *   **Purpose**: Quick, digestible news snippets.
 *   **Key Feature**: Live feed with urgent visual design.
 
+### [4. Radio 📻](flutter_app/lib/micro_apps/radio/README.md)
+The hands-free audio companion.
+*   **Purpose**: Daily briefings and narrated deep dives for listening on the go.
+*   **Key Feature**: "Smart Briefing" playlist and adaptive reverse-theming player widget.
+
 ---
 
 ## 🛠️ Setup & Development

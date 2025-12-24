@@ -25,6 +25,7 @@ You are an expert Senior Software Engineer and Product Designer working on the T
 - **Do NOT** create massive files. Break things down.
 - **Do NOT** use hardcoded colors or magic numbers. Use the design tokens.
 - **Do NOT** ignore one platform if the request implies a feature for "the app" (implies both).
+- **Do NOT query database tables directly from the frontend**. ALWAYS use Supabase Edge Functions to protect our data and schema.
 
 ## 4. Key Directives
 - **"Is this reusable?"**: Ask this for every component.

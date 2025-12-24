@@ -20,13 +20,13 @@ serve(async (req) => {
 
         const { language_code } = await req.json()
 
-        const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
         let query = supabaseClient
             .schema('content')
             .from('news_updates')
             .select('id, created_at, headline, sub_header, introduction_paragraph, content, image_file, teams, players, url, tts_file')
-            .gt('created_at', fortyEightHoursAgo)
+            .gt('created_at', twentyFourHoursAgo)
             .order('created_at', { ascending: false })
 
         if (language_code) {

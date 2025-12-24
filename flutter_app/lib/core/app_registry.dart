@@ -1,4 +1,5 @@
 import 'micro_app.dart';
+import '../micro_apps/radio/radio_app.dart';
 
 class AppRegistry {
   // Singleton Pattern
@@ -12,6 +13,7 @@ class AppRegistry {
     'deep_dive': AppMetadata(category: 'Reading', isFeatured: true),
     'breaking_news': AppMetadata(category: 'Utility', isFeatured: false),
     'app_store': AppMetadata(category: 'System', isFeatured: false),
+    'radio': AppMetadata(category: 'Entertainment', isFeatured: false), // Radio
   };
 
   final List<MicroApp> _registeredApps = [];

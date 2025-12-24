@@ -11,10 +11,12 @@ import 'core/services/settings_service.dart';
 import 'micro_apps/app_store/app_store_app.dart';
 import 'micro_apps/deep_dive/deep_dive_app.dart';
 import 'micro_apps/breaking_news/breaking_news_app.dart';
+import 'micro_apps/radio/radio_app.dart';
+import 'micro_apps/radio/controllers/radio_controller.dart';
 
 import 'core/services/installed_apps_service.dart';
 import 'core/services/audio_player_service.dart';
-import 'core/adk/widgets/mini_player.dart';
+
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -38,14 +40,25 @@ Future<void> main() async {
   AppRegistry().register(AppStoreApp()); 
   AppRegistry().register(DeepDiveApp()); 
   AppRegistry().register(BreakingNewsApp());
+  AppRegistry().register(RadioApp());
   
   // 3. Initialize Services
   await InstalledAppsService().init();
   await AudioPlayerService().init(); // Initialize Audio Service
   
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => SettingsService(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SettingsService()),
+        ChangeNotifierProxyProvider<SettingsService, RadioController>(
+          create: (context) => RadioController(
+            languageCode: Provider.of<SettingsService>(context, listen: false).locale.languageCode,
+          ),
+          update: (context, settings, controller) {
+            return controller!..loadStations(settings.locale.languageCode);
+          },
+        ),
+      ],
       child: const Tackle4LossApp(),
     ),
   );
@@ -85,12 +98,7 @@ class Tackle4LossApp extends StatelessWidget {
           darkTheme: T4LTheme.dark,
           
           builder: (context, child) {
-            return Stack(
-              children: [
-                child!, // The main app content
-                const MiniPlayer(), // Global Audio Player Overlay
-              ],
-            );
+            return child!; // Application content
           },
           home: const OSShellView(),
         );

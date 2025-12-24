@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
+import '../../../../core/theme/t4l_theme.dart';
 
 class AppStoreListItem extends StatelessWidget {
   final String title;
@@ -25,6 +26,8 @@ class AppStoreListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -32,7 +35,7 @@ class AppStoreListItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: AppColors.neutralBorder.withOpacity(0.1),
+              color: colors.border.withOpacity(0.1),
               width: 1,
             ),
           ),
@@ -69,7 +72,7 @@ class AppStoreListItem extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -78,7 +81,7 @@ class AppStoreListItem extends StatelessWidget {
                   Text(
                     category,
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       fontSize: 13,
                     ),
                   ),
@@ -90,17 +93,17 @@ class AppStoreListItem extends StatelessWidget {
             GestureDetector(
               onTap: onAction,
               child: isInstalled
-                  ? Icon(Icons.cloud_download, color: AppColors.primary) // Re-download icon style if installed (or Open)
+                  ? Icon(Icons.check_circle, color: colors.textSecondary) // Use check for installed
                   : Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.surface.withOpacity(0.3), // Glassy button
+                        color: colors.surface, 
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
                         'GET',
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: colors.brand,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),

@@ -8,7 +8,10 @@ import '../../services/settings_service.dart';
 import 't4l_floating_nav_bar.dart';
 import 'user_settings_dialog.dart';
 import 'team_selector_dialog.dart';
+import 'package:audio_service/audio_service.dart';
+import '../../services/audio_player_service.dart';
 import 't4l_header.dart';
+import 'mini_player.dart';
 
 class T4LScaffold extends StatelessWidget {
   final Widget body;
@@ -57,11 +60,21 @@ class T4LScaffold extends StatelessWidget {
             child: Stack(
               children: [
                 // Body (Full Screen, behind header)
-                Padding(
-                  padding: EdgeInsets.only(
-                    bottom: (showNavBar || bottomNavBarOverride != null) ? 80 : 0,
-                  ),
-                  child: body,
+                // We use a StreamBuilder to dynamically adjust padding when MiniPlayer is active
+                StreamBuilder<MediaItem?>(
+                  stream: AudioPlayerService().mediaItemStream,
+                  builder: (context, snapshot) {
+                     final isPlaying = snapshot.data != null;
+                     final navBarHeight = (showNavBar || bottomNavBarOverride != null) ? 80.0 : 0.0;
+                     final playerHeight = isPlaying ? 80.0 : 0.0; // Reduced clearance to match slim MiniPlayer
+                     
+                     return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: navBarHeight + playerHeight, 
+                      ),
+                      child: body,
+                    );
+                  },
                 ),
                 
                 // Header (Floating on top)
@@ -111,36 +124,53 @@ class T4LScaffold extends StatelessWidget {
             ),
 
           // 4. Persistent Dock OR Override
-          if (showNavBar || bottomNavBarOverride != null)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: bottomNavBarOverride ?? T4LFloatingNavBar(
-                homeTooltip: l10n.navHome,
-                appStoreTooltip: l10n.navAppStore,
-                historyTooltip: l10n.navHistory,
-                settingsTooltip: l10n.navSettings,
-                favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-                onHome: () => NavigationService().goHome(context),
-                onAppStore: () => NavigationService().openAppStore(context),
-                onHistory: () => NavigationService().reopenLastApp(context),
-                onSettings: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => const UserSettingsDialog(),
-                  );
-                },
-                onTeamLogo: () {
-                  if (settings.selectedTeam == null) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => const TeamSelectorDialog(),
-                    );
-                  }
-                },
+          // We position the Dock at the bottom.
+          // The MiniPlayer should float ABOVE the Dock if the Dock is visible,
+          // or at the bottom if the Dock is hidden.
+          
+          Stack(
+            children: [
+               Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Mini Player
+                    const MiniPlayer(),
+
+                    // Dock (if enabled)
+                    if (showNavBar || bottomNavBarOverride != null)
+                      bottomNavBarOverride ?? T4LFloatingNavBar(
+                        homeTooltip: l10n.navHome,
+                        appStoreTooltip: l10n.navAppStore,
+                        historyTooltip: l10n.navHistory,
+                        settingsTooltip: l10n.navSettings,
+                        favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
+                        onHome: () => NavigationService().goHome(context),
+                        onAppStore: () => NavigationService().openAppStore(context),
+                        onHistory: () => NavigationService().reopenLastApp(context),
+                        onSettings: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const UserSettingsDialog(),
+                          );
+                        },
+                        onTeamLogo: () {
+                          if (settings.selectedTeam == null) {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const TeamSelectorDialog(),
+                            );
+                          }
+                        },
+                      ),
+                  ],
+                ),
               ),
-            ),
+            ],
+          ),
         ],
       ),
     );

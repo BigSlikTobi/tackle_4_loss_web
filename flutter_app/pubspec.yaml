@@ -88,6 +88,7 @@ flutter:
     - lib/micro_apps/deep_dive/store_assets/
     - lib/micro_apps/app_store/store_assets/
     - lib/micro_apps/breaking_news/store_assets/
+    - lib/micro_apps/radio/store_assets/
     - assets/logos/teams/
 
   # An image asset can refer to one or more resolution-specific "variants", see

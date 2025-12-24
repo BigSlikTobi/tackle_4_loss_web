@@ -22,9 +22,10 @@ serve(async (req) => {
 
         let query = supabaseClient
             .schema('content')
-            .from('deepdive_article')
-            .select('id, language_code, hero_image_url, published_at, author, title, subtitle, audio_file')
-            .order('published_at', { ascending: false })
+            .from('news_updates')
+            .select('id, created_at, headline, image_file, teams, tts_file')
+            .order('created_at', { ascending: false })
+            .limit(30)
 
         if (language_code) {
             query = query.eq('language_code', language_code)
@@ -34,14 +35,39 @@ serve(async (req) => {
 
         if (error) throw error
 
-        return new Response(JSON.stringify(data), {
+        const mappedData = data.map((item: any) => {
+            // Construct image URL (thumbnail)
+            let imageUrl = item.image_file
+            if (imageUrl && !imageUrl.startsWith('http')) {
+                imageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${imageUrl}`
+            }
+
+            // Construct audio URL
+            let audioUrl = item.tts_file
+            if (audioUrl && !audioUrl.startsWith('http')) {
+                audioUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${audioUrl}`
+            }
+
+
+            return {
+                id: item.id,
+                title: item.headline,
+                createdAt: item.created_at,
+                imageUrl: imageUrl,
+                audioUrl: audioUrl,
+                primaryTeam: item.teams && item.teams.length > 0 ? item.teams[0] : null,
+            }
+        })
+
+        return new Response(JSON.stringify(mappedData), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
         })
     } catch (error) {
+        const status = error instanceof SyntaxError ? 400 : 500
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 400,
+            status,
         })
     }
 })
