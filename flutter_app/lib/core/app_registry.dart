@@ -1,5 +1,5 @@
 import 'micro_app.dart';
-import '../micro_apps/radio/radio_app.dart';
+import 'services/feature_flag_service.dart';
 
 class AppRegistry {
   // Singleton Pattern
@@ -13,13 +13,20 @@ class AppRegistry {
     'deep_dive': AppMetadata(category: 'Reading', isFeatured: true),
     'breaking_news': AppMetadata(category: 'Utility', isFeatured: false),
     'app_store': AppMetadata(category: 'System', isFeatured: false),
-    'radio': AppMetadata(category: 'Entertainment', isFeatured: false), // Radio
+    'radio': AppMetadata(category: 'Entertainment', isFeatured: false),
+    'standings': AppMetadata(category: 'Sports', isFeatured: false),
+    'game_reports': AppMetadata(category: 'Sports', isFeatured: false),
   };
 
   final List<MicroApp> _registeredApps = [];
 
   /// Returns an unmodifiable list of all registered metrics.
-  List<MicroApp> get apps => List.unmodifiable(_registeredApps);
+  /// Filtered by Feature Flags.
+  List<MicroApp> get apps => List.unmodifiable(
+        _registeredApps.where(
+          (app) => FeatureFlagService().isEnabled(app.id),
+        ),
+      );
 
   /// Registers a new MicroApp.
   void register(MicroApp app) {
@@ -31,7 +38,13 @@ class AppRegistry {
   }
 
   /// Finds an app by its ID.
+  /// Returns null if not found OR if disabled by feature flag.
   MicroApp? getApp(String id) {
+    // Feature Flag Check
+    if (!FeatureFlagService().isEnabled(id)) {
+      return null;
+    }
+    
     try {
       return _registeredApps.firstWhere((element) => element.id == id);
     } catch (e) {

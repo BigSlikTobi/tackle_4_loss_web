@@ -14,7 +14,8 @@ class RadioHomeWidget extends StatefulWidget {
   State<RadioHomeWidget> createState() => _RadioHomeWidgetState();
 }
 
-class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProviderStateMixin {
+class _RadioHomeWidgetState extends State<RadioHomeWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late ScrollController _scrollController;
   Timer? _marqueeTimer;
@@ -28,24 +29,24 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
     )..repeat(reverse: true);
 
     _scrollController = ScrollController();
-    
+
     // Start marquee effect after a short delay
     Future.delayed(const Duration(seconds: 2), _startMarquee);
   }
 
   void _startMarquee() {
     if (!mounted) return;
-    
+
     _marqueeTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      
+
       if (_scrollController.hasClients) {
         double maxScroll = _scrollController.position.maxScrollExtent;
         double currentScroll = _scrollController.offset;
-        
+
         if (currentScroll >= maxScroll) {
           _scrollController.jumpTo(0);
         } else {
@@ -71,7 +72,7 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
   Widget build(BuildContext context) {
     final defaultColors = Theme.of(context).extension<T4LThemeColors>()!;
     final l10n = AppLocalizations.of(context)!;
-    
+
     final radioController = Provider.of<RadioController>(context);
     final settings = Provider.of<SettingsService>(context); // Listen to changes
     final selectedTeam = settings.selectedTeam;
@@ -87,17 +88,25 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
       // Dark Mode (App is Dark): Widget is Light (White)
       backgroundColor = Colors.white;
       // Text is dark (Team or Black)
-      foregroundColor = selectedTeam != null ? selectedTeam.primaryColor : Colors.black;
+      foregroundColor = selectedTeam != null
+          ? selectedTeam.primaryColor
+          : Colors.black;
       // Play button background: Dark (Team Color)
-      iconBackgroundColor = selectedTeam != null ? selectedTeam.primaryColor : defaultColors.brand;
+      iconBackgroundColor = selectedTeam != null
+          ? selectedTeam.primaryColor
+          : defaultColors.brand;
       // Play Icon: White
       iconColor = Colors.white;
     } else {
       // Light Mode (App is Light): Widget is Dark (Team Color)
-      backgroundColor = selectedTeam != null ? selectedTeam.primaryColor : const Color(0xFF1A1A1A);
+      backgroundColor = selectedTeam != null
+          ? selectedTeam.primaryColor
+          : const Color(0xFF1A1A1A);
       foregroundColor = Colors.white;
       iconBackgroundColor = Colors.white;
-      iconColor = selectedTeam != null ? selectedTeam.primaryColor : defaultColors.brand;
+      iconColor = selectedTeam != null
+          ? selectedTeam.primaryColor
+          : defaultColors.brand;
     }
 
     return Stack(
@@ -112,7 +121,9 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
                 // Subtle shadow dependent on mode
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.4),
+                    color: Colors.black.withValues(
+                      alpha: isDarkMode ? 0.2 : 0.4,
+                    ),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -127,14 +138,14 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
                       top: -10,
                       bottom: -10,
                       child: Opacity(
-                        opacity: 0.3, 
+                        opacity: 0.3,
                         child: Image.asset(
                           selectedTeam.logoUrl,
                           width: 70,
                           fit: BoxFit.contain,
-                          color: foregroundColor, 
+                          color: foregroundColor,
                           colorBlendMode: BlendMode.srcIn,
-                          errorBuilder: (c,e,s) => const SizedBox(),
+                          errorBuilder: (c, e, s) => const SizedBox(),
                         ),
                       ),
                     ),
@@ -153,13 +164,16 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
               GestureDetector(
                 onTap: () {
                   radioController.playStation(
-                    radioController.dailyBriefingStation, 
-                    languageCode: settings.locale.languageCode
+                    radioController.dailyBriefingStation,
+                    languageCode: settings.locale.languageCode,
                   );
                 },
                 child: ScaleTransition(
                   scale: Tween<double>(begin: 1.0, end: 1.1).animate(
-                    CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+                    CurvedAnimation(
+                      parent: _pulseController,
+                      curve: Curves.easeInOut,
+                    ),
                   ),
                   child: Container(
                     width: 44,
@@ -169,26 +183,32 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 3),
                         ),
                       ],
                     ),
-                    child: Icon(Icons.play_arrow_rounded, color: iconColor, size: 28),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      color: iconColor,
+                      size: 28,
+                    ),
                   ),
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // Content Area
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     Navigator.of(context).push(
-                     MaterialPageRoute(builder: (context) => const RadioScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const RadioScreen(),
+                      ),
                     );
                   },
                   child: Column(
@@ -217,23 +237,26 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget> with SingleTickerProv
                           physics: const NeverScrollableScrollPhysics(),
                           children: [
                             Text(
-                              radioController.latestNewsHeadline ?? "${l10n.radioCategoryDeepDive} · ${l10n.radioCategoryNews}",
+                              radioController.latestNewsHeadline ??
+                                  "${l10n.radioCategoryDeepDive} · ${l10n.radioCategoryNews}",
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 12,
                                 // Slightly transparent foreground for description
-                                color: foregroundColor.withOpacity(0.85), 
+                                color: foregroundColor.withValues(alpha: 0.85),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(width: 100),
                             if (radioController.latestNewsHeadline != null)
-                               Text(
+                              Text(
                                 radioController.latestNewsHeadline!,
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 12,
-                                  color: foregroundColor.withOpacity(0.85),
+                                  color: foregroundColor.withValues(
+                                    alpha: 0.85,
+                                  ),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

@@ -1,14 +1,28 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tackle4loss_mobile/core/os_shell/widgets/t4l_scaffold.dart';
+import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
 import 'package:tackle4loss_mobile/core/services/settings_service.dart';
+import 'package:tackle4loss_mobile/core/theme/t4l_theme.dart';
 import 'package:tackle4loss_mobile/l10n/app_localizations.dart';
+
+class MockAudioPlayerService extends AudioPlayerService {
+  MockAudioPlayerService() : super.testing();
+
+  @override
+  Stream<PlaybackState> get playbackStateStream => Stream.value(PlaybackState());
+  
+  @override
+  Stream<MediaItem?> get mediaItemStream => Stream.value(null);
+}
 
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    AudioPlayerService.setInstanceForTesting(MockAudioPlayerService());
   });
 
   Widget createTestWidget(Widget child) {
@@ -19,6 +33,7 @@ void main() {
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
+        theme: T4LTheme.light(),
         home: child,
       ),
     );

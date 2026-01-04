@@ -108,7 +108,7 @@ export const designTokens = {
       slow: '500ms',
       slower: '750ms',
     },
-    
+
     easings: {
       linear: 'linear',
       easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
@@ -117,7 +117,7 @@ export const designTokens = {
       bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
       elastic: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
     },
-    
+
     // Haptic feedback hints (for mobile implementation)
     haptics: {
       light: 'light',       // Subtle tap feedback
@@ -152,6 +152,18 @@ export const designTokens = {
     modal: 1040,
     popover: 1050,
     tooltip: 1060,
+  },
+
+  // ============================================
+  // LAYOUT - Golden Ratio & Proportions
+  // ============================================
+  layout: {
+    /** Golden Ratio (φ = 1.618...) - Defines harmonious proportions */
+    goldenRatio: 1.618033988749895,
+    /** Upper section ratio (1 / (1 + φ)) ≈ 38.2% - Use for smaller section (app icons) */
+    goldenUpper: 0.381966011250105,
+    /** Lower section ratio (φ / (1 + φ)) ≈ 61.8% - Use for larger section (feed) */
+    goldenLower: 0.618033988749895,
   }
 };
 

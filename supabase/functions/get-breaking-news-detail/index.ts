@@ -27,7 +27,7 @@ serve(async (req: Request) => {
 
     const { data, error } = await supabaseClient
       .schema('content')
-      .from('breaking_news')
+      .from('news_updates')
       .select('id, headline, created_at, content, introduction, source_url, tts_file, article_images(image_url, source)')
       .eq('id', id)
       .single()

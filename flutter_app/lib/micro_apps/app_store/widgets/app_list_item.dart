@@ -6,7 +6,7 @@ class AppStoreListItem extends StatelessWidget {
   final String title;
   final String category;
   final IconData icon;
-  final String iconAssetPath; 
+  final String iconAssetPath;
   final Color iconColor;
   final bool isInstalled;
   final VoidCallback onTap;
@@ -35,7 +35,7 @@ class AppStoreListItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: colors.border.withOpacity(0.1),
+              color: colors.border.withValues(alpha: 0.1),
               width: 1,
             ),
           ),
@@ -48,7 +48,9 @@ class AppStoreListItem extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 color: iconColor,
-                borderRadius: BorderRadius.circular(14), // Apple-ish Squircle radius
+                borderRadius: BorderRadius.circular(
+                  14,
+                ), // Apple-ish Squircle radius
                 boxShadow: AppShadows.sm,
               ),
               child: ClipRRect(
@@ -80,24 +82,27 @@ class AppStoreListItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     category,
-                    style: TextStyle(
-                      color: colors.textSecondary,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: colors.textSecondary, fontSize: 13),
                   ),
                 ],
               ),
             ),
-            
+
             // Action Button
             GestureDetector(
               onTap: onAction,
               child: isInstalled
-                  ? Icon(Icons.check_circle, color: colors.textSecondary) // Use check for installed
+                  ? Icon(
+                      Icons.check_circle,
+                      color: colors.textSecondary,
+                    ) // Use check for installed
                   : Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: colors.surface, 
+                        color: colors.surface,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(

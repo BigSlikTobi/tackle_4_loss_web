@@ -4,7 +4,7 @@ import '../../design_tokens.dart';
 import 'views/radio_screen.dart';
 import 'views/widgets/radio_home_widget.dart'; // Will be created next
 
-class RadioApp implements MicroApp {
+class RadioApp extends MicroApp {
   @override
   String get id => 'radio';
 

@@ -21,14 +21,14 @@ class MiniPlayer extends StatelessWidget {
           margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: colors.surface.withOpacity(0.8), // Glassier
+            color: colors.surface.withValues(alpha: 0.8), // Glassier
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Row(
@@ -41,11 +41,15 @@ class MiniPlayer extends StatelessWidget {
                   width: 48,
                   height: 48,
                   fit: BoxFit.cover,
-                  errorBuilder: (c,e,s) => Container(width: 48, height: 48, color: colors.background),
+                  errorBuilder: (c, e, s) => Container(
+                    width: 48,
+                    height: 48,
+                    color: colors.background,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
-              
+
               // Info
               Expanded(
                 child: Column(
@@ -56,11 +60,11 @@ class MiniPlayer extends StatelessWidget {
                       mediaItem.title,
                       style: TextStyle(
                         fontFamily: 'Inter',
-                        fontWeight: FontWeight.bold, 
+                        fontWeight: FontWeight.bold,
                         fontSize: 14,
-                        color: colors.textPrimary
+                        color: colors.textPrimary,
                       ),
-                      maxLines: 1, 
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
@@ -68,9 +72,9 @@ class MiniPlayer extends StatelessWidget {
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
-                        color: colors.textSecondary
+                        color: colors.textSecondary,
                       ),
-                      maxLines: 1, 
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
@@ -84,7 +88,11 @@ class MiniPlayer extends StatelessWidget {
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    icon: Icon(Icons.skip_previous_rounded, color: colors.textPrimary, size: 28),
+                    icon: Icon(
+                      Icons.skip_previous_rounded,
+                      color: colors.textPrimary,
+                      size: 28,
+                    ),
                     onPressed: audioService.skipToPrevious,
                   ),
                   const SizedBox(width: 8),
@@ -96,11 +104,15 @@ class MiniPlayer extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         icon: Icon(
-                          playing ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded,
+                          playing
+                              ? Icons.pause_circle_filled_rounded
+                              : Icons.play_circle_fill_rounded,
                           color: colors.brand,
                           size: 40,
                         ),
-                        onPressed: playing ? audioService.pause : audioService.resume,
+                        onPressed: playing
+                            ? audioService.pause
+                            : audioService.resume,
                       );
                     },
                   ),
@@ -108,14 +120,22 @@ class MiniPlayer extends StatelessWidget {
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    icon: Icon(Icons.skip_next_rounded, color: colors.textPrimary, size: 28),
+                    icon: Icon(
+                      Icons.skip_next_rounded,
+                      color: colors.textPrimary,
+                      size: 28,
+                    ),
                     onPressed: audioService.skipToNext,
                   ),
                   const SizedBox(width: 12),
                   IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
-                    icon: Icon(Icons.close_rounded, color: colors.textSecondary, size: 18),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colors.textSecondary,
+                      size: 18,
+                    ),
                     onPressed: audioService.stop,
                   ),
                 ],

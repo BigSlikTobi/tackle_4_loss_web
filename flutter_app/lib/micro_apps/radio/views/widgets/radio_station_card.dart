@@ -35,7 +35,7 @@ class _RadioStationCardState extends State<RadioStationCard> {
     _timer?.cancel();
     super.dispose();
   }
-  
+
   void _startSlideshow() {
     final images = widget.station.slideshowImages;
     if (images != null && images.length > 1) {
@@ -54,21 +54,21 @@ class _RadioStationCardState extends State<RadioStationCard> {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final images = widget.station.slideshowImages;
     final hasSlideshow = images != null && images.isNotEmpty;
-    
+
     // Determine current image URL
     String currentImageUrl = widget.station.imageUrl;
     if (hasSlideshow) {
-       currentImageUrl = images[_currentImageIndex];
+      currentImageUrl = images[_currentImageIndex];
     }
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
-           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
             offset: const Offset(0, 2),
             blurRadius: 4,
           ),
@@ -93,7 +93,9 @@ class _RadioStationCardState extends State<RadioStationCard> {
                       duration: const Duration(milliseconds: 800),
                       child: Image.network(
                         currentImageUrl,
-                        key: ValueKey(currentImageUrl), // Important for animation
+                        key: ValueKey(
+                          currentImageUrl,
+                        ), // Important for animation
                         width: 80,
                         height: 80,
                         fit: BoxFit.cover,
@@ -101,12 +103,15 @@ class _RadioStationCardState extends State<RadioStationCard> {
                           width: 80,
                           height: 80,
                           color: colors.background,
-                          child: Icon(Icons.music_note, color: colors.textMuted),
+                          child: Icon(
+                            Icons.music_note,
+                            color: colors.textMuted,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  
+
                   // Text Content
                   Expanded(
                     child: Padding(
@@ -150,7 +155,12 @@ class _RadioStationCardState extends State<RadioStationCard> {
             behavior: HitTestBehavior.opaque,
             onTap: widget.onPlayTapped ?? widget.onTap,
             child: Padding(
-              padding: const EdgeInsets.only(right: 16, left: 8, top: 16, bottom: 16), // Increased tap area
+              padding: const EdgeInsets.only(
+                right: 16,
+                left: 8,
+                top: 16,
+                bottom: 16,
+              ), // Increased tap area
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -158,7 +168,7 @@ class _RadioStationCardState extends State<RadioStationCard> {
                   color: colors.brand,
                   boxShadow: [
                     BoxShadow(
-                      color: colors.brand.withOpacity(0.3),
+                      color: colors.brand.withValues(alpha: 0.3),
                       offset: const Offset(0, 2),
                       blurRadius: 4,
                     ),
@@ -180,19 +190,32 @@ class _RadioStationCardState extends State<RadioStationCard> {
   String _localize(String key, BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     switch (key) {
-      case 'radioStationLatestDeepDivesTitle': return l10n.radioStationLatestDeepDivesTitle;
-      case 'radioStationLatestDeepDivesDesc': return l10n.radioStationLatestDeepDivesDesc;
-      case 'radioStationDailyBriefingTitle': return l10n.radioStationDailyBriefingTitle;
-      case 'radioStationDailyBriefingDesc': return l10n.radioStationDailyBriefingDesc;
-      case 'radioStationDeepDiveClassicsTitle': return l10n.radioStationDeepDiveClassicsTitle;
-      case 'radioStationDeepDiveClassicsDesc': return l10n.radioStationDeepDiveClassicsDesc;
-      case 'radioStationNewsTitle': return l10n.radioStationNewsTitle;
-      case 'radioStationNewsDesc': return l10n.radioStationNewsDesc;
-      case 'radioStationNewsCollectionTitle': return l10n.radioStationNewsCollectionTitle;
-      case 'radioStationNewsCollectionDesc': return l10n.radioStationNewsCollectionDesc;
-      case 'radioStationDeepDiveCollectionTitle': return "Deep Dives";
-      case 'radioStationDeepDiveCollectionDesc': return "All the best stories.";
-      default: return key;
+      case 'radioStationLatestDeepDivesTitle':
+        return l10n.radioStationLatestDeepDivesTitle;
+      case 'radioStationLatestDeepDivesDesc':
+        return l10n.radioStationLatestDeepDivesDesc;
+      case 'radioStationDailyBriefingTitle':
+        return l10n.radioStationDailyBriefingTitle;
+      case 'radioStationDailyBriefingDesc':
+        return l10n.radioStationDailyBriefingDesc;
+      case 'radioStationDeepDiveClassicsTitle':
+        return l10n.radioStationDeepDiveClassicsTitle;
+      case 'radioStationDeepDiveClassicsDesc':
+        return l10n.radioStationDeepDiveClassicsDesc;
+      case 'radioStationNewsTitle':
+        return l10n.radioStationNewsTitle;
+      case 'radioStationNewsDesc':
+        return l10n.radioStationNewsDesc;
+      case 'radioStationNewsCollectionTitle':
+        return l10n.radioStationNewsCollectionTitle;
+      case 'radioStationNewsCollectionDesc':
+        return l10n.radioStationNewsCollectionDesc;
+      case 'radioStationDeepDiveCollectionTitle':
+        return "Deep Dives";
+      case 'radioStationDeepDiveCollectionDesc':
+        return "All the best stories.";
+      default:
+        return key;
     }
   }
 }

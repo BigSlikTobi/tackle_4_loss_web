@@ -18,7 +18,9 @@ class UserSettingsDialog extends StatelessWidget {
     final bgColor = isDark ? AppColors.cardDark : AppColors.cardLight;
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
     final subTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
-    final containerColor = isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05);
+    final containerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
     final borderColor = isDark ? Colors.white10 : Colors.black12;
 
     return Dialog(
@@ -99,7 +101,7 @@ class UserSettingsDialog extends StatelessWidget {
                   Switch(
                     value: settings.isDarkMode,
                     onChanged: (value) => settings.toggleTheme(),
-                    activeColor: AppColors.primary,
+                    activeTrackColor: AppColors.primary,
                   ),
                 ],
               ),
@@ -129,11 +131,14 @@ class UserSettingsDialog extends StatelessWidget {
                     height: 48,
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+                      color: isDark
+                          ? AppColors.backgroundDark
+                          : AppColors.backgroundLight,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Image.asset(
-                      settings.selectedTeam?.logoUrl ?? 'assets/logos/nfl_logo.png',
+                      settings.selectedTeam?.logoUrl ??
+                          'assets/logos/nfl_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -154,7 +159,10 @@ class UserSettingsDialog extends StatelessWidget {
                         builder: (context) => const TeamSelectorDialog(),
                       );
                     },
-                    child: const Text('CHANGE', style: TextStyle(color: AppColors.primary)),
+                    child: const Text(
+                      'CHANGE',
+                      style: TextStyle(color: AppColors.primary),
+                    ),
                   ),
                 ],
               ),
@@ -164,7 +172,10 @@ class UserSettingsDialog extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.settingsClose, style: const TextStyle(color: AppColors.primary)),
+                child: Text(
+                  l10n.settingsClose,
+                  style: const TextStyle(color: AppColors.primary),
+                ),
               ),
             ),
           ],
@@ -191,7 +202,7 @@ class _LanguageOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsService>(context);
     final isDark = settings.isDarkMode;
-    
+
     // Dynamic Colors
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
     final subTextColor = isDark ? Colors.white70 : AppColors.textSecondary;
@@ -202,7 +213,9 @@ class _LanguageOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : borderColor,
@@ -219,7 +232,11 @@ class _LanguageOption extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
+              const Icon(
+                Icons.check_circle,
+                color: AppColors.primary,
+                size: 20,
+              ),
           ],
         ),
       ),

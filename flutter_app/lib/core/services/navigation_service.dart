@@ -48,10 +48,12 @@ class NavigationService {
   }
 
   /// Pushes a new app onto the stack and tracks it.
-  void openApp(BuildContext context, MicroApp app) {
+  void openApp(BuildContext context, MicroApp app, {Object? arguments}) {
     trackAppLaunch(app.id);
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => app.page(context)),
+      MaterialPageRoute(
+        builder: (context) => app.buildPage(context, arguments: arguments),
+      ),
     );
   }
 

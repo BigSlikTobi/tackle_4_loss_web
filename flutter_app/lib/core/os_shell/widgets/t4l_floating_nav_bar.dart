@@ -34,7 +34,8 @@ class T4LFloatingNavBar extends StatefulWidget {
   State<T4LFloatingNavBar> createState() => _T4LFloatingNavBarState();
 }
 
-class _T4LFloatingNavBarState extends State<T4LFloatingNavBar> with SingleTickerProviderStateMixin {
+class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -45,9 +46,10 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar> with SingleTicker
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    _animation = Tween<double>(begin: 1.0, end: 1.25).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 1.0,
+      end: 1.25,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -72,15 +74,15 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar> with SingleTicker
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
+                    color: Colors.white.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -147,7 +149,9 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar> with SingleTicker
                 child: AnimatedBuilder(
                   animation: _animation,
                   builder: (context, child) {
-                    final scale = widget.favoriteTeamLogoUrl == null ? _animation.value : 1.0;
+                    final scale = widget.favoriteTeamLogoUrl == null
+                        ? _animation.value
+                        : 1.0;
                     return Transform.scale(
                       scale: scale,
                       child: Container(
@@ -158,15 +162,17 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar> with SingleTicker
                           color: AppColors.background,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: widget.favoriteTeamLogoUrl != null 
-                                ? AppColors.primary 
+                            color: widget.favoriteTeamLogoUrl != null
+                                ? AppColors.primary
                                 : Colors.white24,
                             width: 3,
                           ),
                           boxShadow: [
                             if (widget.favoriteTeamLogoUrl == null)
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.3 * (_controller.value)),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.3 * (_controller.value),
+                                ),
                                 blurRadius: 15,
                                 spreadRadius: 5 * (_controller.value),
                               ),
@@ -230,12 +236,7 @@ class _NavBarButton extends StatelessWidget {
             width: 48,
             height: 48,
             alignment: Alignment.center,
-            child: child ??
-                Icon(
-                  icon,
-                  color: Colors.white70,
-                  size: 24,
-                ),
+            child: child ?? Icon(icon, color: Colors.white70, size: 24),
           ),
         ),
       ),

@@ -33,16 +33,15 @@ class T4LHeroHeader extends StatefulWidget {
 class _T4LHeroHeaderState extends State<T4LHeroHeader> {
   VideoPlayerController? _videoController;
   bool _isVideoPlaying = true;
-  bool _showVideo = false;
 
   @override
   void initState() {
     super.initState();
     debugPrint('T4LHeroHeader: initState. videoUrl: ${widget.videoUrl}');
     if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
-        _initializeVideo();
+      _initializeVideo();
     } else {
-       debugPrint('T4LHeroHeader: videoUrl is null or empty');
+      debugPrint('T4LHeroHeader: videoUrl is null or empty');
     }
   }
 
@@ -64,20 +63,22 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
     }
 
     debugPrint('T4LHeroHeader: Initializing video ${widget.videoUrl}');
-    _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+    _videoController = VideoPlayerController.networkUrl(
+      Uri.parse(widget.videoUrl!),
+    );
     try {
       await _videoController!.initialize();
       debugPrint('T4LHeroHeader: Video initialized');
-      await _videoController!.setLooping(false); // Don't loop, we want to transition to image
+      await _videoController!.setLooping(
+        false,
+      ); // Don't loop, we want to transition to image
       await _videoController!.setVolume(0.0); // Mute for intro
       _videoController!.addListener(_videoListener);
-      
+
       if (mounted) {
-         setState(() {
-           _showVideo = true;
-         });
-         await _videoController!.play();
-         debugPrint('T4LHeroHeader: Video playing');
+        setState(() {});
+        await _videoController!.play();
+        debugPrint('T4LHeroHeader: Video playing');
       }
     } catch (e) {
       debugPrint('Error loading video header: $e');
@@ -85,7 +86,7 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
   }
 
   void _videoListener() {
-    if (_videoController != null && 
+    if (_videoController != null &&
         _videoController!.value.position >= _videoController!.value.duration) {
       // Video finished
       if (mounted && _isVideoPlaying) {
@@ -111,7 +112,9 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
       expandedHeight: widget.expandedHeight,
       floating: false,
       pinned: true,
-      backgroundColor: widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: widget.isDarkMode
+          ? AppColors.backgroundDark
+          : AppColors.backgroundLight,
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         title: FittedBox(
@@ -131,12 +134,16 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                     letterSpacing: 1.0,
                     shadows: [
                       Shadow(
-                        color: widget.isDarkMode ? Colors.black54 : Colors.white24, 
-                        blurRadius: 10
-                      )
+                        color: widget.isDarkMode
+                            ? Colors.black54
+                            : Colors.white24,
+                        blurRadius: 10,
+                      ),
                     ],
                     fontSize: 18,
-                    color: widget.isDarkMode ? Colors.white : AppColors.textPrimary,
+                    color: widget.isDarkMode
+                        ? Colors.white
+                        : AppColors.textPrimary,
                   ),
                 ),
                 if (widget.subtitle != null) ...[
@@ -148,14 +155,20 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                       fontFamily: 'Inter',
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: (widget.isDarkMode ? Colors.white : AppColors.textPrimary).withOpacity(0.8),
+                      color:
+                          (widget.isDarkMode
+                                  ? Colors.white
+                                  : AppColors.textPrimary)
+                              .withValues(alpha: 0.8),
                       fontStyle: FontStyle.italic,
                       height: 1.2,
                       shadows: [
                         Shadow(
-                          color: widget.isDarkMode ? Colors.black54 : Colors.white24, 
-                          blurRadius: 8
-                        )
+                          color: widget.isDarkMode
+                              ? Colors.black54
+                              : Colors.white24,
+                          blurRadius: 8,
+                        ),
                       ],
                     ),
                     maxLines: 3,
@@ -178,12 +191,20 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                   imageUrl: widget.imageUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
+                    color: (widget.isDarkMode
+                        ? AppColors.backgroundDark
+                        : AppColors.backgroundLight),
                     child: const Center(child: CircularProgressIndicator()),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
-                    child: const Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                    color: (widget.isDarkMode
+                        ? AppColors.backgroundDark
+                        : AppColors.backgroundLight),
+                    child: const Icon(
+                      Icons.broken_image,
+                      color: Colors.white24,
+                      size: 48,
+                    ),
                   ),
                 ),
               )
@@ -192,20 +213,31 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                 imageUrl: widget.imageUrl,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
+                  color: (widget.isDarkMode
+                      ? AppColors.backgroundDark
+                      : AppColors.backgroundLight),
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  color: (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight),
-                  child: const Icon(Icons.broken_image, color: Colors.white24, size: 48),
+                  color: (widget.isDarkMode
+                      ? AppColors.backgroundDark
+                      : AppColors.backgroundLight),
+                  child: const Icon(
+                    Icons.broken_image,
+                    color: Colors.white24,
+                    size: 48,
+                  ),
                 ),
               ),
-            
+
             // 2. Video Player Layer (Fades out when finished)
-            if (_videoController != null && _videoController!.value.isInitialized)
+            if (_videoController != null &&
+                _videoController!.value.isInitialized)
               AnimatedOpacity(
                 opacity: _isVideoPlaying ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 1500), // Smooth 1.5s fade
+                duration: const Duration(
+                  milliseconds: 1500,
+                ), // Smooth 1.5s fade
                 curve: Curves.easeInOut,
                 child: SizedBox.expand(
                   child: FittedBox(
@@ -226,21 +258,23 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight).withOpacity(0.54),
+                    (widget.isDarkMode
+                            ? AppColors.backgroundDark
+                            : AppColors.backgroundLight)
+                        .withValues(alpha: 0.54),
                     Colors.transparent,
-                    (widget.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight).withOpacity(0.87),
+                    (widget.isDarkMode
+                            ? AppColors.backgroundDark
+                            : AppColors.backgroundLight)
+                        .withValues(alpha: 0.87),
                   ],
                 ),
               ),
             ),
-            
+
             // 4. Floating Action (Play Button)
             if (widget.floatingAction != null)
-              Positioned(
-                bottom: 132, 
-                right: 16,
-                child: widget.floatingAction!,
-              ),
+              Positioned(bottom: 132, right: 16, child: widget.floatingAction!),
           ],
         ),
       ),

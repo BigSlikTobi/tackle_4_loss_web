@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../app_registry.dart';
 import '../micro_app.dart';
+import 'grid_move_calculator.dart';
 
 class InstalledAppsService with ChangeNotifier {
   // Singleton
@@ -181,12 +182,7 @@ class InstalledAppsService with ChangeNotifier {
     }
   }
 
-  // Helper to safely set a slot
-  void _safeSet(int index, String value) {
-    if (index >= 0 && index < _gridSize) {
-      _installedItems[index] = value;
-    }
-  }
+
 
   void uninstall(String appId) {
     if (appId == 'app_store') return;
@@ -215,138 +211,15 @@ class InstalledAppsService with ChangeNotifier {
     if (toIndex < 0 || toIndex >= _gridSize) return;
     if (fromIndex == toIndex) return;
 
-    final item = _installedItems[fromIndex];
-    final isWidget = item.contains('|widget');
-    
-    if (isWidget) {
-       // Moving a Widget (2x2)
-       // Check bounds for the target 2x2 area
-       int targetRow = toIndex ~/ _gridCols;
-       int targetCol = toIndex % _gridCols;
+    final newGrid = GridMoveCalculator.calculateMove(
+      currentGrid: _installedItems,
+      fromIndex: fromIndex,
+      toIndex: toIndex,
+    );
 
-       if (targetCol + 1 >= _gridCols || targetRow + 1 >= _gridRows) {
-          debugPrint('DEBUG: Cannot place widget at $toIndex, out of bounds for 2x2');
-          return; // Target 2x2 area would be out of bounds
-       }
-
-       // Step A: Identify obstacles (other apps/widgets) in the target 2x2 area
-       List<int> targetIndices = [
-          toIndex,
-          toIndex + 1,
-          toIndex + _gridCols,
-          toIndex + _gridCols + 1,
-       ];
-
-       // Footprint of the widget being moved (its current location)
-       List<int> footprint = [
-          fromIndex,
-          fromIndex + 1,
-          fromIndex + _gridCols,
-          fromIndex + _gridCols + 1,
-       ];
-
-       List<int> obstacleMasters = []; // Stores the master index of any app/widget that needs to be displaced
-
-       for (int i = 0; i < _gridSize; i++) {
-          final val = _installedItems[i];
-          if (val == _emptySlot || val == _occupiedSlot) continue; 
-
-          // Check intersection
-          bool intersects = false;
-          List<int> footprint;
-          if (val.contains('|widget')) {
-            footprint = [i, i+1, i+_gridCols, i+_gridCols+1];
-          } else {
-            footprint = [i];
-          }
-
-          for (final f in footprint) {
-             if (targetIndices.contains(f)) {
-                intersects = true;
-                break;
-             }
-          }
-          
-          // BUT, ignore self (the widget we are moving)
-          if (i == fromIndex) continue;
-
-          if (intersects) {
-             obstacleMasters.add(i);
-          }
-       }
-       
-       // Step B: Clear Self
-       _safeClear(fromIndex);
-       _safeClear(fromIndex + 1);
-       _safeClear(fromIndex + _gridCols);
-       _safeClear(fromIndex + _gridCols + 1);
-
-       // Step C: Remove Obstacles from grid (temporarily)
-       Map<int, String> displacedItems = {}; // MasterIndex -> Value
-       for (final master in obstacleMasters) {
-          displacedItems[master] = _installedItems[master];
-          // Clear them
-          final isWid = _installedItems[master].contains('|widget');
-          _safeClear(master);
-          if (isWid) {
-            _safeClear(master + 1);
-            _safeClear(master + _gridCols);
-            _safeClear(master + _gridCols + 1);
-          }
-       }
-
-       // Step D: Place Self at Target
-       _safeSet(toIndex, item);
-       _safeSet(toIndex + 1, _occupiedSlot);
-       _safeSet(toIndex + _gridCols, _occupiedSlot);
-       _safeSet(toIndex + _gridCols + 1, _occupiedSlot);
-       
-       // Step E: Re-seat Obstacles
-       List<int> freeSlots = [
-          fromIndex, fromIndex + 1, fromIndex + _gridCols, fromIndex + _gridCols + 1
-       ];
-       
-       for (final entry in displacedItems.entries) {
-          final val = entry.value;
-          final isWid = val.contains('|widget');
-          
-          if (isWid) {
-             // For now, if a widget is displaced, we just remove it.
-             // More complex logic would try to find a new 2x2 spot.
-             debugPrint('DEBUG: Displaced widget $val was removed as no re-seating logic is implemented yet.');
-          } else {
-             // 1x1 App
-             bool placed = false;
-             for (final fs in freeSlots) {
-                if (_installedItems[fs] == _emptySlot) {
-                   _safeSet(fs, val);
-                   placed = true;
-                   break;
-                }
-             }
-             if (!placed) {
-                // If no free slot from the widget's old position, try to find any empty slot
-                int newSlot = _installedItems.indexOf(_emptySlot);
-                if (newSlot != -1) {
-                   _safeSet(newSlot, val);
-                } else {
-                   debugPrint('DEBUG: Displaced app $val could not be re-seated, grid full.');
-                }
-             }
-          }
-       }
-    } else {
-       // Moving 1x1 App
-       // Check target type
-       if (_installedItems[toIndex] == _emptySlot) {
-          // Simple move
-          _installedItems[toIndex] = item;
-          _installedItems[fromIndex] = _emptySlot;
-       } else if (!_installedItems[toIndex].contains('|widget') && _installedItems[toIndex] != _occupiedSlot) {
-          // Swap with another 1x1
-          _installedItems[fromIndex] = _installedItems[toIndex];
-          _installedItems[toIndex] = item;
-       }
+    // Apply changes
+    for (int i = 0; i < _gridSize; i++) {
+      _installedItems[i] = newGrid[i];
     }
     
     _persist();

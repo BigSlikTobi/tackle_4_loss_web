@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
 import 'views/app_store_screen.dart';
 
-class AppStoreApp implements MicroApp {
+class AppStoreApp extends MicroApp {
   @override
   String get id => 'app_store';
 

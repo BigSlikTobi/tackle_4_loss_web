@@ -27,6 +27,22 @@ class BreakingNewsApp implements MicroApp {
 
   @override
   WidgetBuilder get page => (context) => const BreakingNewsListScreen();
+  
+  @override
+  Widget buildPage(BuildContext context, {Object? arguments}) {
+    String? initialArticleId;
+    bool autoFlip = false;
+
+    if (arguments is Map<String, dynamic>) {
+      initialArticleId = arguments['articleId'] as String?;
+      autoFlip = arguments['autoFlip'] as bool? ?? false;
+    }
+
+    return BreakingNewsListScreen(
+      initialArticleId: initialArticleId,
+      autoFlip: autoFlip,
+    );
+  }
 
   @override
   bool get hasWidget => true;

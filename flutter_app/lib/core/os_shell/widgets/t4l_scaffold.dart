@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../design_tokens.dart';
@@ -39,18 +38,20 @@ class T4LScaffold extends StatelessWidget {
     final settings = Provider.of<SettingsService>(context);
 
     // Determine text color based on background luminance or dark mode
-    final headerTextColor = settings.isDarkMode ? Colors.white : AppColors.textPrimary;
+    final headerTextColor = settings.isDarkMode
+        ? Colors.white
+        : AppColors.textPrimary;
 
     return Scaffold(
-      backgroundColor: settings.isDarkMode ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: settings.isDarkMode
+          ? AppColors.backgroundDark
+          : AppColors.backgroundLight,
       body: Stack(
         children: [
           // 1. Core Gradient Background
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
-                gradient: settings.backgroundGradient,
-              ),
+              decoration: BoxDecoration(gradient: settings.backgroundGradient),
             ),
           ),
 
@@ -64,19 +65,24 @@ class T4LScaffold extends StatelessWidget {
                 StreamBuilder<MediaItem?>(
                   stream: AudioPlayerService().mediaItemStream,
                   builder: (context, snapshot) {
-                     final isPlaying = snapshot.data != null;
-                     final navBarHeight = (showNavBar || bottomNavBarOverride != null) ? 80.0 : 0.0;
-                     final playerHeight = isPlaying ? 80.0 : 0.0; // Reduced clearance to match slim MiniPlayer
-                     
-                     return Padding(
+                    final isPlaying = snapshot.data != null;
+                    final navBarHeight =
+                        (showNavBar || bottomNavBarOverride != null)
+                        ? 80.0
+                        : 0.0;
+                    final playerHeight = isPlaying
+                        ? 80.0
+                        : 0.0; // Reduced clearance to match slim MiniPlayer
+
+                    return Padding(
                       padding: EdgeInsets.only(
-                        bottom: navBarHeight + playerHeight, 
+                        bottom: navBarHeight + playerHeight,
                       ),
                       child: body,
                     );
                   },
                 ),
-                
+
                 // Header (Floating on top)
                 Positioned(
                   top: 0,
@@ -103,18 +109,22 @@ class T4LScaffold extends StatelessWidget {
                     icon: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: settings.isDarkMode 
-                            ? Colors.black.withOpacity(0.3) 
-                            : Colors.white.withOpacity(0.5),
+                        color: settings.isDarkMode
+                            ? Colors.black.withValues(alpha: 0.3)
+                            : Colors.white.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: settings.isDarkMode ? Colors.white10 : Colors.black12
+                          color: settings.isDarkMode
+                              ? Colors.white10
+                              : Colors.black12,
                         ),
                       ),
                       child: Icon(
-                        Icons.close, 
-                        color: settings.isDarkMode ? Colors.white70 : AppColors.textPrimary, 
-                        size: 20
+                        Icons.close,
+                        color: settings.isDarkMode
+                            ? Colors.white70
+                            : AppColors.textPrimary,
+                        size: 20,
                       ),
                     ),
                     onPressed: onClose ?? () => Navigator.of(context).pop(),
@@ -127,10 +137,9 @@ class T4LScaffold extends StatelessWidget {
           // We position the Dock at the bottom.
           // The MiniPlayer should float ABOVE the Dock if the Dock is visible,
           // or at the bottom if the Dock is hidden.
-          
           Stack(
             children: [
-               Positioned(
+              Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
@@ -142,30 +151,35 @@ class T4LScaffold extends StatelessWidget {
 
                     // Dock (if enabled)
                     if (showNavBar || bottomNavBarOverride != null)
-                      bottomNavBarOverride ?? T4LFloatingNavBar(
-                        homeTooltip: l10n.navHome,
-                        appStoreTooltip: l10n.navAppStore,
-                        historyTooltip: l10n.navHistory,
-                        settingsTooltip: l10n.navSettings,
-                        favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-                        onHome: () => NavigationService().goHome(context),
-                        onAppStore: () => NavigationService().openAppStore(context),
-                        onHistory: () => NavigationService().reopenLastApp(context),
-                        onSettings: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => const UserSettingsDialog(),
-                          );
-                        },
-                        onTeamLogo: () {
-                          if (settings.selectedTeam == null) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => const TeamSelectorDialog(),
-                            );
-                          }
-                        },
-                      ),
+                      bottomNavBarOverride ??
+                          T4LFloatingNavBar(
+                            homeTooltip: l10n.navHome,
+                            appStoreTooltip: l10n.navAppStore,
+                            historyTooltip: l10n.navHistory,
+                            settingsTooltip: l10n.navSettings,
+                            favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
+                            onHome: () => NavigationService().goHome(context),
+                            onAppStore: () =>
+                                NavigationService().openAppStore(context),
+                            onHistory: () =>
+                                NavigationService().reopenLastApp(context),
+                            onSettings: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) =>
+                                    const UserSettingsDialog(),
+                              );
+                            },
+                            onTeamLogo: () {
+                              if (settings.selectedTeam == null) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) =>
+                                      const TeamSelectorDialog(),
+                                );
+                              }
+                            },
+                          ),
                   ],
                 ),
               ),

@@ -13,6 +13,7 @@ abstract class MicroApp {
   IconData get icon;
 
   /// Mandatory: Path to an image asset to use as the icon.
+  // ignore: unintended_html_in_doc_comment
   /// Convention: 'lib/micro_apps/<id>/store_assets/<id>_icon.png'
   String get iconAssetPath;
 
@@ -37,5 +38,12 @@ abstract class MicroApp {
 
   /// The widget builder for the home screen widget.
   /// Returns a SizedBox by default.
-  WidgetBuilder get widgetBuilder => (context) => const SizedBox();
+  WidgetBuilder get widgetBuilder =>
+      (context) => const SizedBox();
+
+  /// Builds the app's main page, optionally accepting arguments.
+  /// Defaults to calling [page].
+  Widget buildPage(BuildContext context, {Object? arguments}) {
+    return page(context);
+  }
 }

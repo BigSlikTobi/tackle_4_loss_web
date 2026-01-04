@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
 import 'l10n/app_localizations.dart';
-import 'design_tokens.dart'; // Still needed for some constants or legacy usage if any
 import 'core/theme/t4l_theme.dart'; // New Theme
 import 'core/os_shell/views/os_shell_view.dart';
 import 'core/app_registry.dart';
@@ -12,6 +12,8 @@ import 'micro_apps/app_store/app_store_app.dart';
 import 'micro_apps/deep_dive/deep_dive_app.dart';
 import 'micro_apps/breaking_news/breaking_news_app.dart';
 import 'micro_apps/radio/radio_app.dart';
+import 'micro_apps/standings/standings_app.dart';
+import 'micro_apps/game_reports/game_reports_app.dart';
 import 'micro_apps/radio/controllers/radio_controller.dart';
 
 import 'core/services/installed_apps_service.dart';
@@ -34,6 +36,11 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
+  // Initialize FlutterGemma plugin
+  FlutterGemma.initialize(
+    maxDownloadRetries: 5,
+  );
+
   // 2. Register MicroApps
   // In a real app we might load these dynamically or via reflection, 
   // but for now we register them manually on boot.
@@ -41,6 +48,8 @@ Future<void> main() async {
   AppRegistry().register(DeepDiveApp()); 
   AppRegistry().register(BreakingNewsApp());
   AppRegistry().register(RadioApp());
+  AppRegistry().register(StandingsApp());
+  AppRegistry().register(GameReportsApp());
   
   // 3. Initialize Services
   await InstalledAppsService().init();
@@ -94,8 +103,8 @@ class Tackle4LossApp extends StatelessWidget {
           
           // Use our standardized T4LTheme
           themeMode: settings.themeMode,
-          theme: T4LTheme.light,
-          darkTheme: T4LTheme.dark,
+          theme: T4LTheme.light(team: settings.selectedTeam),
+          darkTheme: T4LTheme.dark(team: settings.selectedTeam),
           
           builder: (context, child) {
             return child!; // Application content

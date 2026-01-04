@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../design_tokens.dart';
+import '../models/team_model.dart';
 
 class T4LThemeColors extends ThemeExtension<T4LThemeColors> {
   final Color brand;
@@ -13,6 +14,17 @@ class T4LThemeColors extends ThemeExtension<T4LThemeColors> {
   final Color breakingNewsRed;
   final Color breakingNewsRedBright;
 
+  /// Semi-transparent overlay for cards (uses opposite theme's base color)
+  /// Light mode: dark overlay, Dark mode: light overlay
+  final Color cardOverlay;
+
+  /// Border color for overlay cards
+  final Color cardOverlayBorder;
+
+  /// Text color that contrasts with the brand color
+  /// Used for text on top of brand-colored backgrounds
+  final Color contrastText;
+
   const T4LThemeColors({
     required this.brand,
     required this.brandLight,
@@ -24,6 +36,9 @@ class T4LThemeColors extends ThemeExtension<T4LThemeColors> {
     required this.border,
     required this.breakingNewsRed,
     required this.breakingNewsRedBright,
+    required this.cardOverlay,
+    required this.cardOverlayBorder,
+    required this.contrastText,
   });
 
   @override
@@ -38,6 +53,9 @@ class T4LThemeColors extends ThemeExtension<T4LThemeColors> {
     Color? border,
     Color? breakingNewsRed,
     Color? breakingNewsRedBright,
+    Color? cardOverlay,
+    Color? cardOverlayBorder,
+    Color? contrastText,
   }) {
     return T4LThemeColors(
       brand: brand ?? this.brand,
@@ -49,12 +67,19 @@ class T4LThemeColors extends ThemeExtension<T4LThemeColors> {
       textMuted: textMuted ?? this.textMuted,
       border: border ?? this.border,
       breakingNewsRed: breakingNewsRed ?? this.breakingNewsRed,
-      breakingNewsRedBright: breakingNewsRedBright ?? this.breakingNewsRedBright,
+      breakingNewsRedBright:
+          breakingNewsRedBright ?? this.breakingNewsRedBright,
+      cardOverlay: cardOverlay ?? this.cardOverlay,
+      cardOverlayBorder: cardOverlayBorder ?? this.cardOverlayBorder,
+      contrastText: contrastText ?? this.contrastText,
     );
   }
 
   @override
-  ThemeExtension<T4LThemeColors> lerp(ThemeExtension<T4LThemeColors>? other, double t) {
+  ThemeExtension<T4LThemeColors> lerp(
+    ThemeExtension<T4LThemeColors>? other,
+    double t,
+  ) {
     if (other is! T4LThemeColors) {
       return this;
     }
@@ -68,26 +93,57 @@ class T4LThemeColors extends ThemeExtension<T4LThemeColors> {
       textMuted: Color.lerp(textMuted, other.textMuted, t)!,
       border: Color.lerp(border, other.border, t)!,
       breakingNewsRed: Color.lerp(breakingNewsRed, other.breakingNewsRed, t)!,
-      breakingNewsRedBright: Color.lerp(breakingNewsRedBright, other.breakingNewsRedBright, t)!,
+      breakingNewsRedBright: Color.lerp(
+        breakingNewsRedBright,
+        other.breakingNewsRedBright,
+        t,
+      )!,
+      cardOverlay: Color.lerp(cardOverlay, other.cardOverlay, t)!,
+      cardOverlayBorder: Color.lerp(
+        cardOverlayBorder,
+        other.cardOverlayBorder,
+        t,
+      )!,
+      contrastText: Color.lerp(contrastText, other.contrastText, t)!,
     );
   }
 }
 
 class T4LTheme {
-  static ThemeData get light {
+  /// Calculates the appropriate text color for contrast against a background color.
+  /// Returns white for dark backgrounds, black for light backgrounds.
+  static Color _getContrastText(Color backgroundColor) {
+    // Use the relative luminance formula to determine brightness
+    // Luminance > 0.5 means the color is "light" and needs dark text
+    final luminance = backgroundColor.computeLuminance();
+    return luminance > 0.5 ? Colors.black : Colors.white;
+  }
+
+  static ThemeData light({Team? team}) {
+    // Dynamic Brand Logic:
+    // If team selected -> Use secondary color (Light Mode convention per user req)
+    // Else -> Use default brand color
+    final brandColor = team != null ? team.secondaryColor : AppColors.brandBase;
+    // brandLight is what will be used for card backgrounds in widgets
+    final brandLightColor = team != null
+        ? team.primaryColor
+        : AppColors.brandLight;
+    // Calculate contrast text based on the actual brandLight color
+    final contrastTextColor = _getContrastText(brandLightColor);
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.backgroundLight,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.brandBase,
+        seedColor: brandColor,
         brightness: Brightness.light,
         surface: AppColors.cardLight,
       ),
-      extensions: const [
+      extensions: [
         T4LThemeColors(
-          brand: AppColors.brandBase,
-          brandLight: AppColors.brandLight,
+          brand: brandColor,
+          brandLight: brandLightColor,
           surface: AppColors.cardLight,
           background: AppColors.backgroundLight,
           textPrimary: AppColors.textMainLight,
@@ -96,33 +152,54 @@ class T4LTheme {
           border: AppColors.neutralBorder,
           breakingNewsRed: AppColors.breakingNewsRed,
           breakingNewsRedBright: AppColors.breakingNewsRedBright,
+          // Emotional design: Light mode cards use team's primary (brandLight) color
+          cardOverlay: brandLightColor.withValues(alpha: 0.85),
+          cardOverlayBorder: brandLightColor.withValues(alpha: 0.2),
+          // Dynamic contrast: white text on dark cards, black text on light cards
+          contrastText: contrastTextColor,
         ),
       ],
     );
   }
 
-  static ThemeData get dark {
+  static ThemeData dark({Team? team}) {
+    // Dynamic Brand Logic:
+    // If team selected -> Use primary color (Dark Mode convention per user req)
+    // Else -> Use default brand color
+    final brandColor = team != null ? team.primaryColor : AppColors.brandBase;
+    // brandLight is what will be used for card backgrounds in widgets
+    final brandLightColor = team != null
+        ? team.secondaryColor
+        : AppColors.brandLight;
+    // Calculate contrast text based on the actual brandLight color
+    final contrastTextColor = _getContrastText(brandLightColor);
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.backgroundDark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.brandBase,
+        seedColor: brandColor,
         brightness: Brightness.dark,
         surface: AppColors.cardDark,
       ),
-      extensions: const [
+      extensions: [
         T4LThemeColors(
-          brand: AppColors.brandBase,
-          brandLight: AppColors.brandLight, // Might want a lighter variant for dark mode eventually
+          brand: brandColor,
+          brandLight: brandLightColor,
           surface: AppColors.cardDark,
           background: AppColors.backgroundDark,
           textPrimary: AppColors.textMainDark,
           textSecondary: AppColors.textSubDark,
-          textMuted: AppColors.neutralTextLight, // Muted text in dark mode is often lighter
-          border: Color(0xFF2C2C2E), // Darker border
+          textMuted: AppColors.neutralTextLight,
+          border: const Color(0xFF2C2C2E),
           breakingNewsRed: AppColors.breakingNewsRed,
           breakingNewsRedBright: AppColors.breakingNewsRedBright,
+          // Emotional design: Dark mode cards use team's secondary (brandLight) color
+          cardOverlay: brandLightColor.withValues(alpha: 0.85),
+          cardOverlayBorder: brandLightColor.withValues(alpha: 0.2),
+          // Dynamic contrast: white text on dark cards, black text on light cards
+          contrastText: contrastTextColor,
         ),
       ],
     );

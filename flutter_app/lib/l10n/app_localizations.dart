@@ -281,7 +281,7 @@ abstract class AppLocalizations {
   /// No description provided for @radioStationDailyBriefingDesc.
   ///
   /// In en, this message translates to:
-  /// **'Catch up on everything in 5 minutes.'**
+  /// **'All News and latest updates in one stream.'**
   String get radioStationDailyBriefingDesc;
 
   /// No description provided for @radioStationDeepDiveClassicsTitle.

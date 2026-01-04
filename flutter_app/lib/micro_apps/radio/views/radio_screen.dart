@@ -1,8 +1,5 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/os_shell/widgets/t4l_scaffold.dart';
-import '../../../../core/services/audio_player_service.dart';
-import '../../../design_tokens.dart';
 import 'package:tackle4loss_mobile/core/theme/t4l_theme.dart';
 import '../controllers/radio_controller.dart';
 import 'widgets/radio_station_card.dart';
@@ -54,7 +51,6 @@ class _RadioScreenState extends State<RadioScreen> {
             // T4LScaffold uses a Stack for header, so body goes BEHIND it.
             // We need a top spacer.
             const SizedBox(height: 100), // Approx header height
-
             // Categories
             SizedBox(
               height: 40,
@@ -64,22 +60,31 @@ class _RadioScreenState extends State<RadioScreen> {
                 itemCount: _controller.categories.length,
                 itemBuilder: (context, index) {
                   final category = _controller.categories[index];
-                  final isSelected = category.id == _controller.selectedCategoryId;
-                  
+                  final isSelected =
+                      category.id == _controller.selectedCategoryId;
+
                   // Translate Category Label
-                  final translatedLabel = _getCategoryLabel(category.label, l10n);
-                  
+                  final translatedLabel = _getCategoryLabel(
+                    category.label,
+                    l10n,
+                  );
+
                   return GestureDetector(
                     onTap: () => _controller.selectCategory(category.id),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected ? colors.brand : colors.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected ? colors.brandLight : colors.border.withOpacity(0.5),
+                          color: isSelected
+                              ? colors.brandLight
+                              : colors.border.withValues(alpha: 0.5),
                           width: 1,
                         ),
                       ),
@@ -88,8 +93,12 @@ class _RadioScreenState extends State<RadioScreen> {
                         translatedLabel,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          color: isSelected ? Colors.white : colors.textSecondary,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? Colors.white
+                              : colors.textSecondary,
                         ),
                       ),
                     ),
@@ -101,11 +110,16 @@ class _RadioScreenState extends State<RadioScreen> {
             const SizedBox(height: 24),
 
             // Station List
-             Expanded(
+            Expanded(
               child: _controller.isLoading
-                  ? Center(child: CircularProgressIndicator(color: colors.brand))
+                  ? Center(
+                      child: CircularProgressIndicator(color: colors.brand),
+                    )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 0,
+                      ),
                       itemCount: _controller.stations.length,
                       itemBuilder: (context, index) {
                         final station = _controller.stations[index];
@@ -115,34 +129,51 @@ class _RadioScreenState extends State<RadioScreen> {
                             if (station.id == 'news') {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => ChangeNotifierProvider.value(
-                                    value: _controller,
-                                    child: const NewsCollectionScreen(),
-                                  ),
+                                  builder: (context) =>
+                                      ChangeNotifierProvider.value(
+                                        value: _controller,
+                                        child: const NewsCollectionScreen(),
+                                      ),
                                 ),
                               );
                             } else if (station.id == 'deep_dive_collection') {
-                               Navigator.of(context).push(
+                              Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) => ChangeNotifierProvider.value(
-                                    value: _controller,
-                                    child: const DeepDiveCollectionScreen(),
-                                  ),
+                                  builder: (context) =>
+                                      ChangeNotifierProvider.value(
+                                        value: _controller,
+                                        child: const DeepDiveCollectionScreen(),
+                                      ),
                                 ),
                               );
                             } else {
-                              final settings = Provider.of<SettingsService>(context, listen: false);
-                              _controller.playStation(station, languageCode: settings.locale.languageCode);
+                              final settings = Provider.of<SettingsService>(
+                                context,
+                                listen: false,
+                              );
+                              _controller.playStation(
+                                station,
+                                languageCode: settings.locale.languageCode,
+                              );
                             }
                           },
                           onPlayTapped: () {
-                            final settings = Provider.of<SettingsService>(context, listen: false);
-                            
+                            final settings = Provider.of<SettingsService>(
+                              context,
+                              listen: false,
+                            );
+
                             if (station.id == 'news') {
-                              _controller.playStation(_controller.dailyBriefingStation, languageCode: settings.locale.languageCode);
+                              _controller.playStation(
+                                _controller.dailyBriefingStation,
+                                languageCode: settings.locale.languageCode,
+                              );
                             } else if (station.id == 'deep_dive_collection') {
                               if (_controller.allDeepDives.isNotEmpty) {
-                                _controller.playStation(_controller.allDeepDives.first, languageCode: settings.locale.languageCode);
+                                _controller.playStation(
+                                  _controller.allDeepDives.first,
+                                  languageCode: settings.locale.languageCode,
+                                );
                               }
                             } else {
                               // Regular stations are started via the card tap (onTap); the explicit play button is only used for collection stations.
@@ -160,10 +191,14 @@ class _RadioScreenState extends State<RadioScreen> {
 
   String _getCategoryLabel(String key, AppLocalizations l10n) {
     switch (key) {
-      case 'radioCategoryAll': return l10n.radioCategoryAll;
-      case 'radioCategoryDeepDive': return l10n.radioCategoryDeepDive;
-      case 'radioCategoryNews': return l10n.radioCategoryNews;
-      default: return key;
+      case 'radioCategoryAll':
+        return l10n.radioCategoryAll;
+      case 'radioCategoryDeepDive':
+        return l10n.radioCategoryDeepDive;
+      case 'radioCategoryNews':
+        return l10n.radioCategoryNews;
+      default:
+        return key;
     }
   }
 }

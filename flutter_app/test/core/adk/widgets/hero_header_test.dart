@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:tackle4loss_mobile/core/adk/widgets/t4l_hero_header.dart';
-import 'package:tackle4loss_mobile/design_tokens.dart';
 
 void main() {
   testWidgets('T4LHeroHeader renders title and image', (WidgetTester tester) async {

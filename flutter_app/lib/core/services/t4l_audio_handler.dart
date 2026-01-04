@@ -33,7 +33,7 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
     _player.onDurationChanged.listen((duration) {
       final item = mediaItem.value;
-      if (item != null && duration != null) {
+      if (item != null) {
         mediaItem.add(item.copyWith(duration: duration));
       }
     });
@@ -60,10 +60,17 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
       final item = queue[_currentIndex];
       mediaItem.add(item);
       try {
-        await _player.setSourceUrl(item.id);
+        await _player.stop(); // Ensure we start from a clean state
+        await _player.setSource(UrlSource(item.id));
         await _player.resume();
       } catch (e) {
         debugPrint("Error playing audio: $e");
+        // Convert to UI message or retry?
+        // Attempt to skip to next item if the current one is unplayable
+        if (_currentIndex < queue.length - 1) {
+          debugPrint("Skipping to next track due to error...");
+          _skipToNext();
+        }
       }
     }
   }
@@ -118,7 +125,6 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
   @override
   Future<void> skipToPrevious() async {
-    final queue = this.queue.value;
     if (_currentIndex > 0) {
       _currentIndex--;
       await _playCurrent();
@@ -152,5 +158,22 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
     if (_currentIndex >= mediaItems.length) _currentIndex = mediaItems.length - 1;
     
     await _playCurrent();
+  }
+
+  /// Insert items into the queue immediately after the current item
+  Future<void> insertQueueItemsNext(List<MediaItem> items) async {
+    final currentQueue = queue.value;
+    if (currentQueue.isEmpty) {
+      await addQueueItems(items);
+      return;
+    }
+
+    final newQueue = List<MediaItem>.from(currentQueue);
+    // Insert after current index
+    newQueue.insertAll(_currentIndex + 1, items);
+    
+    // Update the queue
+    queue.add(newQueue);
+    // _currentIndex remains the same as we inserted AFTER it
   }
 }

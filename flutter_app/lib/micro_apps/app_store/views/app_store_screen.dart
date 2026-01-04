@@ -6,6 +6,7 @@ import '../../../core/micro_app.dart';
 import '../widgets/featured_card.dart';
 import '../widgets/app_list_item.dart';
 import '../widgets/app_info_dialog.dart';
+import '../widgets/model_download_dialog.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 
@@ -33,6 +34,33 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
     );
   }
 
+  /// Handles app installation, including model download for game_reports
+  void _handleInstall(BuildContext context, MicroApp app, {bool asWidget = false}) {
+    if (app.id == 'game_reports') {
+      // Game Reports requires model download
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => ModelDownloadDialog(
+          appName: app.name,
+          onComplete: () {
+            setState(() {
+              _controller.toggleInstall(app.id, asWidget: asWidget);
+            });
+          },
+          onCancel: () {
+            // Do nothing, user cancelled
+          },
+        ),
+      );
+    } else {
+      // Standard install
+      setState(() {
+        _controller.toggleInstall(app.id, asWidget: asWidget);
+      });
+    }
+  }
+
   void _showInstallOptions(BuildContext context, MicroApp app) {
     showDialog(
       context: context,
@@ -42,9 +70,7 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
           SimpleDialogOption(
             onPressed: () {
               Navigator.pop(context);
-              setState(() {
-                _controller.toggleInstall(app.id, asWidget: false);
-              });
+              _handleInstall(context, app, asWidget: false);
             },
             child: const Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
@@ -60,9 +86,7 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
           SimpleDialogOption(
             onPressed: () {
               Navigator.pop(context);
-              setState(() {
-                 _controller.toggleInstall(app.id, asWidget: true);
-              });
+              _handleInstall(context, app, asWidget: true);
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -111,9 +135,22 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
                      imagePath: featuredApp.storeImageAsset,
                      isInstalled: _controller.isInstalled(featuredApp.id),
                      onInfo: () => _showAppInfo(context, featuredApp),
-                     // onAction: null - Disable install/remove for app of the month
+                     onAction: () {
+                       final isInstalled = _controller.isInstalled(featuredApp.id);
+                       if (isInstalled) {
+                          setState(() {
+                            _controller.toggleInstall(featuredApp.id);
+                          });
+                       } else {
+                          if (featuredApp.hasWidget) {
+                            _showInstallOptions(context, featuredApp);
+                          } else {
+                            _handleInstall(context, featuredApp);
+                          }
+                       }
+                     },
                      onTap: () {
-                       // Open Detail or Launch
+                       _showAppInfo(context, featuredApp);
                      },
                    ),
                    const SizedBox(height: 32),
@@ -167,9 +204,7 @@ class _AppStoreScreenState extends State<AppStoreScreen> {
                          if (app.hasWidget) {
                            _showInstallOptions(context, app);
                          } else {
-                           setState(() {
-                             _controller.toggleInstall(app.id);
-                           });
+                           _handleInstall(context, app);
                          }
                       }
                     },

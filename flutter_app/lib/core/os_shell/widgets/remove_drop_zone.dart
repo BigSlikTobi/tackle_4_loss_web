@@ -5,17 +5,14 @@ import 'package:lucide_icons/lucide_icons.dart';
 class RemoveDropZone extends StatelessWidget {
   final Function(int) onRemove;
 
-  const RemoveDropZone({
-    super.key,
-    required this.onRemove,
-  });
+  const RemoveDropZone({super.key, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
     return DragTarget<int>(
-      onWillAccept: (data) => true,
-      onAccept: (index) {
-        onRemove(index);
+      onWillAcceptWithDetails: (details) => true,
+      onAcceptWithDetails: (details) {
+        onRemove(details.data);
       },
       builder: (context, candidateData, rejectedData) {
         final isHovering = candidateData.isNotEmpty;
@@ -30,19 +27,19 @@ class RemoveDropZone extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
-                  color: isHovering 
-                      ? Colors.red.withOpacity(0.2) 
-                      : Colors.white.withOpacity(0.08),
+                  color: isHovering
+                      ? Colors.red.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isHovering 
-                        ? Colors.red.withOpacity(0.5) 
-                        : Colors.white.withOpacity(0.12),
+                    color: isHovering
+                        ? Colors.red.withValues(alpha: 0.5)
+                        : Colors.white.withValues(alpha: 0.12),
                     width: isHovering ? 2 : 1,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),

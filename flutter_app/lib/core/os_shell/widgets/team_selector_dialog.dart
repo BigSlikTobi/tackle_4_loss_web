@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../../../design_tokens.dart';
 import '../../services/team_service.dart';
 import '../../services/settings_service.dart';
-import '../../models/team_model.dart';
 
 class TeamSelectorDialog extends StatelessWidget {
   const TeamSelectorDialog({super.key});
@@ -57,23 +56,26 @@ class TeamSelectorDialog extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected 
-                            ? team.primaryColor.withOpacity(0.2) 
-                            : Colors.white.withOpacity(0.05),
+                        color: isSelected
+                            ? team.primaryColor.withValues(alpha: 0.2)
+                            : Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isSelected ? team.primaryColor : Colors.white10,
+                          color: isSelected
+                              ? team.primaryColor
+                              : Colors.white10,
                           width: 2,
                         ),
                       ),
                       child: Image.asset(
                         team.logoUrl,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => const Icon(
-                          Icons.error_outline,
-                          color: Colors.white24,
-                          size: 20,
-                        ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.white24,
+                              size: 20,
+                            ),
                       ),
                     ),
                   );
@@ -85,7 +87,10 @@ class TeamSelectorDialog extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('CANCEL', style: TextStyle(color: AppColors.textSecondary)),
+                child: const Text(
+                  'CANCEL',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
               ),
             ),
           ],

@@ -5,11 +5,12 @@ import '../services/breaking_news_service.dart';
 
 class BreakingNewsController extends ChangeNotifier {
   final BreakingNewsService _newsService;
-  
-  BreakingNewsController({BreakingNewsService? service}) 
-      : _newsService = service ?? BreakingNewsService();
+
+  BreakingNewsController({BreakingNewsService? service})
+    : _newsService = service ?? BreakingNewsService();
   final List<BreakingNewsArticle> _articles = []; // The Filtered Queue
-  final List<BreakingNewsArticle> _allAvailableArticles = []; // Source for the queue (minus saved/refused/read)
+  final List<BreakingNewsArticle> _allAvailableArticles =
+      []; // Source for the queue (minus saved/refused/read)
   final List<BreakingNewsArticle> _savedArticles = [];
   final List<BreakingNewsArticle> _refusedArticles = [];
   final List<BreakingNewsArticle> _readHistoryArticles = [];
@@ -17,7 +18,7 @@ class BreakingNewsController extends ChangeNotifier {
 
   String? _currentTeamFilter;
   bool _isNewestFirst = true;
-  
+
   // Persistence Keys
   static const String _keySavedIds = 'breaking_news_saved_ids';
   static const String _keyRefusedIds = 'breaking_news_refused_ids';
@@ -27,9 +28,12 @@ class BreakingNewsController extends ChangeNotifier {
   bool _isLoading = false;
 
   List<BreakingNewsArticle> get articles => List.unmodifiable(_articles);
-  List<BreakingNewsArticle> get savedArticles => List.unmodifiable(_savedArticles);
-  List<BreakingNewsArticle> get refusedArticles => List.unmodifiable(_refusedArticles);
-  List<BreakingNewsArticle> get readHistoryArticles => List.unmodifiable(_readHistoryArticles);
+  List<BreakingNewsArticle> get savedArticles =>
+      List.unmodifiable(_savedArticles);
+  List<BreakingNewsArticle> get refusedArticles =>
+      List.unmodifiable(_refusedArticles);
+  List<BreakingNewsArticle> get readHistoryArticles =>
+      List.unmodifiable(_readHistoryArticles);
   bool get isLoading => _isLoading;
   String? get currentTeamFilter => _currentTeamFilter;
   bool get isNewestFirst => _isNewestFirst;
@@ -39,10 +43,18 @@ class BreakingNewsController extends ChangeNotifier {
     for (var article in _allAvailableArticles) {
       if (article.teams != null) {
         for (var team in article.teams!) {
-          if (team is Map && team.containsKey('team_name')) {
-            final name = team['team_name'] as String;
-            final logo = team['logo_url'] as String? ?? '';
-            teams[name] = logo;
+          // Changed to use Strong types
+          final teamId = team.teamId;
+          // Note: team.teamId is the ID, not necessarily the name. 
+          // However, previous code seemingly expected 'team_name' key.
+          // Based on usage in UI (logos/teams/$teamId.png), teamId seems to be the abbr/id.
+          // If the previous code relied on 'team_name' for display name, but now we only have teamId,
+          // we might need to rely on teamId as the key.
+          // Assuming teamId is sufficient for filtering.
+          
+          if (teamId.isNotEmpty) {
+            final logo = team.logoUrl ?? '';
+            teams[teamId] = logo;
           }
         }
       }
@@ -64,14 +76,18 @@ class BreakingNewsController extends ChangeNotifier {
     if (!_isDisposed) notifyListeners();
 
     try {
-      final fetched = await _newsService.fetchBreakingNews(languageCode: languageCode);
+      final fetched = await _newsService.fetchBreakingNews(
+        languageCode: languageCode,
+      );
       if (_isDisposed) return; // Exit early if disposed during fetch
-      
-      await _loadState(fetched); 
-    } catch (e) {
+
+      await _loadState(fetched);
+    } catch (e, stackTrace) {
+      debugPrint('Error loading breaking news: $e');
+      debugPrint(stackTrace.toString());
       _articles.clear();
     }
-    
+
     _isLoading = false;
     if (!_isDisposed) {
       notifyListeners();
@@ -107,19 +123,19 @@ class BreakingNewsController extends ChangeNotifier {
         _allAvailableArticles.add(article);
       }
     }
-    
+
     _applyFilterAndSort();
   }
 
   void _applyFilterAndSort() {
     _articles.clear();
-    
+
     // 1. Filter
     final filtered = _allAvailableArticles.where((article) {
       if (_currentTeamFilter == null) return true;
       if (article.teams == null) return false;
-      return article.teams!.any((team) => 
-        team is Map && team['team_name'] == _currentTeamFilter
+      return article.teams!.any(
+        (team) => team.teamId == _currentTeamFilter,
       );
     }).toList();
 
@@ -133,6 +149,50 @@ class BreakingNewsController extends ChangeNotifier {
     });
 
     _articles.addAll(filtered);
+  }
+
+  /// Moves the article with [id] to the top of the list
+  void prioritizeArticle(String id) {
+    BreakingNewsArticle? targetArticle;
+
+    // 1. Check active articles first
+    final index = _articles.indexWhere((a) => a.id == id);
+    if (index != -1) {
+      targetArticle = _articles.removeAt(index);
+    } 
+    // 2. Check all available (but filtered out?)
+    else {
+      final availIndex = _allAvailableArticles.indexWhere((a) => a.id == id);
+      if (availIndex != -1) {
+        targetArticle = _allAvailableArticles.removeAt(availIndex);
+      }
+    }
+
+    // 3. Check other lists if not found yet
+    if (targetArticle == null) {
+      if (_removeFromList(_savedArticles, id, out: (a) => targetArticle = a)) {
+        // found in saved
+      } else if (_removeFromList(_refusedArticles, id, out: (a) => targetArticle = a)) {
+        // found in refused
+      } else if (_removeFromList(_readHistoryArticles, id, out: (a) => targetArticle = a)) {
+        // found in history
+      }
+    }
+
+    // 4. If found anywhere, put it at top of active list
+    if (targetArticle != null) {
+      _articles.insert(0, targetArticle!);
+      if (!_isDisposed) notifyListeners();
+    }
+  }
+
+  bool _removeFromList(List<BreakingNewsArticle> list, String id, {required Function(BreakingNewsArticle) out}) {
+    final index = list.indexWhere((a) => a.id == id);
+    if (index != -1) {
+      out(list.removeAt(index));
+      return true;
+    }
+    return false;
   }
 
   void setTeamFilter(String? teamName) {
@@ -152,9 +212,18 @@ class BreakingNewsController extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     // Disposal check not strictly necessary for simple async saves but good practice
     // ensuring we don't act on stale state, though _saveState is usually atomic-ish logic.
-    await prefs.setStringList(_keySavedIds, _savedArticles.map((a) => a.id).toList());
-    await prefs.setStringList(_keyRefusedIds, _refusedArticles.map((a) => a.id).toList());
-    await prefs.setStringList(_keyReadHistoryIds, _readHistoryArticles.map((a) => a.id).toList());
+    await prefs.setStringList(
+      _keySavedIds,
+      _savedArticles.map((a) => a.id).toList(),
+    );
+    await prefs.setStringList(
+      _keyRefusedIds,
+      _refusedArticles.map((a) => a.id).toList(),
+    );
+    await prefs.setStringList(
+      _keyReadHistoryIds,
+      _readHistoryArticles.map((a) => a.id).toList(),
+    );
     await prefs.setStringList(_keyReadStatusIds, _readArticleIds.toList());
   }
 
@@ -185,15 +254,15 @@ class BreakingNewsController extends ChangeNotifier {
     _saveState();
     if (!_isDisposed) notifyListeners();
   }
-  
+
   void restoreArticle(BreakingNewsArticle article) {
     // Remove from whichever stack it is in
     if (_savedArticles.remove(article)) {
-       // Removed from saved
+      // Removed from saved
     } else if (_refusedArticles.remove(article)) {
-       // Removed from refused
+      // Removed from refused
     } else if (_readHistoryArticles.remove(article)) {
-       // Removed from read history
+      // Removed from read history
     }
 
     // Add to TOP of queue (first item) so it appears immediately
@@ -201,11 +270,11 @@ class BreakingNewsController extends ChangeNotifier {
     // Actually let's add it back to _allAvailableArticles and re-apply.
     _allAvailableArticles.add(article);
     _applyFilterAndSort();
-    
+
     _saveState();
     if (!_isDisposed) notifyListeners();
   }
-  
+
   /// Clears storage and memory
   Future<void> reset() async {
     final prefs = await SharedPreferences.getInstance();
@@ -218,8 +287,8 @@ class BreakingNewsController extends ChangeNotifier {
     _refusedArticles.clear();
     _readHistoryArticles.clear();
     _readArticleIds.clear();
-    
+
     // Reload to fetch fresh
-    await loadNews(); 
+    await loadNews();
   }
 }
