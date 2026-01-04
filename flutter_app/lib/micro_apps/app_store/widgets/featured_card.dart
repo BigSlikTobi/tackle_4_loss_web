@@ -30,7 +30,7 @@ class AppStoreFeaturedCard extends StatelessWidget {
     final ImageProvider imageProvider = imagePath.startsWith('http')
         ? NetworkImage(imagePath)
         : AssetImage(imagePath) as ImageProvider;
-    
+
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
 
     return Column(
@@ -62,10 +62,7 @@ class AppStoreFeaturedCard extends StatelessWidget {
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: colors.textSecondary,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: colors.textSecondary, fontSize: 16),
                 ),
               ],
             ),
@@ -78,10 +75,7 @@ class AppStoreFeaturedCard extends StatelessWidget {
           height: 240,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            image: DecorationImage(
-              image: imageProvider,
-              fit: BoxFit.cover,
-            ),
+            image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
             boxShadow: AppShadows.md,
           ),
           child: Stack(
@@ -105,13 +99,13 @@ class AppStoreFeaturedCard extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.6),
+                        Colors.black.withValues(alpha: 0.6),
                       ],
                     ),
                   ),
                 ),
               ),
-              
+
               // 3. Info Button (Top Right)
               if (onInfo != null)
                 Positioned(
@@ -126,7 +120,11 @@ class AppStoreFeaturedCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white24, width: 1),
                       ),
-                      child: const Icon(Icons.info_outline, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.info_outline,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ),
@@ -164,14 +162,17 @@ class AppStoreFeaturedCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                     // 5. Get Button
                     if (onAction != null)
                       GestureDetector(
                         onTap: onAction,
                         behavior: HitTestBehavior.opaque,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: colors.surface,
                             borderRadius: BorderRadius.circular(20),

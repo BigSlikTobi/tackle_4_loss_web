@@ -1,20 +1,23 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../design_tokens.dart';
 import '../../../core/os_shell/widgets/t4l_scaffold.dart';
-import '../../../core/services/settings_service.dart';
 import '../models/breaking_news_article.dart'; // Added Import
 import '../controllers/breaking_news_controller.dart';
-import 'widgets/breaking_news_card.dart';
 import 'widgets/swipeable_card_stack.dart';
-import 'package:intl/intl.dart';
 import 'widgets/side_stack_widget.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../core/theme/t4l_theme.dart';
 
 class BreakingNewsListScreen extends StatefulWidget {
-  const BreakingNewsListScreen({super.key});
+  final String? initialArticleId;
+  final bool autoFlip;
+
+  const BreakingNewsListScreen({
+    super.key,
+    this.initialArticleId,
+    this.autoFlip = false,
+  });
 
   @override
   State<BreakingNewsListScreen> createState() => _BreakingNewsListScreenState();
@@ -22,11 +25,11 @@ class BreakingNewsListScreen extends StatefulWidget {
 
 class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
   final BreakingNewsController _controller = BreakingNewsController();
-  final GlobalKey<SwipeableCardStackState> _stackKey = GlobalKey<SwipeableCardStackState>();
+  final GlobalKey<SwipeableCardStackState> _stackKey =
+      GlobalKey<SwipeableCardStackState>();
 
-  bool _showSaved = false;
   bool _isLoaded = false;
-  
+
   // History List Overlay State
   List<BreakingNewsArticle>? _historyArticles;
   String? _historyTitle;
@@ -38,7 +41,11 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
     super.didChangeDependencies();
     if (!_isLoaded) {
       final locale = Localizations.localeOf(context).languageCode;
-      _controller.loadNews(languageCode: locale);
+      _controller.loadNews(languageCode: locale).then((_) {
+        if (mounted && widget.initialArticleId != null) {
+          _controller.prioritizeArticle(widget.initialArticleId!);
+        }
+      });
       _isLoaded = true;
     }
   }
@@ -78,13 +85,15 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
           children: [
             Column(
               children: [
-                const SizedBox(height: 130), 
+                const SizedBox(height: 130),
 
                 // Filter & Sort Bar
                 Consumer<BreakingNewsController>(
                   builder: (context, controller, child) {
                     final teams = controller.availableTeams;
-                    if (teams.isEmpty && controller.currentTeamFilter == null) return const SizedBox.shrink();
+                    if (teams.isEmpty && controller.currentTeamFilter == null) {
+                      return const SizedBox.shrink();
+                    }
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -93,25 +102,46 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                         children: [
                           // Dropdown Filter
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: colors.surface,
                               borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: colors.border.withOpacity(0.3)),
+                              border: Border.all(
+                                color: colors.border.withValues(alpha: 0.3),
+                              ),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
-                                value: controller.currentTeamFilter, // null is "All"
+                                value: controller
+                                    .currentTeamFilter, // null is "All"
                                 hint: Row(
                                   children: [
-                                    Icon(Icons.public, size: 18, color: colors.textSecondary),
+                                    Icon(
+                                      Icons.public,
+                                      size: 18,
+                                      color: colors.textSecondary,
+                                    ),
                                     const SizedBox(width: 8),
-                                    Text(l10n.radioCollectionAllTeams, style: TextStyle(color: colors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
+                                    Text(
+                                      l10n.radioCollectionAllTeams,
+                                      style: TextStyle(
+                                        color: colors.textSecondary,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 icon: Padding(
                                   padding: const EdgeInsets.only(left: 8.0),
-                                  child: Icon(Icons.filter_list_rounded, color: colors.brand, size: 20),
+                                  child: Icon(
+                                    Icons.filter_list_rounded,
+                                    color: colors.brand,
+                                    size: 20,
+                                  ),
                                 ),
                                 dropdownColor: colors.surface,
                                 borderRadius: BorderRadius.circular(16),
@@ -121,9 +151,19 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                                     value: null,
                                     child: Row(
                                       children: [
-                                        Icon(Icons.public, size: 18, color: colors.textSecondary),
+                                        Icon(
+                                          Icons.public,
+                                          size: 18,
+                                          color: colors.textSecondary,
+                                        ),
                                         const SizedBox(width: 8),
-                                        Text(l10n.radioCollectionAllTeams, style: TextStyle(color: colors.textPrimary, fontSize: 13)),
+                                        Text(
+                                          l10n.radioCollectionAllTeams,
+                                          style: TextStyle(
+                                            color: colors.textPrimary,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -135,31 +175,45 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           if (entry.value.isNotEmpty)
-                                            Image.network(entry.value, width: 20, height: 20, errorBuilder: (c, e, s) => const SizedBox(width: 20)),
+                                            Image.network(
+                                              entry.value,
+                                              width: 20,
+                                              height: 20,
+                                              errorBuilder: (c, e, s) =>
+                                                  const SizedBox(width: 20),
+                                            ),
                                           const SizedBox(width: 8),
                                           Text(
                                             entry.key,
-                                            style: TextStyle(color: colors.textPrimary, fontSize: 13),
+                                            style: TextStyle(
+                                              color: colors.textPrimary,
+                                              fontSize: 13,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     );
-                                  }).toList(),
+                                  }),
                                 ],
-                                onChanged: (value) => controller.setTeamFilter(value),
+                                onChanged: (value) =>
+                                    controller.setTeamFilter(value),
                               ),
                             ),
                           ),
-                          
+
                           // Sort Toggle
                           IconButton(
                             icon: Icon(
-                              controller.isNewestFirst ? Icons.arrow_downward : Icons.arrow_upward,
+                              controller.isNewestFirst
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
                               color: colors.brand,
                               size: 20,
                             ),
                             onPressed: () => controller.toggleSort(),
-                            tooltip: controller.isNewestFirst ? 'Newest First' : 'Oldest First',
+                            tooltip: controller.isNewestFirst
+                                ? 'Newest First'
+                                : 'Oldest First',
                           ),
                         ],
                       ),
@@ -173,24 +227,39 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                       if (controller.isLoading) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      
+
                       return Stack(
                         clipBehavior: Clip.none,
                         children: [
                           // 1. Active Cards (Bottom Layer of this Stack)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                              vertical: 16.0,
+                            ),
                             child: SwipeableCardStack(
                               key: _stackKey,
                               articles: controller.articles,
-                              onCardFlip: null, // No longer marking as read simply on flip
+                              onCardFlip:
+                                  null, // No longer marking as read simply on flip
                               onReadFinished: (article) {
                                 controller.markAsRead(article.id);
                                 // Trigger programmatic swipe left to "put it down"
                                 _stackKey.currentState?.swipeLeft();
                               },
-                              onSwipeLeft: (article) => controller.swipeLeft(article),
-                              onSwipeRight: (article) => controller.swipeRight(article),
+                              onSwipeLeft: (article) {
+                                controller.swipeLeft(article);
+                                if (widget.initialArticleId == article.id) {
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              onSwipeRight: (article) {
+                                controller.swipeRight(article);
+                                if (widget.initialArticleId == article.id) {
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              autoFlip: widget.autoFlip,
                             ),
                           ),
 
@@ -200,7 +269,7 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                             left: -4,
                             top: screenHeight * 0.15,
                             child: SideStackWidget(
-                              articles: controller.refusedArticles, 
+                              articles: controller.refusedArticles,
                               color: colors.breakingNewsRed,
                               alignment: Alignment.centerLeft,
                               onStackTap: () => _showHistoryList(
@@ -210,7 +279,7 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                               ),
                             ),
                           ),
-                          
+
                           // Read History (Dynamic) - Lower Left
                           Positioned(
                             left: -4,
@@ -226,14 +295,14 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                               ),
                             ),
                           ),
-                          
+
                           // Saved (Brand) - Center Right
                           Positioned(
                             right: -4,
                             top: screenHeight * 0.3,
                             child: SideStackWidget(
                               articles: controller.savedArticles,
-                              color: colors.brand, 
+                              color: colors.brand,
                               alignment: Alignment.centerRight,
                               onStackTap: () => _showHistoryList(
                                 articles: controller.savedArticles,
@@ -289,7 +358,14 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontHeading,
                             fontSize: 18,
-                            color: (_historyColor ?? colors.textPrimary).computeLuminance() > 0.5 && Theme.of(context).brightness == Brightness.light ? Colors.black : (_historyColor ?? colors.textPrimary),
+                            color:
+                                (_historyColor ?? colors.textPrimary)
+                                            .computeLuminance() >
+                                        0.5 &&
+                                    Theme.of(context).brightness ==
+                                        Brightness.light
+                                ? Colors.black
+                                : (_historyColor ?? colors.textPrimary),
                           ),
                         ),
                         IconButton(
@@ -299,20 +375,24 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                       ],
                     ),
                   ),
-                  Divider(height: 1, color: colors.border.withOpacity(0.5)),
+                  Divider(
+                    height: 1,
+                    color: colors.border.withValues(alpha: 0.5),
+                  ),
                   // List
                   Expanded(
                     child: ListView.separated(
                       padding: const EdgeInsets.all(12),
                       itemCount: _historyArticles!.length,
-                      separatorBuilder: (context, index) => Divider(color: colors.border.withOpacity(0.2)),
+                      separatorBuilder: (context, index) =>
+                          Divider(color: colors.border.withValues(alpha: 0.2)),
                       itemBuilder: (context, index) {
                         final article = _historyArticles![index];
                         return ListTile(
                           title: Text(
                             article.headline,
                             style: TextStyle(
-                              fontSize: 14, 
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                               color: colors.textPrimary,
                             ),
@@ -320,7 +400,10 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           trailing: IconButton(
-                            icon: Icon(Icons.settings_backup_restore, color: colors.brand),
+                            icon: Icon(
+                              Icons.settings_backup_restore,
+                              color: colors.brand,
+                            ),
                             onPressed: () => _restoreFromHistory(article),
                           ),
                         );

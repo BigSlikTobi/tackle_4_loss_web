@@ -1,0 +1,213 @@
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import '../../controllers/news_feed_controller.dart';
+import '../../../models/news_feed_item.dart';
+import '../../../services/settings_service.dart';
+import '../../../theme/t4l_theme.dart';
+import 'news_feed_item_card.dart';
+import 'video_feed_item_card.dart';
+import 'personalized_feed_item_card.dart';
+
+/// News feed widget with infinite scroll for the home screen
+class NewsFeedWidget extends StatefulWidget {
+  const NewsFeedWidget({super.key});
+
+  @override
+  State<NewsFeedWidget> createState() => _NewsFeedWidgetState();
+}
+
+class _NewsFeedWidgetState extends State<NewsFeedWidget> {
+  late NewsFeedController _controller;
+  bool _initialized = false;
+  String? _currentLanguageCode;
+
+
+  void _initializeController(SettingsService settings) {
+    _controller = NewsFeedController(
+      languageCode: settings.locale.languageCode,
+    );
+    _controller.loadInitial();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final settings = Provider.of<SettingsService>(context);
+    final newLanguageCode = settings.locale.languageCode;
+
+    if (!_initialized) {
+      // First initialization
+      _currentLanguageCode = newLanguageCode;
+      _initializeController(settings);
+      _initialized = true;
+    } else if (_currentLanguageCode != newLanguageCode) {
+      // Language changed - reinitialize controller
+      _currentLanguageCode = newLanguageCode;
+      _controller.dispose();
+      _initializeController(settings);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  /// Pre-cache images for upcoming feed items to improve perceived loading speed
+  void _precacheUpcomingImages(BuildContext context, int currentIndex) {
+    const lookAhead = 3;
+    for (int i = 1; i <= lookAhead; i++) {
+      final nextIndex = currentIndex + i;
+      if (nextIndex < _controller.items.length) {
+        final item = _controller.items[nextIndex];
+        if (item is NewsFeedItem && item.imageUrl != null) {
+          precacheImage(
+            CachedNetworkImageProvider(
+              item.imageUrl!,
+              maxWidth: 800,
+              maxHeight: 400,
+            ),
+            context,
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsService>(context);
+    final userTeamId = settings.selectedTeam?.id;
+    final t4lColors = Theme.of(context).extension<T4LThemeColors>();
+
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        if (_controller.error != null && _controller.items.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Failed to load news feed',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => _controller.refresh(),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
+        if (_controller.items.isEmpty && _controller.isLoading) {
+          return const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(48.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        return SliverMainAxisGroup(
+          slivers: [
+            // Filter Toggle Header
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color:
+                            t4lColors?.border.withValues(alpha: 0.7) ??
+                            Colors.grey.withValues(alpha: 0.7),
+                        thickness: 2.0,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'T4L Feed',
+                        style: TextStyle(
+                          color: t4lColors?.textSecondary ?? Colors.grey,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color:
+                            t4lColors?.border.withValues(alpha: 0.7) ??
+                            Colors.grey.withValues(alpha: 0.7),
+                        thickness: 2.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Feed Items
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index >= _controller.items.length) {
+                    // Loading indicator at the end
+                    if (_controller.hasMore) {
+                      _controller.loadMore();
+                      return const Padding(
+                        padding: EdgeInsets.all(24.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }
+
+                  final item = _controller.items[index];
+
+                  // Pre-cache images for upcoming items (look-ahead of 3)
+                  _precacheUpcomingImages(context, index);
+
+                  // Handle different feed item types
+                  return switch (item) {
+                    NewsFeedItem newsItem => NewsFeedItemCard(
+                      item: newsItem,
+                      userTeamId: userTeamId,
+                    ),
+                    VideoFeedItem videoItem => VideoFeedItemCard(
+                      item: videoItem,
+                    ),
+                    PersonalizedFeedItem personalizedItem =>
+                      PersonalizedFeedItemCard(item: personalizedItem),
+                  };
+                },
+                childCount:
+                    _controller.items.length + (_controller.hasMore ? 1 : 0),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}

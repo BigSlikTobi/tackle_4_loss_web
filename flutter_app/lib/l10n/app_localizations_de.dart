@@ -102,7 +102,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get radioStationDailyBriefingTitle => 'Tägliches Briefing';
 
   @override
-  String get radioStationDailyBriefingDesc => 'In 5 Minuten auf dem Laufenden.';
+  String get radioStationDailyBriefingDesc =>
+      'Alle News und aktuelle Updates in einem Stream.';
 
   @override
   String get radioStationDeepDiveClassicsTitle => 'Deep Dive Klassiker';

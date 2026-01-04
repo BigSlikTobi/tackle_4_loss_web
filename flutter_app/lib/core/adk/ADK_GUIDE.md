@@ -51,6 +51,9 @@ The Core Team reviews the PR using the strict criteria:
 -   **Quality**: Do tests pass?
 -   **Integration**: Is it registered in `AppRegistry`?
 
+### 9. Toggle Feature Flag
+Once merged, the app's visibility is controlled via the `FeatureFlagService`. Apps are typically disabled by default until they pass a final production quality audit.
+
 **Approval**: Once approved and merged, the app is considered "Published" to the OS.
 
 ---
@@ -132,3 +135,9 @@ return T4LScaffold(
 ### The Look (Design Tokens)
 **Forbidden**: Hardcoded colors.
 **Mandatory**: Use `AppColors` and `TextStyles` from `design_tokens.dart`.
+
+### Feature Flags (Visibility)
+To prevent incomplete apps from being exposed to users, all MicroApps must be registered in the `FeatureFlagService`.
+-   **Location**: `lib/core/services/feature_flag_service.dart`
+-   **Standard**: New apps must be added with `false` by default and only toggled to `true` when ready for production.
+-   **Integration**: The `AppRegistry` automatically respects these flags. If an app is disabled, it will not appear in the Shell grid or App Store.

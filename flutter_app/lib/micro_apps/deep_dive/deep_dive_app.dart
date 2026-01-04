@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
 import 'views/deep_dive_list_screen.dart';
 
-class DeepDiveApp implements MicroApp {
+class DeepDiveApp extends MicroApp {
   @override
   String get id => 'deep_dive';
 

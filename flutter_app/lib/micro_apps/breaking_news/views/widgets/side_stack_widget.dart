@@ -21,7 +21,6 @@ class SideStackWidget extends StatelessWidget {
     if (articles.isEmpty) return const SizedBox.shrink();
 
     final count = articles.length;
-    final isRight = alignment.x > 0;
     
     return GestureDetector(
       onTap: onStackTap,

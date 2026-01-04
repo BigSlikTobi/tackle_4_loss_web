@@ -22,6 +22,7 @@ void main() {
         name: 'Kansas City Chiefs',
         logoUrl: 'assets/logos/teams/kc.png',
         primaryColor: Colors.red,
+        secondaryColor: Colors.yellow,
       );
 
       await service.setFavoriteTeam(testTeam);

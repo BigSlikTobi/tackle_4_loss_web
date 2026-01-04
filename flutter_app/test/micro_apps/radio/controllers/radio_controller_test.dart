@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tackle4loss_mobile/micro_apps/radio/controllers/radio_controller.dart';
 import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
 
@@ -7,16 +8,19 @@ class MockAudioPlayerService extends AudioPlayerService {
   MockAudioPlayerService() : super.testing();
   
   @override
-  Future<void> playPlaylist(List<Map<String, String>> items) async {
+  Future<void> playPlaylist(List<Map<String, String>> items, {int initialIndex = 0}) async {
     // Mock interaction
   }
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
   group('RadioController', () {
     late RadioController controller;
 
     setUp(() {
+      SharedPreferences.setMockInitialValues({});
       AudioPlayerService.setInstanceForTesting(MockAudioPlayerService());
       controller = RadioController();
     });

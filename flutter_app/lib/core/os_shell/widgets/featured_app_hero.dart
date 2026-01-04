@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../design_tokens.dart';
 import '../../micro_app.dart';
 import '../../services/navigation_service.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +37,7 @@ class FeaturedAppHero extends StatelessWidget {
           // Ambient depth shadow
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 30,
               offset: const Offset(0, 15),
             ),
@@ -54,19 +53,19 @@ class FeaturedAppHero extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.transparent, 
-                    Colors.black,       
-                    Colors.black,       
-                    Colors.transparent  
+                    Colors.transparent,
+                    Colors.black,
+                    Colors.black,
+                    Colors.transparent,
                   ],
-                  stops: [0.0, 0.08, 0.92, 1.0], 
+                  stops: [0.0, 0.08, 0.92, 1.0],
                 ).createShader(rect);
               },
               blendMode: BlendMode.dstIn,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                   // Background Image
+                  // Background Image
                   if (displayImageUrl != null)
                     CachedNetworkImage(
                       imageUrl: displayImageUrl,
@@ -74,22 +73,25 @@ class FeaturedAppHero extends StatelessWidget {
                       errorWidget: (_, __, ___) => Image.asset(
                         app.storeImageAsset,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(color: brandingColor),
+                        errorBuilder: (_, __, ___) =>
+                            Container(color: brandingColor),
                       ),
                     )
                   else
                     CachedNetworkImage(
-                      imageUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2938&auto=format&fit=crop',
+                      imageUrl:
+                          'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=2938&auto=format&fit=crop',
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) {
-                         return Image.asset(
-                           app.storeImageAsset, 
-                           fit: BoxFit.cover,
-                           errorBuilder: (_, __, ___) => Container(color: brandingColor),
-                         );
+                        return Image.asset(
+                          app.storeImageAsset,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              Container(color: brandingColor),
+                        );
                       },
                     ),
-                  
+
                   // Grounded Gradient Overlay (Cinematic Depth)
                   Container(
                     decoration: BoxDecoration(
@@ -98,9 +100,17 @@ class FeaturedAppHero extends StatelessWidget {
                         end: Alignment.topCenter,
                         colors: [
                           // Mix team color with black for a "grounded" look at the bottom
-                          Color.lerp(brandingColor, Colors.black, 0.7)!.withOpacity(0.9),
-                          Color.lerp(brandingColor, Colors.black, 0.3)!.withOpacity(0.4),
-                          Colors.black.withOpacity(0.4), // Dark top
+                          Color.lerp(
+                            brandingColor,
+                            Colors.black,
+                            0.7,
+                          )!.withValues(alpha: 0.9),
+                          Color.lerp(
+                            brandingColor,
+                            Colors.black,
+                            0.3,
+                          )!.withValues(alpha: 0.4),
+                          Colors.black.withValues(alpha: 0.4), // Dark top
                         ],
                         stops: const [0.0, 0.4, 1.0],
                       ),
@@ -135,24 +145,29 @@ class FeaturedAppHero extends StatelessWidget {
 
             // 2. Content Overlay
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 20.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  
                   // Tag / CTA "App of the Month"
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFC9A256), // Gold color
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
+                          color: Colors.black.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
-                        )
+                        ),
                       ],
                     ),
                     child: Row(
@@ -170,11 +185,11 @@ class FeaturedAppHero extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Container(
-                          width: 4, 
-                          height: 4, 
+                          width: 4,
+                          height: 4,
                           decoration: const BoxDecoration(
                             color: Color(0xFF0f3d2e),
-                            shape: BoxShape.circle
+                            shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 4),
@@ -195,7 +210,7 @@ class FeaturedAppHero extends StatelessWidget {
                   // Title (More intense 3D shadow)
                   Flexible(
                     child: Text(
-                      displayTitle.toUpperCase(), 
+                      displayTitle.toUpperCase(),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -205,8 +220,12 @@ class FeaturedAppHero extends StatelessWidget {
                         height: 0.9,
                         letterSpacing: -1.5,
                         shadows: [
-                          Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 4),
-                        ]
+                          Shadow(
+                            color: Colors.black54,
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -214,11 +233,11 @@ class FeaturedAppHero extends StatelessWidget {
 
                   // Subtitle
                   Text(
-                    displaySubtitle, 
+                    displaySubtitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.white, 
+                      color: Colors.white,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       height: 1.4,

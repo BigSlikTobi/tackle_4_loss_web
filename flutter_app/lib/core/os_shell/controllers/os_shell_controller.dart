@@ -45,26 +45,24 @@ class OSShellController extends ChangeNotifier {
   }
 
   void openApp(MicroApp app) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => app.page(context),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => app.page(context)));
   }
 
   void openAppStore() {
-    print("Navigating to App Store...");
+    debugPrint("Navigating to App Store...");
   }
 
   void openHistory() {
-    print("Opening History...");
+    debugPrint("Opening History...");
   }
 
   void openSettings() {
-    print("Opening Settings...");
+    debugPrint("Opening Settings...");
   }
 
   void openTeamSelector() {
-    print("Opening Team Selector...");
+    debugPrint("Opening Team Selector...");
   }
 }

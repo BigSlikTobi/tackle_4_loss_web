@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tackle4loss_mobile/core/services/installed_apps_service.dart';
-import 'package:tackle4loss_mobile/core/app_registry.dart';
 
 void main() {
   test('Restore default apps', () async {

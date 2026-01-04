@@ -103,7 +103,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get radioStationDailyBriefingDesc =>
-      'Catch up on everything in 5 minutes.';
+      'All News and latest updates in one stream.';
 
   @override
   String get radioStationDeepDiveClassicsTitle => 'Deep Dive Classics';

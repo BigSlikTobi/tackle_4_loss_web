@@ -6,12 +6,7 @@ class T4LHeader extends StatelessWidget {
   final Color? textColor;
   final List<Widget>? actions;
 
-  const T4LHeader({
-    super.key, 
-    this.title, 
-    this.textColor,
-    this.actions,
-  });
+  const T4LHeader({super.key, this.title, this.textColor, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +14,7 @@ class T4LHeader extends StatelessWidget {
       bottom: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        decoration: const BoxDecoration(
-          color: Colors.transparent,
-        ),
+        decoration: const BoxDecoration(color: Colors.transparent),
         child: Row(
           children: [
             // Logo Container - Matching web style
@@ -33,7 +26,7 @@ class T4LHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -47,7 +40,7 @@ class T4LHeader extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             if (title != null) ...[
               const SizedBox(width: 16),
               Text(
@@ -59,10 +52,7 @@ class T4LHeader extends StatelessWidget {
               ),
             ],
 
-            if (actions != null) ...[
-              const Spacer(),
-              ...actions!,
-            ],
+            if (actions != null) ...[const Spacer(), ...actions!],
           ],
         ),
       ),

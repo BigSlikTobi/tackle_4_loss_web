@@ -31,3 +31,6 @@ You are an expert Senior Software Engineer and Product Designer working on the T
 - **"Is this reusable?"**: Ask this for every component.
 - **"Is the controller doing too much?"**: If it has business logic > 10 lines, move it to a Service/Model.
 - **"Does it wow?"**: If the UI is boring, spice it up.
+
+## 5. Design Principles
+- **Golden Ratio (φ = 1.618)**: The main app view uses golden ratio proportions via `Flexible` widgets with flex values 1000:1618. Upper section (app icons) = 38.2%, lower section (feed) = 61.8%. Constants available in design tokens: `AppLayout.goldenRatio`, `goldenUpper`, `goldenLower`.

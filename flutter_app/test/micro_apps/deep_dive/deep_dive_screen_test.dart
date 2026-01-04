@@ -66,7 +66,7 @@ void main() {
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates, 
             supportedLocales: AppLocalizations.supportedLocales, 
-            theme: T4LTheme.light, // Added to provide T4LThemeColors extension
+            theme: T4LTheme.light(), // Added to provide T4LThemeColors extension
             home: DeepDiveScreen(article: mockArticle, controller: mockController),
           ),
         ),

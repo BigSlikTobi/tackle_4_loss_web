@@ -5,11 +5,13 @@ class Team {
   final String name;
   final String logoUrl;
   final Color primaryColor;
+  final Color secondaryColor;
 
   const Team({
     required this.id,
     required this.name,
     required this.logoUrl,
     required this.primaryColor,
+    required this.secondaryColor,
   });
 }

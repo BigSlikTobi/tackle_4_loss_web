@@ -15,6 +15,7 @@ import { useTeamTheme } from './hooks/useTeamTheme';
 import OSAppGrid from './components/OSAppGrid';
 import AppStore from './components/AppStore';
 import Settings from './components/Settings';
+import { designTokens } from './design-tokens';
 
 // --- Helper: Parse Supabase Section Format ---
 function parseArticle(supabaseArticle: SupabaseArticle): Article {

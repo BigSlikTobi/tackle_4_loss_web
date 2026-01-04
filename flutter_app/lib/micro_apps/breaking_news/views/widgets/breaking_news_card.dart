@@ -1,4 +1,3 @@
-
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
@@ -7,7 +6,6 @@ import 'package:intl/intl.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../../../core/services/settings_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 
@@ -16,6 +14,7 @@ class BreakingNewsCard extends StatefulWidget {
   final VoidCallback? onFlip;
   final ValueChanged<bool>? onFlipChanged;
   final VoidCallback? onReadFinished;
+  final bool initialFlip;
 
   const BreakingNewsCard({
     super.key,
@@ -23,6 +22,7 @@ class BreakingNewsCard extends StatefulWidget {
     this.onFlip,
     this.onFlipChanged,
     this.onReadFinished,
+    this.initialFlip = false,
   });
 
   @override
@@ -45,7 +45,9 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
     _controller = AnimationController(
-        duration: const Duration(milliseconds: 600), vsync: this);
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
 
     _frontRotation = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: -pi / 2), weight: 50),
@@ -56,6 +58,12 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
       TweenSequenceItem(tween: ConstantTween(pi / 2), weight: 50),
       TweenSequenceItem(tween: Tween(begin: pi / 2, end: 0.0), weight: 50),
     ]).animate(_controller);
+
+    if (widget.initialFlip) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _flipCard();
+      });
+    }
   }
 
   void _flipCard() {
@@ -70,16 +78,17 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
         widget.onReadFinished?.call();
       }
     }
-    
+
     setState(() => _isFront = !_isFront);
-    
+
     // Notify change: true = back visible (reading), false = front visible
     widget.onFlipChanged?.call(!_isFront);
   }
 
   void _scrollListener() {
     if (!_isFullyRead && _scrollController.hasClients) {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 20) {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 20) {
         setState(() {
           _isFullyRead = true;
         });
@@ -140,9 +149,9 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
   Widget _buildFront() {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final imageUrl = widget.article.imageUrl ?? 
+    final imageUrl =
+        widget.article.imageUrl ??
         'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=3540&auto=format&fit=crop';
 
     return Container(
@@ -160,15 +169,19 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
             imageUrl: imageUrl,
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
-              color: colors.textPrimary.withOpacity(0.1),
+              color: colors.textPrimary.withValues(alpha: 0.1),
               child: const Center(child: CircularProgressIndicator()),
             ),
             errorWidget: (context, url, error) => Container(
-              color: colors.textPrimary.withOpacity(0.05),
-              child: const Icon(Icons.broken_image, color: Colors.white24, size: 48),
+              color: colors.textPrimary.withValues(alpha: 0.05),
+              child: const Icon(
+                Icons.broken_image,
+                color: Colors.white24,
+                size: 48,
+              ),
             ),
           ),
-          
+
           // Gradient Overlay
           Container(
             decoration: BoxDecoration(
@@ -177,8 +190,8 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withOpacity(0.2),
-                  Colors.black.withOpacity(0.9),
+                  Colors.black.withValues(alpha: 0.2),
+                  Colors.black.withValues(alpha: 0.9),
                 ],
                 stops: const [0.4, 0.6, 1.0],
               ),
@@ -196,7 +209,10 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: colors.breakingNewsRed,
                         borderRadius: BorderRadius.circular(8),
@@ -213,7 +229,9 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      DateFormat('h:mm a').format(widget.article.createdAt.toLocal()),
+                      DateFormat(
+                        'h:mm a',
+                      ).format(widget.article.createdAt.toLocal()),
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
@@ -223,7 +241,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Headline
                 Text(
                   widget.article.headline,
@@ -236,7 +254,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                   maxLines: 4,
                   overflow: TextOverflow.ellipsis,
                 ),
-                
+
                 if (widget.article.subHeader != null) ...[
                   const SizedBox(height: 12),
                   Text(
@@ -263,11 +281,11 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final bgColor = colors.surface;
     final textColor = colors.textPrimary;
     final subTextColor = colors.textSecondary;
-    final borderColor = colors.border.withOpacity(0.5);
+    final borderColor = colors.border.withValues(alpha: 0.5);
 
     return Container(
       decoration: BoxDecoration(
@@ -298,41 +316,47 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                 if (_isFullyRead)
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20,
+                    ),
                   ),
                 const SizedBox(width: 8),
-                
+
                 // Team Logos - Use Wrap to prevent overflow if many teams
-                if (widget.article.teams != null && widget.article.teams!.isNotEmpty)
-                   ConstrainedBox(
-                     constraints: const BoxConstraints(maxWidth: 120),
-                     child: Wrap(
-                       alignment: WrapAlignment.end,
-                       spacing: -8, // Slight overlap for style
-                       children: widget.article.teams!.take(3).map((team) {
-                         final teamId = team['team_id']?.toString().toLowerCase() ?? '';
-                         if (teamId.isEmpty) return const SizedBox.shrink();
-                         
-                         return Container(
-                           decoration: BoxDecoration(
-                             shape: BoxShape.circle,
-                             border: Border.all(color: bgColor, width: 2),
-                             color: Colors.white,
-                           ),
-                           child: Image.asset(
-                             'assets/logos/teams/$teamId.png',
-                             width: 28,
-                             height: 28,
-                             errorBuilder: (_,__,___) => const SizedBox.shrink(),
-                           ),
-                         );
-                       }).toList(),
-                     ),
-                   ),
+                if (widget.article.teams != null &&
+                    widget.article.teams!.isNotEmpty)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 120),
+                    child: Wrap(
+                      alignment: WrapAlignment.end,
+                      spacing: -8, // Slight overlap for style
+                      children: widget.article.teams!.take(3).map((team) {
+                        final teamId = team.teamId.toLowerCase();
+                        if (teamId.isEmpty) return const SizedBox.shrink();
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: bgColor, width: 2),
+                            color: Colors.white,
+                          ),
+                          child: Image.asset(
+                            'assets/logos/teams/$teamId.png',
+                            width: 28,
+                            height: 28,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox.shrink(),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
               ],
             ),
           ),
-          
+
           // Scrollable Content
           Expanded(
             child: SingleChildScrollView(
@@ -342,7 +366,8 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Players Section (Headshots)
-                  if (widget.article.players != null && widget.article.players!.isNotEmpty) ...[
+                  if (widget.article.players != null &&
+                      widget.article.players!.isNotEmpty) ...[
                     SizedBox(
                       height: 60,
                       child: ListView.builder(
@@ -350,14 +375,18 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                         itemCount: widget.article.players!.length,
                         itemBuilder: (context, index) {
                           final player = widget.article.players![index];
-                          final headshotUrl = player['headshot_url'];
-                          if (headshotUrl == null) return const SizedBox.shrink();
-                          
+                          final headshotUrl = player.headshotUrl;
+                          if (headshotUrl == null) {
+                            return const SizedBox.shrink();
+                          }
+
                           return Padding(
                             padding: const EdgeInsets.only(right: 12.0),
                             child: CircleAvatar(
                               radius: 24,
-                              backgroundColor: isDark ? Colors.white10 : AppColors.neutralSoft,
+                              backgroundColor: isDark
+                                  ? Colors.white10
+                                  : AppColors.neutralSoft,
                               backgroundImage: NetworkImage(headshotUrl),
                               onBackgroundImageError: (_, __) {},
                             ),
@@ -371,10 +400,13 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
 
                   Text(
                     widget.article.headline,
-                    style: AppTextStyles.h2.copyWith(fontSize: 22, color: textColor),
+                    style: AppTextStyles.h2.copyWith(
+                      fontSize: 22,
+                      color: textColor,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   if (widget.article.introductionParagraph != null)
                     Text(
                       widget.article.introductionParagraph!,
@@ -382,21 +414,21 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                         height: 1.6,
                         color: textColor, // Strong emphasis
                         fontWeight: FontWeight.w600,
-                        fontSize: 16
+                        fontSize: 16,
                       ),
                     ),
-                  
+
                   if (widget.article.content != null) ...[
-                     const SizedBox(height: 20),
-                     Text(
-                        widget.article.content!,
-                        style: AppTextStyles.body.copyWith(
-                          height: 1.6,
-                          color: subTextColor,
-                          fontSize: 16
-                        ),
-                     ),
-                  ]
+                    const SizedBox(height: 20),
+                    Text(
+                      widget.article.content!,
+                      style: AppTextStyles.body.copyWith(
+                        height: 1.6,
+                        color: subTextColor,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

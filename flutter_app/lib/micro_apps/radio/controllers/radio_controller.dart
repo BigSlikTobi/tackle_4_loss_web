@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,7 +16,7 @@ class RadioController extends ChangeNotifier {
   String _selectedCategoryId = 'all';
   String get selectedCategoryId => _selectedCategoryId;
 
-  List<RadioCategory> _categories = [
+  final List<RadioCategory> _categories = [
     RadioCategory(id: 'all', label: 'radioCategoryAll'),
     RadioCategory(id: 'deep_dive', label: 'radioCategoryDeepDive'),
     RadioCategory(id: 'news', label: 'radioCategoryNews'),
@@ -38,8 +39,17 @@ class RadioController extends ChangeNotifier {
   List<RadioStation> _allDeepDives = [];
   List<RadioStation> get allDeepDives => _allDeepDives;
 
+  Timer? _newsTimer;
+  Set<String> _currentPlaylistIds = {};
+
   RadioController({String? languageCode}) {
     _initAndLoad(languageCode ?? 'en');
+  }
+
+  @override
+  void dispose() {
+    _newsTimer?.cancel();
+    super.dispose();
   }
 
   void _initAndLoad(String languageCode) async {
@@ -64,19 +74,17 @@ class RadioController extends ChangeNotifier {
     notifyListeners();
 
     // Fetch latest news for dynamic images
-    List<String> newsImages = [];
-    String? latestNewsImage;
 
     try {
       final newsTracks = await fetchNewsTracks(languageCode);
       if (newsTracks.isNotEmpty) {
         _newsImages = newsTracks
-            .map((e) => (e['imageUrl'] as String?) ??
+            .map((e) => (e['imageUrl']) ??
                 'https://placehold.co/400/1a1a1a/ffffff?text=News')
             .toList();
         _latestNewsImage = _newsImages.first;
         _latestNewsHeadline =
-            (newsTracks.first['title'] as String?) ?? 'News';
+            (newsTracks.first['title']) ?? 'News';
       }
     } catch (e) {
       debugPrint("Error loading news images for UI: $e");
@@ -148,6 +156,7 @@ class RadioController extends ChangeNotifier {
   );
 
   Future<void> playStation(RadioStation station, {String? languageCode}) async {
+    _newsTimer?.cancel(); // Cancel any existing polling
     List<Map<String, String>> playlist = [];
 
     if (station.id == 'news_briefing') {
@@ -158,6 +167,9 @@ class RadioController extends ChangeNotifier {
         // 2. We start playing from the first UNPLAYED item.
         playlist = allNews;
         
+        // Track current playlist to avoid duplicates during polling
+        _currentPlaylistIds = playlist.map((e) => e['url']!).toSet();
+
         int initialIndex = 0;
         final unplayedIndex = allNews.indexWhere((track) => !_playedNewsIds.contains(track['url']));
         
@@ -172,6 +184,11 @@ class RadioController extends ChangeNotifier {
 
         if (playlist.isNotEmpty) {
           await _audioService.playPlaylist(playlist, initialIndex: initialIndex);
+          
+          // Start polling for new news every 30 seconds
+          _newsTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+            _checkForNewNews(languageCode ?? 'en');
+          });
         }
         return; // Return early since we handled playback
       } catch (e) {
@@ -213,7 +230,32 @@ class RadioController extends ChangeNotifier {
     }
   }
 
+  Future<void> _checkForNewNews(String languageCode) async {
+    try {
+      final latestNews = await fetchNewsTracks(languageCode);
+      
+      // Filter for tracks that are NOT in the current playlist
+      // We assume track['url'] is the unique identifier
+      final newTracks = latestNews.where((track) => 
+        !_currentPlaylistIds.contains(track['url'])
+      ).toList();
+
+      if (newTracks.isNotEmpty) {
+        debugPrint("RadioController: Found ${newTracks.length} new news tracks. Inserting into queue.");
+        
+        // Insert tracks to be played NEXT
+        await _audioService.insertNext(newTracks);
+        
+        // Update local awareness of what's in the playlist
+        _currentPlaylistIds.addAll(newTracks.map((e) => e['url']!));
+      }
+    } catch (e) {
+      debugPrint("RadioController: Error checking for new news: $e");
+    }
+  }
+
   Future<void> playTrack(Map<String, String> track) async {
+    _newsTimer?.cancel();
     // Determine if it's already playing?
     // For simplicity, just replace playlist with this single track
     await _audioService.playPlaylist([track]);
