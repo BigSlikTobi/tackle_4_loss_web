@@ -1,8 +1,21 @@
-# Tackle4Loss 🏈
+<p align="center">
+  <img src="flutter_app/assets/T4L_app_logo.png" width="120" alt="T4L Logo">
+</p>
 
-**"Tackle4Loss OS."**
+# Tackle4Loss OS 🏈
 
-Welcome to the Tackle4Loss mobile experience. This project is architected as a **Micro-App Operating System**. Instead of a traditional navigation app, we built a custom "OS Shell" that hosts independent, modular applications.
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/bigsliktobi/tackle_4_loss_web/flutter.yml?branch=main&label=CI&logo=github&style=for-the-badge" alt="Build Status">
+  <img src="https://img.shields.io/badge/Flutter-3.22.x-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter Version">
+  <img src="https://img.shields.io/badge/Coverage-80%25-success?style=for-the-badge&logo=dart" alt="Coverage">
+</p>
+
+![Project Banner](assets/readme_banner.png)
+
+
+> [!NOTE]
+> **Tackle4Loss OS** is a premium NFL fan experience architected as a **Micro-App Operating System**. Instead of a traditional navigation app, we built a custom "OS Shell" that hosts independent, modular applications with high-fidelity design.
+
 
 ## 🏗️ Architecture: The "OS Shell"
 
