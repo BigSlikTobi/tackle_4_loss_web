@@ -55,7 +55,7 @@ serve(async (req) => {
                 createdAt: item.created_at,
                 imageUrl: imageUrl,
                 audioUrl: audioUrl,
-                primaryTeam: item.teams && item.teams.length > 0 ? item.teams[0] : null,
+                primaryTeam: Array.isArray(item.teams) && item.teams.length > 0 ? item.teams[0] : null,
             }
         })
 

@@ -138,4 +138,171 @@ class AppLocalizationsEn extends AppLocalizations {
   String radioPlaying(String title) {
     return 'Playing: $title';
   }
+
+  @override
+  String get playerWordleTitle => 'Guess the Player';
+
+  @override
+  String get playerWordleLevelFan => 'Fan';
+
+  @override
+  String get playerWordleLevelRookie => 'Rookie';
+
+  @override
+  String get playerWordleLevelPro => 'Pro';
+
+  @override
+  String get playerWordleLevelAllMadden => 'All-Madden';
+
+  @override
+  String get playerWordleInstructionPrimary => 'Guess the mystery NFL player!';
+
+  @override
+  String get playerWordleInstructionSecondary =>
+      'Start typing a name below to begin.';
+
+  @override
+  String playerWordlePointsToNext(int points, String rank) {
+    return '$points pts to $rank';
+  }
+
+  @override
+  String get playerWordleMaxLevel => 'Max Level';
+
+  @override
+  String get playerWordleSearchHint => 'Search for an NFL player...';
+
+  @override
+  String get playerWordleGameOverSearchHint => 'Game Over';
+
+  @override
+  String get playerWordleYouGotIt => 'You Got It!';
+
+  @override
+  String get playerWordleGameOver => 'Game Over!';
+
+  @override
+  String get playerWordlePlayAgain => 'Play Again';
+
+  @override
+  String get playerWordleStatAge => 'Age';
+
+  @override
+  String get playerWordleStatHeight => 'Height';
+
+  @override
+  String get playerWordleStatWeight => 'Weight';
+
+  @override
+  String get playerWordleStatCollege => 'College';
+
+  @override
+  String get playerWordleStatExperience => 'Experience';
+
+  @override
+  String get playerWordleStatDraft => 'Draft';
+
+  @override
+  String get playerWordleHeaderPlayer => 'Player';
+
+  @override
+  String get playerWordleHeaderConf => 'Conf';
+
+  @override
+  String get playerWordleHeaderDiv => 'Div';
+
+  @override
+  String get playerWordleHeaderTeam => 'Team';
+
+  @override
+  String get playerWordleHeaderPos => 'Pos';
+
+  @override
+  String get playerWordleHeaderNum => '#';
+
+  @override
+  String get playerWordleHeaderAge => 'Age';
+
+  @override
+  String get playerWordleHeaderHt => 'Ht';
+
+  @override
+  String get playerWordleRevealSurprise => 'Reveal Surprise';
+
+  @override
+  String get playerWordleGiveUp => 'Give Up?';
+
+  @override
+  String get playerWordleHint => 'Hint: Reveal College (-10pts)';
+
+  @override
+  String get playerWordleSurpriseTitle => 'A Surprise for you!';
+
+  @override
+  String get playerWordleSurpriseUnlock => 'Unlock';
+
+  @override
+  String get playerWordleSurpriseDismiss => 'Not now';
+
+  @override
+  String get playerWordleModeFan => 'Fan Mode (Easy)';
+
+  @override
+  String get playerWordleModeRookie => 'Rookie Mode (Skill Pos)';
+
+  @override
+  String get playerWordleModePro => 'Pro Mode (All Starters)';
+
+  @override
+  String get playerWordleModeAllMadden => 'All-Madden (Everyone)';
+
+  @override
+  String get playerWordleLoading => 'Finding your mystery player...';
+
+  @override
+  String get playerWordleNoGameLoaded => 'No game loaded';
+
+  @override
+  String get playerWordleFailedToLoad => 'Failed to load game';
+
+  @override
+  String get playerWordleUnknownError => 'Unknown error';
+
+  @override
+  String get playerWordleTryAgain => 'Try Again';
+
+  @override
+  String get playerWordleMaxLevelAchieved => 'Max Level Achieved!';
+
+  @override
+  String get playerWordleStatPts => 'PTS';
+
+  @override
+  String get playerWordleStatPlayed => 'Played';
+
+  @override
+  String get playerWordleStatWon => 'Won';
+
+  @override
+  String get playerWordleStatStreak => 'Streak';
+
+  @override
+  String get playerWordleStatMax => 'Max';
+
+  @override
+  String get playerWordleStatWinLabel => 'WL';
+
+  @override
+  String get playerWordleFilterTeam => 'Team';
+
+  @override
+  String get playerWordleFilterAllTeams => 'All Teams';
+
+  @override
+  String get playerWordleNotAvailable => 'N/A';
+
+  @override
+  String playerWordleGuessesFormat(int count) {
+    return '$count guesses';
+  }
 }

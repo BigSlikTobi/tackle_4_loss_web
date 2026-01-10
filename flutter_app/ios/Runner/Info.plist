@@ -47,6 +47,12 @@
   <array>
     <string>audio</string>
   </array>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>This app requires access to speech recognition to interpret your voice commands for navigation and interaction.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to the microphone to capture voice input for speech recognition/commands.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires access to the photo library to allow you to select and upload images.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 </dict>

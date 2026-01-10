@@ -62,13 +62,15 @@ serve(async (req) => {
 
         const mappedData = data.map((item: any) => {
             // Enrich players with headshot_url
-            const enrichedPlayers = item.players?.map((p: any) => {
+            // Defensive check: ensure players is an array before mapping
+            const playersArray = Array.isArray(item.players) ? item.players : []
+            const enrichedPlayers = playersArray.map((p: any) => {
                 const details = playersMap.get(p.player_id)
                 return {
                     ...p,
                     headshot_url: details?.headshot
                 }
-            }) ?? []
+            })
 
             // Construct image URL (existing logic)
             let imageUrl = item.image_file
@@ -84,7 +86,7 @@ serve(async (req) => {
                 content: item.content, // New field
                 createdAt: item.created_at,
                 imageUrl: imageUrl,
-                teams: item.teams,
+                teams: Array.isArray(item.teams) ? item.teams : [],
                 players: enrichedPlayers, // Enriched list
                 url: item.url,
                 audioFile: item.tts_file

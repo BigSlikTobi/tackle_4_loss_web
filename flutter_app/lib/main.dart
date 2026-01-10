@@ -14,6 +14,7 @@ import 'micro_apps/breaking_news/breaking_news_app.dart';
 import 'micro_apps/radio/radio_app.dart';
 import 'micro_apps/standings/standings_app.dart';
 import 'micro_apps/game_reports/game_reports_app.dart';
+import 'micro_apps/player_wordle/player_wordle_app.dart';
 import 'micro_apps/radio/controllers/radio_controller.dart';
 
 import 'core/services/installed_apps_service.dart';
@@ -50,6 +51,7 @@ Future<void> main() async {
   AppRegistry().register(RadioApp());
   AppRegistry().register(StandingsApp());
   AppRegistry().register(GameReportsApp());
+  AppRegistry().register(PlayerWordleApp());
   
   // 3. Initialize Services
   await InstalledAppsService().init();
