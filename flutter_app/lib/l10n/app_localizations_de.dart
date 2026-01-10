@@ -233,7 +233,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get playerWordleGiveUp => 'Aufgeben?';
 
   @override
-  String get playerWordleHint => 'Tipp: College zeigen (-50 Pkt)';
+  String get playerWordleHint => 'Tipp: College zeigen (-10 Pkt)';
 
   @override
   String get playerWordleSurpriseTitle => 'Eine Überraschung für dich!';
@@ -255,4 +255,54 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get playerWordleModeAllMadden => 'All-Madden (Alle)';
+
+  @override
+  String get playerWordleLoading => 'Suche deinen geheimnisvollen Spieler...';
+
+  @override
+  String get playerWordleNoGameLoaded => 'Kein Spiel geladen';
+
+  @override
+  String get playerWordleFailedToLoad => 'Spiel konnte nicht geladen werden';
+
+  @override
+  String get playerWordleUnknownError => 'Unbekannter Fehler';
+
+  @override
+  String get playerWordleTryAgain => 'Erneut versuchen';
+
+  @override
+  String get playerWordleMaxLevelAchieved => 'Max Level erreicht!';
+
+  @override
+  String get playerWordleStatPts => 'PKT';
+
+  @override
+  String get playerWordleStatPlayed => 'Gespielt';
+
+  @override
+  String get playerWordleStatWon => 'Gewonnen';
+
+  @override
+  String get playerWordleStatStreak => 'Serie';
+
+  @override
+  String get playerWordleStatMax => 'Max';
+
+  @override
+  String get playerWordleStatWinLabel => 'WL';
+
+  @override
+  String get playerWordleFilterTeam => 'Team';
+
+  @override
+  String get playerWordleFilterAllTeams => 'Alle Teams';
+
+  @override
+  String get playerWordleNotAvailable => 'N/V';
+
+  @override
+  String playerWordleGuessesFormat(int count) {
+    return '$count Versuche';
+  }
 }

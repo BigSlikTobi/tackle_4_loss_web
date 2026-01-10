@@ -250,12 +250,17 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
           color: AppColors.textPrimary,
         ),
       ),
-      subtitle: Text(
-        '${player.team ?? 'N/A'} · ${player.position ?? 'N/A'}',
-        style: TextStyle(
-          fontSize: AppTypography.fontSizeSm,
-          color: AppColors.textSecondary,
-        ),
+      subtitle: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          return Text(
+            '${player.team ?? l10n.playerWordleNotAvailable} · ${player.position ?? l10n.playerWordleNotAvailable}',
+            style: TextStyle(
+              fontSize: AppTypography.fontSizeSm,
+              color: AppColors.textSecondary,
+            ),
+          );
+        },
       ),
       onTap: () => _selectPlayer(player),
     );

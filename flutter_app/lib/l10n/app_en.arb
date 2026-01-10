@@ -94,12 +94,33 @@
   "playerWordleHeaderHt": "Ht",
   "playerWordleRevealSurprise": "Reveal Surprise",
   "playerWordleGiveUp": "Give Up?",
-  "playerWordleHint": "Hint: Reveal College (-50pts)",
+  "playerWordleHint": "Hint: Reveal College (-10pts)",
   "playerWordleSurpriseTitle": "A Surprise for you!",
   "playerWordleSurpriseUnlock": "Unlock",
   "playerWordleSurpriseDismiss": "Not now",
   "playerWordleModeFan": "Fan Mode (Easy)",
   "playerWordleModeRookie": "Rookie Mode (Skill Pos)",
   "playerWordleModePro": "Pro Mode (All Starters)",
-  "playerWordleModeAllMadden": "All-Madden (Everyone)"
+  "playerWordleModeAllMadden": "All-Madden (Everyone)",
+  "playerWordleLoading": "Finding your mystery player...",
+  "playerWordleNoGameLoaded": "No game loaded",
+  "playerWordleFailedToLoad": "Failed to load game",
+  "playerWordleUnknownError": "Unknown error",
+  "playerWordleTryAgain": "Try Again",
+  "playerWordleMaxLevelAchieved": "Max Level Achieved!",
+  "playerWordleStatPts": "PTS",
+  "playerWordleStatPlayed": "Played",
+  "playerWordleStatWon": "Won",
+  "playerWordleStatStreak": "Streak",
+  "playerWordleStatMax": "Max",
+  "playerWordleStatWinLabel": "WL",
+  "playerWordleFilterTeam": "Team",
+  "playerWordleFilterAllTeams": "All Teams",
+  "playerWordleNotAvailable": "N/A",
+  "playerWordleGuessesFormat": "{count} guesses",
+  "@playerWordleGuessesFormat": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

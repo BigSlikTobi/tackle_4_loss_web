@@ -10,7 +10,6 @@ import '../../../core/os_shell/widgets/t4l_scaffold.dart';
 import '../../../core/services/settings_service.dart';
 import '../../../design_tokens.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../l10n/app_localizations.dart';
 import '../controllers/player_wordle_controller.dart';
 import '../models/game_state.dart';
 import 'widgets/player_search_bar.dart';
@@ -61,7 +60,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
   @override
   Widget build(BuildContext context) {
     return T4LScaffold(
-      title: 'Guess the Player',
+      title: AppLocalizations.of(context)!.playerWordleTitle,
       body: Consumer<PlayerWordleController>(
         builder: (context, controller, child) {
           if (controller.isLoading) {
@@ -74,7 +73,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
 
           final gameState = controller.gameState;
           if (gameState == null) {
-            return const Center(child: Text('No game loaded'));
+            return Center(child: Text(AppLocalizations.of(context)!.playerWordleNoGameLoaded));
           }
 
           if (gameState.isGameOver && controller.mysteryPlayer != null) {
@@ -108,9 +107,11 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
             ),
           ),
           const SizedBox(height: AppSpacing.space3),
-          Text(
-            'Finding your mystery player...',
-            style: AppTextStyles.h3.copyWith(color: AppColors.textSecondary),
+          Builder(
+            builder: (context) => Text(
+              AppLocalizations.of(context)!.playerWordleLoading,
+              style: AppTextStyles.h3.copyWith(color: AppColors.textSecondary),
+            ),
           ),
         ],
       ),
@@ -220,7 +221,9 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                                         '${controller.totalPoints}',
                                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                       ),
-                                      const Text('PTS', style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+                                      Builder(
+                                        builder: (context) => Text(AppLocalizations.of(context)!.playerWordleStatPts, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -335,7 +338,9 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text(controller.selectedTeamFilter ?? 'Team', style: const TextStyle(fontSize: 12)),
+                                          Builder(
+                                          builder: (context) => Text(controller.selectedTeamFilter ?? AppLocalizations.of(context)!.playerWordleFilterTeam, style: const TextStyle(fontSize: 12)),
+                                        ),
                                           const SizedBox(width: 4),
                                           Icon(
                                             controller.selectedTeamFilter != null 
@@ -350,7 +355,9 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                                   menuChildren: [
                                     MenuItemButton(
                                       onPressed: () => controller.setTeamFilter(null),
-                                      child: const Text('All Teams'),
+                                      child: Builder(
+                                        builder: (context) => Text(AppLocalizations.of(context)!.playerWordleFilterAllTeams),
+                                      ),
                                     ),
                                     for (final team in ['ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 'DAL', 'DEN', 'DET', 'GB', 'HOU', 'IND', 'JAX', 'KC', 'LAC', 'LAR', 'LV', 'MIA', 'MIN', 'NE', 'NO', 'NYG', 'NYJ', 'PHI', 'PIT', 'SEA', 'SF', 'TB', 'TEN', 'WAS'])
                                       MenuItemButton(
@@ -440,8 +447,12 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('WL: ${(controller.winPercentage * 100).toInt()}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
-          Text('STREAK: ${controller.currentStreak}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+          Builder(
+            builder: (context) => Text('${AppLocalizations.of(context)!.playerWordleStatWinLabel}: ${(controller.winPercentage * 100).toInt()}%', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+          ),
+          Builder(
+            builder: (context) => Text('${AppLocalizations.of(context)!.playerWordleStatStreak.toUpperCase()}: ${controller.currentStreak}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+          ),
           if (gameState.hintUsed && gameState.revealedHint != null)
              Row(
                mainAxisSize: MainAxisSize.min,
@@ -470,9 +481,9 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem('Played', '${controller.gamesPlayed}'),
-          _buildStatItem('Won', '${(controller.winPercentage * 100).toInt()}%'),
-          _buildStatItem('Streak', '${controller.currentStreak}'),
+          _buildStatItem(context, AppLocalizations.of(context)!.playerWordleStatPlayed, '${controller.gamesPlayed}'),
+          _buildStatItem(context, AppLocalizations.of(context)!.playerWordleStatWon, '${(controller.winPercentage * 100).toInt()}%'),
+          _buildStatItem(context, AppLocalizations.of(context)!.playerWordleStatStreak, '${controller.currentStreak}'),
           if (gameState.hintUsed && gameState.revealedHint != null)
              Container(
                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -502,7 +513,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
+  Widget _buildStatItem(BuildContext context, String label, String value) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -887,7 +898,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                       Icon(Icons.emoji_events, color: Colors.amber, size: 20),
                       const SizedBox(width: 6),
                       Text(
-                        'Max Level Achieved!',
+                        l10n.playerWordleMaxLevelAchieved,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.amber.shade700,
@@ -965,10 +976,10 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
               color: AppColors.breakingNewsRed,
             ),
             const SizedBox(height: AppSpacing.space3),
-            Text('Failed to load game', style: AppTextStyles.h2),
+            Text(AppLocalizations.of(context)!.playerWordleFailedToLoad, style: AppTextStyles.h2),
             const SizedBox(height: AppSpacing.space1),
             Text(
-              controller.error ?? 'Unknown error',
+              controller.error ?? AppLocalizations.of(context)!.playerWordleUnknownError,
               style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -976,7 +987,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
             ElevatedButton.icon(
               onPressed: controller.startNewGame,
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text(AppLocalizations.of(context)!.playerWordleTryAgain),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandBase,
                 foregroundColor: Colors.white,

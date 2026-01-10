@@ -527,7 +527,7 @@ abstract class AppLocalizations {
   /// No description provided for @playerWordleHint.
   ///
   /// In en, this message translates to:
-  /// **'Hint: Reveal College (-50pts)'**
+  /// **'Hint: Reveal College (-10pts)'**
   String get playerWordleHint;
 
   /// No description provided for @playerWordleSurpriseTitle.
@@ -571,6 +571,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All-Madden (Everyone)'**
   String get playerWordleModeAllMadden;
+
+  /// No description provided for @playerWordleLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding your mystery player...'**
+  String get playerWordleLoading;
+
+  /// No description provided for @playerWordleNoGameLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'No game loaded'**
+  String get playerWordleNoGameLoaded;
+
+  /// No description provided for @playerWordleFailedToLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load game'**
+  String get playerWordleFailedToLoad;
+
+  /// No description provided for @playerWordleUnknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error'**
+  String get playerWordleUnknownError;
+
+  /// No description provided for @playerWordleTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get playerWordleTryAgain;
+
+  /// No description provided for @playerWordleMaxLevelAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Level Achieved!'**
+  String get playerWordleMaxLevelAchieved;
+
+  /// No description provided for @playerWordleStatPts.
+  ///
+  /// In en, this message translates to:
+  /// **'PTS'**
+  String get playerWordleStatPts;
+
+  /// No description provided for @playerWordleStatPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Played'**
+  String get playerWordleStatPlayed;
+
+  /// No description provided for @playerWordleStatWon.
+  ///
+  /// In en, this message translates to:
+  /// **'Won'**
+  String get playerWordleStatWon;
+
+  /// No description provided for @playerWordleStatStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get playerWordleStatStreak;
+
+  /// No description provided for @playerWordleStatMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Max'**
+  String get playerWordleStatMax;
+
+  /// No description provided for @playerWordleStatWinLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WL'**
+  String get playerWordleStatWinLabel;
+
+  /// No description provided for @playerWordleFilterTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Team'**
+  String get playerWordleFilterTeam;
+
+  /// No description provided for @playerWordleFilterAllTeams.
+  ///
+  /// In en, this message translates to:
+  /// **'All Teams'**
+  String get playerWordleFilterAllTeams;
+
+  /// No description provided for @playerWordleNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'N/A'**
+  String get playerWordleNotAvailable;
+
+  /// No description provided for @playerWordleGuessesFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} guesses'**
+  String playerWordleGuessesFormat(int count);
 }
 
 class _AppLocalizationsDelegate

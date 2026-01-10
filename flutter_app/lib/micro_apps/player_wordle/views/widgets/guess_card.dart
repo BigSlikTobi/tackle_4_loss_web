@@ -219,7 +219,7 @@ class _GuessCardState extends State<GuessCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  '${player.team ?? "N/A"} • ${player.position ?? "N/A"}',
+                  '${player.team ?? AppLocalizations.of(context)!.playerWordleNotAvailable} • ${player.position ?? AppLocalizations.of(context)!.playerWordleNotAvailable}',
                   style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,

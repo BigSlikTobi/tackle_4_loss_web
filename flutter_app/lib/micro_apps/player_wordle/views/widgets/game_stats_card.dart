@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
+import '../../../../l10n/app_localizations.dart';
 
 /// Displays game statistics (streak, win rate).
 class GameStatsCard extends StatelessWidget {
@@ -43,28 +44,33 @@ class GameStatsCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildStat(
+            context,
             value: gamesPlayed.toString(),
-            label: 'Played',
+            label: AppLocalizations.of(context)!.playerWordleStatPlayed,
           ),
           _buildStat(
+            context,
             value: '$winPercentage%',
-            label: 'Win %',
+            label: AppLocalizations.of(context)!.playerWordleStatWon,
           ),
           _buildStat(
+            context,
             value: currentStreak.toString(),
-            label: 'Streak',
+            label: AppLocalizations.of(context)!.playerWordleStatStreak,
             highlight: currentStreak >= 3,
           ),
           _buildStat(
+            context,
             value: maxStreak.toString(),
-            label: 'Max',
+            label: AppLocalizations.of(context)!.playerWordleStatMax,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStat({
+  Widget _buildStat(
+    BuildContext context, {
     required String value,
     required String label,
     bool highlight = false,

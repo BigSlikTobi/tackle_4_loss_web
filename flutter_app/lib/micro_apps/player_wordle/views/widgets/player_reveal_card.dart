@@ -51,7 +51,7 @@ class PlayerRevealCard extends StatelessWidget {
           // Header
           _buildHeader(context, isWin),
           // Player photo and info
-          _buildPlayerInfo(),
+          _buildPlayerInfo(context),
           // Stats grid
           _buildStatsGrid(context),
           // Play again button
@@ -85,7 +85,7 @@ class PlayerRevealCard extends StatelessWidget {
           const SizedBox(width: AppSpacing.space1),
           Text(
             isWin 
-                ? '${l10n.playerWordleYouGotIt}${guessCount != null ? " ($guessCount guesses)" : ""}'
+                ? '${l10n.playerWordleYouGotIt}${guessCount != null ? " (${l10n.playerWordleGuessesFormat(guessCount!)})" : ""}'
                 : l10n.playerWordleGameOver,
             style: AppTextStyles.h2.copyWith(
               color: isWin ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
@@ -96,7 +96,8 @@ class PlayerRevealCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayerInfo() {
+  Widget _buildPlayerInfo(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.space3),
       child: Column(
@@ -142,7 +143,7 @@ class PlayerRevealCard extends StatelessWidget {
                 const SizedBox(width: AppSpacing.space1),
               ],
               Text(
-                '${player.teamName ?? player.team ?? "N/A"} · ${player.position ?? "N/A"}',
+                '${player.teamName ?? player.team ?? l10n.playerWordleNotAvailable} · ${player.position ?? l10n.playerWordleNotAvailable}',
                 style: AppTextStyles.body.copyWith(
                   color: AppColors.textSecondary,
                 ),

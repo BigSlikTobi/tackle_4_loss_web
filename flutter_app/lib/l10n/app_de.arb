@@ -70,12 +70,33 @@
   "playerWordleHeaderHt": "Größe",
   "playerWordleRevealSurprise": "Überraschung!",
   "playerWordleGiveUp": "Aufgeben?",
-  "playerWordleHint": "Tipp: College zeigen (-50 Pkt)",
+  "playerWordleHint": "Tipp: College zeigen (-10 Pkt)",
   "playerWordleSurpriseTitle": "Eine Überraschung für dich!",
   "playerWordleSurpriseUnlock": "Freischalten",
   "playerWordleSurpriseDismiss": "Nicht jetzt",
   "playerWordleModeFan": "Fan Modus (Einfach)",
   "playerWordleModeRookie": "Rookie Modus (Skill Pos)",
   "playerWordleModePro": "Pro Modus (Alle Starter)",
-  "playerWordleModeAllMadden": "All-Madden (Alle)"
+  "playerWordleModeAllMadden": "All-Madden (Alle)",
+  "playerWordleLoading": "Suche deinen geheimnisvollen Spieler...",
+  "playerWordleNoGameLoaded": "Kein Spiel geladen",
+  "playerWordleFailedToLoad": "Spiel konnte nicht geladen werden",
+  "playerWordleUnknownError": "Unbekannter Fehler",
+  "playerWordleTryAgain": "Erneut versuchen",
+  "playerWordleMaxLevelAchieved": "Max Level erreicht!",
+  "playerWordleStatPts": "PKT",
+  "playerWordleStatPlayed": "Gespielt",
+  "playerWordleStatWon": "Gewonnen",
+  "playerWordleStatStreak": "Serie",
+  "playerWordleStatMax": "Max",
+  "playerWordleStatWinLabel": "WL",
+  "playerWordleFilterTeam": "Team",
+  "playerWordleFilterAllTeams": "Alle Teams",
+  "playerWordleNotAvailable": "N/V",
+  "playerWordleGuessesFormat": "{count} Versuche",
+  "@playerWordleGuessesFormat": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  }
 }

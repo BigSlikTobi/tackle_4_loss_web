@@ -411,7 +411,12 @@ class PlayerWordleController extends ChangeNotifier {
     // So if I win on 1st guess, guesses.length is 1, remaining is 7.
     // Formula: 100 * (7 + 1) / 8 = 100. Correct.
     
-    return (basePoints * (remaining + 1) / maxGuesses).round();
+    final baseScore = (basePoints * (remaining + 1) / maxGuesses).round();
+    
+    // Deduct points if hint was used
+    final hintPenalty = _gameState!.hintUsed ? 10 : 0;
+    
+    return (baseScore - hintPenalty).clamp(0, baseScore);
   }
   
   /// Checks if a difficulty level is unlocked.
