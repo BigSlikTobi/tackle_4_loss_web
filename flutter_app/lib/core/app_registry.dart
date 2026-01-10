@@ -16,6 +16,7 @@ class AppRegistry {
     'radio': AppMetadata(category: 'Entertainment', isFeatured: false),
     'standings': AppMetadata(category: 'Sports', isFeatured: false),
     'game_reports': AppMetadata(category: 'Sports', isFeatured: false),
+    'player_wordle': AppMetadata(category: 'Games', isFeatured: false),
   };
 
   final List<MicroApp> _registeredApps = [];

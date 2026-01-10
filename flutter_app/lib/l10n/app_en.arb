@@ -57,5 +57,49 @@
         "type": "String"
       }
     }
-  }
+  },
+  "playerWordleTitle": "Guess the Player",
+  "playerWordleLevelFan": "Fan",
+  "playerWordleLevelRookie": "Rookie",
+  "playerWordleLevelPro": "Pro",
+  "playerWordleLevelAllMadden": "All-Madden",
+  "playerWordleInstructionPrimary": "Guess the mystery NFL player!",
+  "playerWordleInstructionSecondary": "Start typing a name below to begin.",
+  "playerWordlePointsToNext": "{points} pts to {rank}",
+  "@playerWordlePointsToNext": {
+    "placeholders": {
+      "points": { "type": "int" },
+      "rank": { "type": "String" }
+    }
+  },
+  "playerWordleMaxLevel": "Max Level",
+  "playerWordleSearchHint": "Search for an NFL player...",
+  "playerWordleGameOverSearchHint": "Game Over",
+  "playerWordleYouGotIt": "You Got It!",
+  "playerWordleGameOver": "Game Over!",
+  "playerWordlePlayAgain": "Play Again",
+  "playerWordleStatAge": "Age",
+  "playerWordleStatHeight": "Height",
+  "playerWordleStatWeight": "Weight",
+  "playerWordleStatCollege": "College",
+  "playerWordleStatExperience": "Experience",
+  "playerWordleStatDraft": "Draft",
+  "playerWordleHeaderPlayer": "Player",
+  "playerWordleHeaderConf": "Conf",
+  "playerWordleHeaderDiv": "Div",
+  "playerWordleHeaderTeam": "Team",
+  "playerWordleHeaderPos": "Pos",
+  "playerWordleHeaderNum": "#",
+  "playerWordleHeaderAge": "Age",
+  "playerWordleHeaderHt": "Ht",
+  "playerWordleRevealSurprise": "Reveal Surprise",
+  "playerWordleGiveUp": "Give Up?",
+  "playerWordleHint": "Hint: Reveal College (-50pts)",
+  "playerWordleSurpriseTitle": "A Surprise for you!",
+  "playerWordleSurpriseUnlock": "Unlock",
+  "playerWordleSurpriseDismiss": "Not now",
+  "playerWordleModeFan": "Fan Mode (Easy)",
+  "playerWordleModeRookie": "Rookie Mode (Skill Pos)",
+  "playerWordleModePro": "Pro Mode (All Starters)",
+  "playerWordleModeAllMadden": "All-Madden (Everyone)"
 }

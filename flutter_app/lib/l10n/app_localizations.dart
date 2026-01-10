@@ -63,7 +63,7 @@ import 'app_localizations_en.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -86,16 +86,16 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// Navigation bar label for the Home screen
@@ -343,6 +343,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Playing: {title}'**
   String radioPlaying(String title);
+
+  /// No description provided for @playerWordleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Guess the Player'**
+  String get playerWordleTitle;
+
+  /// No description provided for @playerWordleLevelFan.
+  ///
+  /// In en, this message translates to:
+  /// **'Fan'**
+  String get playerWordleLevelFan;
+
+  /// No description provided for @playerWordleLevelRookie.
+  ///
+  /// In en, this message translates to:
+  /// **'Rookie'**
+  String get playerWordleLevelRookie;
+
+  /// No description provided for @playerWordleLevelPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro'**
+  String get playerWordleLevelPro;
+
+  /// No description provided for @playerWordleLevelAllMadden.
+  ///
+  /// In en, this message translates to:
+  /// **'All-Madden'**
+  String get playerWordleLevelAllMadden;
+
+  /// No description provided for @playerWordleInstructionPrimary.
+  ///
+  /// In en, this message translates to:
+  /// **'Guess the mystery NFL player!'**
+  String get playerWordleInstructionPrimary;
+
+  /// No description provided for @playerWordleInstructionSecondary.
+  ///
+  /// In en, this message translates to:
+  /// **'Start typing a name below to begin.'**
+  String get playerWordleInstructionSecondary;
+
+  /// No description provided for @playerWordlePointsToNext.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} pts to {rank}'**
+  String playerWordlePointsToNext(int points, String rank);
+
+  /// No description provided for @playerWordleMaxLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Level'**
+  String get playerWordleMaxLevel;
+
+  /// No description provided for @playerWordleSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for an NFL player...'**
+  String get playerWordleSearchHint;
+
+  /// No description provided for @playerWordleGameOverSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Over'**
+  String get playerWordleGameOverSearchHint;
+
+  /// No description provided for @playerWordleYouGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'You Got It!'**
+  String get playerWordleYouGotIt;
+
+  /// No description provided for @playerWordleGameOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Over!'**
+  String get playerWordleGameOver;
+
+  /// No description provided for @playerWordlePlayAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Again'**
+  String get playerWordlePlayAgain;
+
+  /// No description provided for @playerWordleStatAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get playerWordleStatAge;
+
+  /// No description provided for @playerWordleStatHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get playerWordleStatHeight;
+
+  /// No description provided for @playerWordleStatWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get playerWordleStatWeight;
+
+  /// No description provided for @playerWordleStatCollege.
+  ///
+  /// In en, this message translates to:
+  /// **'College'**
+  String get playerWordleStatCollege;
+
+  /// No description provided for @playerWordleStatExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get playerWordleStatExperience;
+
+  /// No description provided for @playerWordleStatDraft.
+  ///
+  /// In en, this message translates to:
+  /// **'Draft'**
+  String get playerWordleStatDraft;
+
+  /// No description provided for @playerWordleHeaderPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Player'**
+  String get playerWordleHeaderPlayer;
+
+  /// No description provided for @playerWordleHeaderConf.
+  ///
+  /// In en, this message translates to:
+  /// **'Conf'**
+  String get playerWordleHeaderConf;
+
+  /// No description provided for @playerWordleHeaderDiv.
+  ///
+  /// In en, this message translates to:
+  /// **'Div'**
+  String get playerWordleHeaderDiv;
+
+  /// No description provided for @playerWordleHeaderTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'Team'**
+  String get playerWordleHeaderTeam;
+
+  /// No description provided for @playerWordleHeaderPos.
+  ///
+  /// In en, this message translates to:
+  /// **'Pos'**
+  String get playerWordleHeaderPos;
+
+  /// No description provided for @playerWordleHeaderNum.
+  ///
+  /// In en, this message translates to:
+  /// **'#'**
+  String get playerWordleHeaderNum;
+
+  /// No description provided for @playerWordleHeaderAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get playerWordleHeaderAge;
+
+  /// No description provided for @playerWordleHeaderHt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ht'**
+  String get playerWordleHeaderHt;
+
+  /// No description provided for @playerWordleRevealSurprise.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal Surprise'**
+  String get playerWordleRevealSurprise;
+
+  /// No description provided for @playerWordleGiveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Give Up?'**
+  String get playerWordleGiveUp;
+
+  /// No description provided for @playerWordleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hint: Reveal College (-50pts)'**
+  String get playerWordleHint;
+
+  /// No description provided for @playerWordleSurpriseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A Surprise for you!'**
+  String get playerWordleSurpriseTitle;
+
+  /// No description provided for @playerWordleSurpriseUnlock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get playerWordleSurpriseUnlock;
+
+  /// No description provided for @playerWordleSurpriseDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get playerWordleSurpriseDismiss;
+
+  /// No description provided for @playerWordleModeFan.
+  ///
+  /// In en, this message translates to:
+  /// **'Fan Mode (Easy)'**
+  String get playerWordleModeFan;
+
+  /// No description provided for @playerWordleModeRookie.
+  ///
+  /// In en, this message translates to:
+  /// **'Rookie Mode (Skill Pos)'**
+  String get playerWordleModeRookie;
+
+  /// No description provided for @playerWordleModePro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro Mode (All Starters)'**
+  String get playerWordleModePro;
+
+  /// No description provided for @playerWordleModeAllMadden.
+  ///
+  /// In en, this message translates to:
+  /// **'All-Madden (Everyone)'**
+  String get playerWordleModeAllMadden;
 }
 
 class _AppLocalizationsDelegate
@@ -372,9 +600,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

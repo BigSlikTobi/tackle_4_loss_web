@@ -76,13 +76,15 @@ serve(async (req) => {
 
         const mappedData = newsData.map((item: any) => {
             // Enrich players with headshot_url
-            const enrichedPlayers = item.players?.map((p: any) => {
+            // Defensive check: ensure players is an array before mapping
+            const playersArray = Array.isArray(item.players) ? item.players : []
+            const enrichedPlayers = playersArray.map((p: any) => {
                 const details = playersMap.get(p.player_id)
                 return {
                     ...p,
                     headshot_url: details?.headshot
                 }
-            }) ?? []
+            })
 
             // Construct image URL
             let imageUrl = item.image_file
@@ -98,7 +100,7 @@ serve(async (req) => {
                 createdAt: item.created_at,
                 headline: item.headline,
                 players: enrichedPlayers,
-                teams: item.teams ?? [],
+                teams: Array.isArray(item.teams) ? item.teams : [],
             }
         })
 

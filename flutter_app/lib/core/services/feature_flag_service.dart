@@ -16,6 +16,7 @@ class FeatureFlagService {
     'radio': true,
     'standings': true,
     'game_reports': false, // in development
+    'player_wordle': true, // Ready for testing
   };
 
   /// Returns true if the feature/app is enabled.
