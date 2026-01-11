@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
+import '../../core/app_category.dart';
 import 'views/standings_screen.dart';
 import 'views/widgets/standings_widget.dart';
 
@@ -11,6 +12,15 @@ class StandingsApp extends MicroApp {
 
   @override
   String get name => 'Game Center';
+
+  @override
+  String get description => 'NFL standings and team rankings';
+
+  @override
+  AppCategory get category => AppCategory.gameData;
+
+  @override
+  bool get showOnHomePage => false;
 
   @override
   IconData get icon => Icons.sports_football_rounded;
@@ -39,3 +49,4 @@ class StandingsApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const StandingsWidget();
 }
+

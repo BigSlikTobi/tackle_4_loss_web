@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_category.dart';
 
 /// The contract that all feature apps must implement.
 /// This allows the Core OS to behave like an App Store/Launcher.
@@ -8,6 +9,16 @@ abstract class MicroApp {
 
   /// Display name of the app.
   String get name;
+
+  /// Short description of the app (1-2 sentences for App Hub display).
+  String get description;
+
+  /// Category for organizing apps in the App Hub.
+  AppCategory get category;
+
+  /// Whether this app should appear on the home page by default.
+  /// If false, app is only accessible via App Hub.
+  bool get showOnHomePage => false;
 
   /// The official icon for the app (displayed in App Store & OS Shell).
   IconData get icon;
@@ -47,3 +58,4 @@ abstract class MicroApp {
     return page(context);
   }
 }
+

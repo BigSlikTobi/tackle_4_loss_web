@@ -256,7 +256,23 @@ class TimelineGameRow extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(team.logoUrl, width: 24, height: 24),
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(4),
+          child: Image.asset(team.logoUrl),
+        ),
         const SizedBox(width: 4),
         Text(
           teamId.toUpperCase(),

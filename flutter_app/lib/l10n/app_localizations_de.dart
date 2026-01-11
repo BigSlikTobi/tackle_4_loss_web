@@ -12,7 +12,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navHome => 'Startseite';
 
   @override
-  String get navAppStore => 'App Store';
+  String get navAppHub => 'App Hub';
 
   @override
   String get navHistory => 'Letzte App';
@@ -68,16 +68,44 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deepDiveNoContent => 'Kein Inhalt verfügbar';
 
   @override
-  String get appStoreTitle => 'T4L Apps';
+  String get deepDiveNotebookDisclaimer =>
+      'Für unsere Recherche nutzen wir NotebookLM, wenn du mehr erfahren oder tiefer in das Thema einsteigen willst, gelangst du hier zum Notebook!';
 
   @override
-  String get appStoreFeaturedTitle => 'App des Monats';
+  String get appHubTitle => 'App Hub';
 
   @override
-  String get appStoreFeaturedSubtitle => 'Tiefes, immersives Lesen.';
+  String get appHubFeaturedTitle => 'Empfohlene App';
 
   @override
-  String get appStoreAllApps => 'Alle Apps';
+  String get appHubFeaturedGames => 'Spiel des Monats';
+
+  @override
+  String get appHubFeaturedContent => 'Artikel des Monats';
+
+  @override
+  String get appHubFeaturedGameData => 'Stat d. Monats';
+
+  @override
+  String get appHubFeaturedNews => 'Thema d. Monats';
+
+  @override
+  String get appHubAllApps => 'Alle Apps';
+
+  @override
+  String get appHubOpen => 'Öffnen';
+
+  @override
+  String get categoryGames => 'Spiele';
+
+  @override
+  String get categoryGameData => 'Spielinfos';
+
+  @override
+  String get categoryContent => 'Inhalte';
+
+  @override
+  String get categoryNews => 'News';
 
   @override
   String get radioTitle => 'Radio';

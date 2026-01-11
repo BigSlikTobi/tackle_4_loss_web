@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
+import '../../core/app_category.dart';
 import 'views/breaking_news_list_screen.dart';
 import 'views/widgets/breaking_news_widget.dart';
 
@@ -9,6 +10,15 @@ class BreakingNewsApp implements MicroApp {
 
   @override
   String get name => 'Breaking News';
+
+  @override
+  String get description => 'Real-time NFL news and updates';
+
+  @override
+  AppCategory get category => AppCategory.news;
+
+  @override
+  bool get showOnHomePage => true;
 
   @override
   IconData get icon => Icons.flash_on_rounded;
@@ -45,7 +55,7 @@ class BreakingNewsApp implements MicroApp {
   }
 
   @override
-  bool get hasWidget => true;
+  bool get hasWidget => false;
 
   @override
   Size get widgetSize => const Size(2, 2);
@@ -53,3 +63,4 @@ class BreakingNewsApp implements MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const BreakingNewsWidget();
 }
+

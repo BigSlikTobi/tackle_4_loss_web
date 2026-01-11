@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../design_tokens.dart';
+import '../../widgets/notification_badge.dart';
 
 class T4LFloatingNavBar extends StatefulWidget {
   final VoidCallback onHome;
@@ -15,6 +16,7 @@ class T4LFloatingNavBar extends StatefulWidget {
   final String? appStoreTooltip;
   final String? historyTooltip;
   final String? settingsTooltip;
+  final bool showAppHubBadge;
 
   const T4LFloatingNavBar({
     super.key,
@@ -28,6 +30,7 @@ class T4LFloatingNavBar extends StatefulWidget {
     this.appStoreTooltip,
     this.historyTooltip,
     this.settingsTooltip,
+    this.showAppHubBadge = false,
   });
 
   @override
@@ -111,11 +114,22 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                 ),
               ),
 
-              // Slot 2: App Store
-              _NavBarButton(
-                onTap: widget.onAppStore,
-                tooltip: widget.appStoreTooltip,
-                icon: LucideIcons.layoutGrid,
+              // Slot 2: App Store with optional badge
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _NavBarButton(
+                    onTap: widget.onAppStore,
+                    tooltip: widget.appStoreTooltip,
+                    icon: LucideIcons.layoutGrid,
+                  ),
+                  if (widget.showAppHubBadge)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: NotificationBadge(show: widget.showAppHubBadge),
+                    ),
+                ],
               ),
 
               // Slot 3: Spacer for the Center Button

@@ -7,6 +7,7 @@ import '../controllers/game_report_controller.dart';
 import 'widgets/chat_interface.dart';
 import 'widgets/quick_action_chips.dart';
 import 'widgets/game_selector.dart';
+import '../../../core/widgets/shimmer_skeleton.dart';
 
 /// Redesigned Game Reports screen with chat-first conversational UI.
 class GameReportScreen extends StatefulWidget {
@@ -145,7 +146,11 @@ class _GameReportScreenState extends State<GameReportScreen> {
           _buildQuotaBadge(),
         ],
         body: _isLoadingGames
-            ? const Center(child: CircularProgressIndicator())
+            ? ListView.builder(
+                padding: const EdgeInsets.only(top: 130),
+                itemCount: 5,
+                itemBuilder: (_, __) => const CardSkeleton(),
+              )
             : Column(
                 children: [
                   // Compact Game Header

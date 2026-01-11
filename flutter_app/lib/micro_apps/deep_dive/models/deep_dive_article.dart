@@ -14,6 +14,7 @@ class DeepDiveArticle {
   final String imageUrl;
   final String? videoUrl;
   final String? audioUrl;
+  final String? notebookUrl;
   final DateTime publishedAt;
   final String author;
   final String languageCode;
@@ -27,6 +28,7 @@ class DeepDiveArticle {
     required this.imageUrl,
     this.audioUrl,
     this.videoUrl,
+    this.notebookUrl,
     required this.publishedAt,
     required this.author,
     required this.languageCode,
@@ -61,6 +63,7 @@ class DeepDiveArticle {
       imageUrl: json['hero_image_url'] as String,
       audioUrl: json['audio_file'] as String?,
       videoUrl: json['video_file'] as String?,
+      notebookUrl: json['notebook_link'] as String?,
       publishedAt: DateTime.parse(json['published_at'] as String),
       author: json['author'] as String,
       languageCode: json['language_code'] as String,
@@ -88,6 +91,7 @@ This Deep Dive explores the mathematical principles behind the modern spread and
       ''',
       imageUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=3538&auto=format&fit=crop',
       audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Free test audio
+      notebookUrl: 'https://colab.research.google.com/',
       publishedAt: DateTime.now(),
       author: 'Tobias Latta',
       languageCode: 'en',

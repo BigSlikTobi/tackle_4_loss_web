@@ -16,7 +16,7 @@ void main() {
       final service = NavigationService();
       service.trackAppLaunch('deep_dive'); // Set initial
       
-      service.trackAppLaunch('app_store');
+      service.trackAppLaunch('app_hub');
       expect(service.lastAppId, 'deep_dive'); // Should still be deep_dive
       
       service.trackAppLaunch('settings');

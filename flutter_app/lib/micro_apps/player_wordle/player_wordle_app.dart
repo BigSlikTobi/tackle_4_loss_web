@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
+import '../../core/app_category.dart';
 import 'views/player_wordle_screen.dart';
 
 /// The Player Wordle (NFL Guessing Game) micro app.
@@ -9,7 +10,15 @@ class PlayerWordleApp extends MicroApp {
   String get id => 'player_wordle';
 
   @override
-  String get name => 'Player Wordle';
+  String get name => 'Guess the Player';
+
+  @override
+  String get description => 'Guess the mystery NFL player in 8 tries';
+
+  @override
+  AppCategory get category => AppCategory.games;
+
+  // showOnHomePage defaults to false (App Hub only)
 
   @override
   IconData get icon => Icons.sports_football_rounded;
@@ -38,3 +47,4 @@ class PlayerWordleApp extends MicroApp {
   @override
   Size get widgetSize => const Size(1, 1);
 }
+

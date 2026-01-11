@@ -104,11 +104,11 @@ abstract class AppLocalizations {
   /// **'Home'**
   String get navHome;
 
-  /// No description provided for @navAppStore.
+  /// No description provided for @navAppHub.
   ///
   /// In en, this message translates to:
-  /// **'App Store'**
-  String get navAppStore;
+  /// **'App Hub'**
+  String get navAppHub;
 
   /// No description provided for @navHistory.
   ///
@@ -212,29 +212,83 @@ abstract class AppLocalizations {
   /// **'No content available'**
   String get deepDiveNoContent;
 
-  /// No description provided for @appStoreTitle.
+  /// No description provided for @deepDiveNotebookDisclaimer.
   ///
   /// In en, this message translates to:
-  /// **'T4L Apps'**
-  String get appStoreTitle;
+  /// **'Our researches are done with NotebookLM, if you want to dig deeper and explore more content, feel free to access the notebook here!'**
+  String get deepDiveNotebookDisclaimer;
 
-  /// No description provided for @appStoreFeaturedTitle.
+  /// No description provided for @appHubTitle.
   ///
   /// In en, this message translates to:
-  /// **'App of the Month'**
-  String get appStoreFeaturedTitle;
+  /// **'App Hub'**
+  String get appHubTitle;
 
-  /// No description provided for @appStoreFeaturedSubtitle.
+  /// No description provided for @appHubFeaturedTitle.
   ///
   /// In en, this message translates to:
-  /// **'Deeply immersive reading.'**
-  String get appStoreFeaturedSubtitle;
+  /// **'Featured App'**
+  String get appHubFeaturedTitle;
 
-  /// No description provided for @appStoreAllApps.
+  /// No description provided for @appHubFeaturedGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Game of the Month'**
+  String get appHubFeaturedGames;
+
+  /// No description provided for @appHubFeaturedContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Article of the Month'**
+  String get appHubFeaturedContent;
+
+  /// No description provided for @appHubFeaturedGameData.
+  ///
+  /// In en, this message translates to:
+  /// **'Stat of the Month'**
+  String get appHubFeaturedGameData;
+
+  /// No description provided for @appHubFeaturedNews.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic of the Month'**
+  String get appHubFeaturedNews;
+
+  /// No description provided for @appHubAllApps.
   ///
   /// In en, this message translates to:
   /// **'All Apps'**
-  String get appStoreAllApps;
+  String get appHubAllApps;
+
+  /// No description provided for @appHubOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get appHubOpen;
+
+  /// No description provided for @categoryGames.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get categoryGames;
+
+  /// No description provided for @categoryGameData.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Data'**
+  String get categoryGameData;
+
+  /// No description provided for @categoryContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
+  String get categoryContent;
+
+  /// No description provided for @categoryNews.
+  ///
+  /// In en, this message translates to:
+  /// **'News'**
+  String get categoryNews;
 
   /// No description provided for @radioTitle.
   ///

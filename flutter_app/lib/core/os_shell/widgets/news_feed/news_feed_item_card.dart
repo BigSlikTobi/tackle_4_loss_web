@@ -6,6 +6,7 @@ import '../../../services/settings_service.dart';
 import '../../../theme/t4l_theme.dart';
 import '../../../services/navigation_service.dart';
 import '../../../app_registry.dart';
+import '../../../services/team_logo_service.dart';
 
 /// Individual news feed item with subtle ambient animations
 class NewsFeedItemCard extends StatefulWidget {
@@ -335,7 +336,7 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                                           ),
                                           child: ClipOval(
                                             child: Image.asset(
-                                              'assets/logos/teams/$teamId.png',
+                                              TeamLogoService.getLogoPath(teamId),
                                               width: 26,
                                               height: 26,
                                               errorBuilder: (_, __, ___) =>

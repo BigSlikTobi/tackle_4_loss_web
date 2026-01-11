@@ -7,6 +7,7 @@ import '../../../core/services/settings_service.dart';
 import '../controllers/standings_controller.dart';
 import 'widgets/schedule_tab.dart';
 import 'widgets/standings_tab.dart';
+import '../../../core/widgets/shimmer_skeleton.dart';
 
 /// Main screen for the Game Center micro app.
 /// Displays NFL schedule and standings with tabbed navigation.
@@ -36,9 +37,7 @@ class _StandingsScreenContent extends StatelessWidget {
         builder: (context, controller, child) {
           if (controller.isLoading &&
               controller.activeTab == GameCenterTab.schedule) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.brandBase),
-            );
+            return const StandingsSkeleton();
           }
 
           if (controller.error != null &&

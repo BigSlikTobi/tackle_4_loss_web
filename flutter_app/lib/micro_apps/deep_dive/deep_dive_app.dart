@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
+import '../../core/app_category.dart';
 import 'views/deep_dive_list_screen.dart';
+
+import 'views/widgets/deep_dive_home_widget.dart';
 
 class DeepDiveApp extends MicroApp {
   @override
@@ -8,6 +11,17 @@ class DeepDiveApp extends MicroApp {
 
   @override
   String get name => 'Deep Dive';
+
+  @override
+  String get description => 'In-depth NFL analysis and long-form articles';
+
+  @override
+  AppCategory get category => AppCategory.content;
+
+  // showOnHomePage defaults to false (App Hub only)
+
+@override
+  bool get showOnHomePage => true;
 
   @override
   IconData get icon => Icons.article_rounded;
@@ -28,11 +42,12 @@ class DeepDiveApp extends MicroApp {
   WidgetBuilder get page => (context) => const DeepDiveListScreen();
 
   @override
-  bool get hasWidget => false;
+  bool get hasWidget => true;
 
   @override
-  Size get widgetSize => const Size(1, 1);
+  Size get widgetSize => const Size(2, 2);
 
   @override
-  WidgetBuilder get widgetBuilder => (context) => const SizedBox();
+  WidgetBuilder get widgetBuilder => (context) => const DeepDiveHomeWidget();
 }
+

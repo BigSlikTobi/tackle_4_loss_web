@@ -8,6 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
+import '../../../../core/services/team_logo_service.dart';
 
 class BreakingNewsCard extends StatefulWidget {
   final BreakingNewsArticle article;
@@ -343,7 +344,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                             color: Colors.white,
                           ),
                           child: Image.asset(
-                            'assets/logos/teams/$teamId.png',
+                            TeamLogoService.getLogoPath(teamId),
                             width: 28,
                             height: 28,
                             errorBuilder: (_, __, ___) =>

@@ -5,6 +5,7 @@ import '../../../../core/theme/t4l_theme.dart';
 import '../../../../core/services/navigation_service.dart';
 import '../../../../core/app_registry.dart';
 import '../../controllers/breaking_news_controller.dart';
+import '../../../../core/widgets/shimmer_skeleton.dart';
 
 import 'package:tackle4loss_mobile/l10n/app_localizations.dart';
 
@@ -58,7 +59,7 @@ class _BreakingNewsWidgetContent extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: article == null
             ? (controller.isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const ShimmerBox(borderRadius: 24)
                   : Center(
                       child: Icon(
                         Icons.flash_on_rounded,

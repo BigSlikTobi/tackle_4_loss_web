@@ -3,10 +3,11 @@ import '../../../../design_tokens.dart';
 
 class T4LHeader extends StatelessWidget {
   final String? title;
+  final Widget? titleWidget;
   final Color? textColor;
   final List<Widget>? actions;
 
-  const T4LHeader({super.key, this.title, this.textColor, this.actions});
+  const T4LHeader({super.key, this.title, this.titleWidget, this.textColor, this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,10 @@ class T4LHeader extends StatelessWidget {
               ),
             ),
 
-            if (title != null) ...[
+            if (titleWidget != null) ...[
+              const SizedBox(width: 16),
+              titleWidget!,
+            ] else if (title != null) ...[
               const SizedBox(width: 16),
               Text(
                 title!,

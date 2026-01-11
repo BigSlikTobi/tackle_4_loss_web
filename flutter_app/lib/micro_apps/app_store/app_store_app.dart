@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
-import 'views/app_store_screen.dart';
+import '../../core/app_category.dart';
+import 'views/app_hub_screen.dart';
 
-class AppStoreApp extends MicroApp {
+class AppHubApp extends MicroApp {
   @override
-  String get id => 'app_store';
-
-  @override
-  String get name => 'App Store';
+  String get id => 'app_hub';
 
   @override
-  IconData get icon => Icons.storefront;
+  String get name => 'App Hub';
+
+  @override
+  String get description => 'Browse and discover all T4L apps';
+
+  @override
+  AppCategory get category => AppCategory.system;
+
+  @override
+  bool get showOnHomePage => false; // Accessible via nav bar, not in grid
+
+  @override
+  IconData get icon => Icons.apps;
 
   @override
   String get iconAssetPath => 'lib/micro_apps/app_store/store_assets/app_store_icon.png';
@@ -25,7 +35,7 @@ class AppStoreApp extends MicroApp {
   String get descriptionAsset => '';
 
   @override
-  WidgetBuilder get page => (context) => const AppStoreScreen();
+  WidgetBuilder get page => (context) => const AppHubScreen();
 
   @override
   bool get hasWidget => false;
@@ -36,3 +46,4 @@ class AppStoreApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const SizedBox();
 }
+

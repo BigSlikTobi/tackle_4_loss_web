@@ -27,7 +27,7 @@ serve(async (req) => {
         const { data, error } = await supabaseClient
             .schema('content')
             .from('deepdive_article')
-            .select('*')
+            .select('id, language_code, hero_image_url, published_at, author, title, subtitle, audio_file, video_file, content, sections, notebook_link')
             .eq('id', article_id)
             .single()
 

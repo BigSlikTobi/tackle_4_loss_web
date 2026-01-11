@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
+import '../../core/app_category.dart';
 import 'views/game_report_screen.dart';
 
 /// The Game Reports micro app.
@@ -10,6 +11,14 @@ class GameReportsApp extends MicroApp {
 
   @override
   String get name => 'Game Reports';
+
+  @override
+  String get description => 'AI-powered post-game analysis';
+
+  @override
+  AppCategory get category => AppCategory.gameData;
+
+  // showOnHomePage defaults to false (App Hub only)
 
   @override
   IconData get icon => Icons.article_rounded;
@@ -38,3 +47,4 @@ class GameReportsApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const SizedBox.shrink();
 }
+
