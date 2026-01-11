@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tackle4loss_mobile/core/os_shell/widgets/t4l_floating_nav_bar.dart';
+import 'package:tackle4loss_mobile/core/widgets/notification_badge.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 void main() {
@@ -50,5 +51,46 @@ void main() {
 
     await tester.tap(find.byType(Image));
     expect(teamPressed, isTrue);
+  });
+
+  testWidgets('T4LFloatingNavBar shows badge when showAppHubBadge is true', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: T4LFloatingNavBar(
+            onHome: () {},
+            onAppStore: () {},
+            onHistory: () {},
+            onSettings: () {},
+            onTeamLogo: () {},
+            showAppHubBadge: true,
+          ),
+        ),
+      ),
+    );
+
+    // Verify badge is rendered
+    expect(find.byType(NotificationBadge), findsOneWidget);
+    expect(find.text('1'), findsOneWidget);
+  });
+
+  testWidgets('T4LFloatingNavBar hides badge when showAppHubBadge is false', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: T4LFloatingNavBar(
+            onHome: () {},
+            onAppStore: () {},
+            onHistory: () {},
+            onSettings: () {},
+            onTeamLogo: () {},
+            showAppHubBadge: false,
+          ),
+        ),
+      ),
+    );
+
+    // Badge widget exists but should not render visible content
+    expect(find.text('1'), findsNothing);
   });
 }

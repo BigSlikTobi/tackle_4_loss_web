@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../app_registry.dart';
 import 'dart:math' as math;
 import '../../services/installed_apps_service.dart';
+import '../../services/new_content_service.dart';
 import '../controllers/os_shell_controller.dart';
 import '../../services/navigation_service.dart';
 import '../widgets/t4l_floating_nav_bar.dart';
@@ -17,6 +18,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../team_center/views/team_center_overlay.dart';
 import '../widgets/user_settings_dialog.dart';
 import '../widgets/team_selector_dialog.dart';
+import '../../widgets/shimmer_skeleton.dart';
 
 class OSShellView extends StatefulWidget {
   const OSShellView({super.key});
@@ -74,34 +76,39 @@ class _OSShellViewState extends State<OSShellView>
     final isWidget = item.contains('|widget');
 
     if (isWidget) {
-      // 2x2 Logic
-      // Calculate the 4 slots relative to the hover target
+      // Dynamic Widget Logic
+      final appId = item.split('|').first;
+      final app = AppRegistry().getApp(appId);
+      
+      int width = 2;
+      int height = 2;
+      if (app != null) {
+        width = app.widgetSize.width.toInt();
+        height = app.widgetSize.height.toInt();
+      }
+
+      // Calculate the slots relative to the hover target
       final target = _hoverTargetIndex!;
       final cols = 4; // gridCols
       final rows = 5; // gridRows
 
       // Check bounds of the "phantom widget" placed at target
-      int row = target ~/ cols;
-      int col = target % cols;
-      if (col + 1 >= cols || row + 1 >= rows) {
-        // The phantom itself is out of bounds, so usually we don't show it or show it at the valid slots only
-        // But for simplicity, let's just check if THIS slotIndex is one of the theoretical slots
-        // Actually, if the target is invalid (out of bounds), simply don't show phantom or show red?
-        // Let's rely on the service logic for validity
+      // This is implicit in canPlaceWidgetAt but useful here to define visual feedback
+      
+      final phantomSlots = <int>[];
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          phantomSlots.add(target + x + (y * cols));
+        }
       }
-
-      final phantomSlots = [
-        target,
-        target + 1,
-        target + cols,
-        target + cols + 1,
-      ];
 
       if (phantomSlots.contains(slotIndex)) {
         // This slot is part of the phantom
         // Check validity of the move
         final isValid = service.canPlaceWidgetAt(
           target,
+          width,
+          height,
           ignoreIndex: _draggedIndex!,
         );
         return isValid ? 1 : 2;
@@ -121,7 +128,7 @@ class _OSShellViewState extends State<OSShellView>
     final settings = Provider.of<SettingsService>(context);
     if (_currentLanguageCode != settings.locale.languageCode) {
       _currentLanguageCode = settings.locale.languageCode;
-      _controller.loadFeaturedContent(_currentLanguageCode!);
+      _controller.initLoadAll(_currentLanguageCode!);
     }
   }
 
@@ -169,30 +176,42 @@ class _OSShellViewState extends State<OSShellView>
               : CrossFadeState.showFirst,
 
           // State 1: Dock
-          firstChild: T4LFloatingNavBar(
-            homeTooltip: AppLocalizations.of(context)!.navHome,
-            appStoreTooltip: AppLocalizations.of(context)!.navAppStore,
-            historyTooltip: AppLocalizations.of(context)!.navHistory,
-            settingsTooltip: AppLocalizations.of(context)!.navSettings,
-            favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-            onHome: () => NavigationService().goHome(context),
-            onAppStore: () => NavigationService().openAppStore(context),
-            onHistory: () => NavigationService().reopenLastApp(context),
-            onSettings: () {
-              showDialog(
-                context: context,
-                builder: (context) => UserSettingsDialog(),
+          firstChild: ListenableBuilder(
+            listenable: NewContentService(),
+            builder: (context, child) {
+              return T4LFloatingNavBar(
+                homeTooltip: AppLocalizations.of(context)!.navHome,
+                appStoreTooltip: AppLocalizations.of(context)!.navAppHub,
+                historyTooltip: AppLocalizations.of(context)!.navHistory,
+                settingsTooltip: AppLocalizations.of(context)!.navSettings,
+                favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
+                showAppHubBadge: NewContentService().hasNewAppsInHub,
+                onHome: () => NavigationService().goHome(context),
+                onAppStore: () {
+                  NewContentService().markAppHubSeen();
+                  NavigationService().openAppHub(context);
+                },
+                onHistory: () => NavigationService().reopenLastApp(context),
+                onSettings: () {
+                  NavigationService().openSettings(
+                    context,
+                    (context) => const UserSettingsDialog(),
+                  );
+                },
+                onTeamLogo: () {
+                  if (settings.selectedTeam == null) {
+                    NavigationService().openTeamSelector(
+                      context,
+                      (context) => const TeamSelectorDialog(),
+                    );
+                  } else {
+                    NavigationService().openTeamCenter(
+                      context,
+                      () => TeamCenterOverlay.show(context, settings.selectedTeam!),
+                    );
+                  }
+                },
               );
-            },
-            onTeamLogo: () {
-              if (settings.selectedTeam == null) {
-                showDialog(
-                  context: context,
-                  builder: (context) => TeamSelectorDialog(),
-                );
-              } else {
-                TeamCenterOverlay.show(context, settings.selectedTeam!);
-              }
             },
           ),
 
@@ -286,10 +305,18 @@ class _OSShellViewState extends State<OSShellView>
               // 1. Fixed App Grid + Scrollable Feed Layout
               Consumer<OSShellController>(
                 builder: (context, shellController, child) {
+                  // Show skeleton while loading
+                  if (!shellController.isPageReady) {
+                    return const OSShellSkeleton();
+                  }
+                  
                   return ListenableBuilder(
                     listenable: InstalledAppsService(),
                     builder: (context, child) {
-                      return Column(
+                      return AnimatedOpacity(
+                        opacity: 1.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: Column(
                         children: [
                           // 1. Header Clearance
                           const SizedBox(height: 80),
@@ -326,7 +353,7 @@ class _OSShellViewState extends State<OSShellView>
                                               children: [
                                                 for (
                                                   int index = 0;
-                                                  index < 12;
+                                                  index < 20;
                                                   index++
                                                 ) ...[
                                                   if (!InstalledAppsService()
@@ -389,7 +416,8 @@ class _OSShellViewState extends State<OSShellView>
                             ),
                           ),
                         ],
-                      );
+                      ),
+                    );
                     },
                   );
                 },

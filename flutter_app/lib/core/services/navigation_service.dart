@@ -8,11 +8,23 @@ class NavigationService {
   factory NavigationService() => _instance;
   NavigationService._internal();
 
+  @visibleForTesting
+  void reset() {
+    _isAppHubOpen = false;
+    _isSettingsOpen = false;
+    _isTeamCenterOpen = false;
+    _lastAppId = null;
+  }
+
+  bool _isAppHubOpen = false;
+  bool _isSettingsOpen = false;
+  bool _isTeamCenterOpen = false;
+
   String? _lastAppId;
 
   /// Tracks the last micro-app opened.
   void trackAppLaunch(String appId) {
-    if (appId != 'app_store' && appId != 'settings') {
+    if (appId != 'app_hub' && appId != 'settings') {
       _lastAppId = appId;
     }
   }
@@ -20,24 +32,68 @@ class NavigationService {
   /// Returns the ID of the last used micro-app.
   String? get lastAppId => _lastAppId;
 
-  /// Navigates to the App Store.
-  void openAppStore(BuildContext context) {
-    final store = AppRegistry().getApp('app_store');
-    if (store != null) {
+  /// Navigates to the App Hub.
+  void openAppHub(BuildContext context) {
+    if (_isAppHubOpen) return;
+
+    final hub = AppRegistry().getApp('app_hub');
+    if (hub != null) {
+      _isAppHubOpen = true;
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => store.page(context)),
-      );
+        MaterialPageRoute(builder: (context) => hub.page(context)),
+      ).then((_) {
+        _isAppHubOpen = false;
+      });
     }
   }
+
+  /// Opens the Settings dialog.
+  void openSettings(BuildContext context, WidgetBuilder builder) {
+    if (_isSettingsOpen) return;
+
+    _isSettingsOpen = true;
+    showDialog(
+      context: context,
+      builder: builder,
+    ).then((_) {
+      _isSettingsOpen = false;
+    });
+  }
+
+  /// Opens the Team Center or Team Selector.
+  Future<void> openTeamCenter(BuildContext context, Future<void> Function() showOverlay) async {
+    if (_isTeamCenterOpen) return;
+
+    _isTeamCenterOpen = true;
+    try {
+      await showOverlay();
+    } finally {
+      // Small delay to ensure the UI has time to process the close event completely
+      // before allowing another open? 
+      // Usually await is enough.
+      _isTeamCenterOpen = false;
+    }
+  }
+  
+  /// Opens the Team Selector dialog.
+  Future<void> openTeamSelector(BuildContext context, WidgetBuilder builder) async {
+      if (_isTeamCenterOpen) return;
+      _isTeamCenterOpen = true;
+      try {
+        await showDialog(context: context, builder: builder);
+      } finally {
+        _isTeamCenterOpen = false;
+      }
+  }
+  
+  String? _currentOpenAppId;
 
   /// Reopens the last used app if available.
   void reopenLastApp(BuildContext context) {
     if (_lastAppId != null) {
       final app = AppRegistry().getApp(_lastAppId!);
       if (app != null) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => app.page(context)),
-        );
+         openApp(context, app);
       }
     } else {
       final l10n = AppLocalizations.of(context)!;
@@ -49,12 +105,20 @@ class NavigationService {
 
   /// Pushes a new app onto the stack and tracks it.
   void openApp(BuildContext context, MicroApp app, {Object? arguments}) {
+    if (_currentOpenAppId == app.id) return;
+
     trackAppLaunch(app.id);
+    _currentOpenAppId = app.id;
+    
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => app.buildPage(context, arguments: arguments),
       ),
-    );
+    ).then((_) {
+      if (_currentOpenAppId == app.id) {
+        _currentOpenAppId = null;
+      }
+    });
   }
 
   /// Navigates back to the home screen.

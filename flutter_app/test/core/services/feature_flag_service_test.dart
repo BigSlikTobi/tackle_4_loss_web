@@ -11,7 +11,7 @@ void main() {
 
     group('isEnabled', () {
       test('returns true for enabled core apps', () {
-        expect(service.isEnabled('app_store'), isTrue);
+        expect(service.isEnabled('app_hub'), isTrue);
         expect(service.isEnabled('breaking_news'), isTrue);
         expect(service.isEnabled('deep_dive'), isTrue);
         expect(service.isEnabled('radio'), isTrue);

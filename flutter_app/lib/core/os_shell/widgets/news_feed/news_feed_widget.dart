@@ -8,6 +8,7 @@ import '../../../theme/t4l_theme.dart';
 import 'news_feed_item_card.dart';
 import 'video_feed_item_card.dart';
 import 'personalized_feed_item_card.dart';
+import '../../../widgets/shimmer_skeleton.dart';
 
 /// News feed widget with infinite scroll for the home screen
 class NewsFeedWidget extends StatefulWidget {
@@ -115,10 +116,10 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
         }
 
         if (_controller.items.isEmpty && _controller.isLoading) {
-          return const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(48.0),
-              child: Center(child: CircularProgressIndicator()),
+          return SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => const NewsFeedItemSkeleton(),
+              childCount: 3,
             ),
           );
         }
@@ -175,10 +176,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                     // Loading indicator at the end
                     if (_controller.hasMore) {
                       _controller.loadMore();
-                      return const Padding(
-                        padding: EdgeInsets.all(24.0),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
+                      return const NewsFeedItemSkeleton();
                     }
                     return const SizedBox.shrink();
                   }

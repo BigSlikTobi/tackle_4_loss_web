@@ -10,13 +10,13 @@ class AppRegistry {
   /// Metadata for App Store display and categorization.
   /// Defined centrally, not by the individual apps.
   final Map<String, AppMetadata> _appMetadata = {
-    'deep_dive': AppMetadata(category: 'Reading', isFeatured: true),
+    'deep_dive': AppMetadata(category: 'Reading', isFeatured: false),
     'breaking_news': AppMetadata(category: 'Utility', isFeatured: false),
-    'app_store': AppMetadata(category: 'System', isFeatured: false),
+    'app_hub': AppMetadata(category: 'System', isFeatured: false),
     'radio': AppMetadata(category: 'Entertainment', isFeatured: false),
     'standings': AppMetadata(category: 'Sports', isFeatured: false),
     'game_reports': AppMetadata(category: 'Sports', isFeatured: false),
-    'player_wordle': AppMetadata(category: 'Games', isFeatured: false),
+    'player_wordle': AppMetadata(category: 'Games', isFeatured: true),
   };
 
   final List<MicroApp> _registeredApps = [];
@@ -37,6 +37,12 @@ class AppRegistry {
     }
     _registeredApps.add(app);
   }
+
+  /// Clears all registered apps (used for testing).
+  void clear() {
+    _registeredApps.clear();
+  }
+
 
   /// Finds an app by its ID.
   /// Returns null if not found OR if disabled by feature flag.

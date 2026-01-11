@@ -10,7 +10,7 @@ class FeatureFlagService {
   /// Value: Enabled status
   final Map<String, bool> _flags = {
     // Core apps
-    'app_store': true,
+    'app_hub': true,
     'breaking_news': true,
     'deep_dive': true,
     'radio': true,

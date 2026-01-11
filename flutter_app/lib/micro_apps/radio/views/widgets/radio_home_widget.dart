@@ -155,7 +155,7 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
           ),
         ),
 
-        // 2. Main Content (Unclipped to allow button pulse overflow)
+        // 2. Main Content
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
@@ -198,7 +198,7 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
                 ),
               ),
 
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
 
               // Content Area
               Expanded(
@@ -247,7 +247,7 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const SizedBox(width: 100),
+                            const SizedBox(width: 60),
                             if (radioController.latestNewsHeadline != null)
                               Text(
                                 radioController.latestNewsHeadline!,

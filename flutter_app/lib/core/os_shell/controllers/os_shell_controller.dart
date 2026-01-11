@@ -7,11 +7,13 @@ class OSShellController extends ChangeNotifier {
   final BuildContext context;
   DeepDiveArticle? _featuredArticle;
   bool _isLoadingFeatured = false;
+  bool _isPageReady = false;
 
   OSShellController(this.context);
 
   DeepDiveArticle? get featuredArticle => _featuredArticle;
   bool get isLoadingFeatured => _isLoadingFeatured;
+  bool get isPageReady => _isPageReady;
 
   bool _mounted = true;
 
@@ -41,6 +43,23 @@ class OSShellController extends ChangeNotifier {
         _isLoadingFeatured = false;
         notifyListeners();
       }
+    }
+  }
+
+  /// Load all page data in parallel, notify when complete.
+  /// This should be called from the view's initState or didChangeDependencies.
+  Future<void> initLoadAll(String languageCode) async {
+    _isPageReady = false;
+    if (_mounted) notifyListeners();
+
+    await Future.wait([
+      loadFeaturedContent(languageCode),
+      // Add other data sources here as needed
+    ]);
+
+    if (_mounted) {
+      _isPageReady = true;
+      notifyListeners();
     }
   }
 

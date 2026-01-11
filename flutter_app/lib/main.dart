@@ -19,6 +19,7 @@ import 'micro_apps/radio/controllers/radio_controller.dart';
 
 import 'core/services/installed_apps_service.dart';
 import 'core/services/audio_player_service.dart';
+import 'core/services/new_content_service.dart';
 
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,7 +46,7 @@ Future<void> main() async {
   // 2. Register MicroApps
   // In a real app we might load these dynamically or via reflection, 
   // but for now we register them manually on boot.
-  AppRegistry().register(AppStoreApp()); 
+  AppRegistry().register(AppHubApp()); 
   AppRegistry().register(DeepDiveApp()); 
   AppRegistry().register(BreakingNewsApp());
   AppRegistry().register(RadioApp());
@@ -56,6 +57,7 @@ Future<void> main() async {
   // 3. Initialize Services
   await InstalledAppsService().init();
   await AudioPlayerService().init(); // Initialize Audio Service
+  await NewContentService().init(); // Initialize new content tracking
   
   runApp(
     MultiProvider(

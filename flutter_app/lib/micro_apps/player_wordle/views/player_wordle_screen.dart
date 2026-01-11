@@ -60,7 +60,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
   @override
   Widget build(BuildContext context) {
     return T4LScaffold(
-      title: AppLocalizations.of(context)!.playerWordleTitle,
+      title: 'Guess the Player',
       body: Consumer<PlayerWordleController>(
         builder: (context, controller, child) {
           if (controller.isLoading) {

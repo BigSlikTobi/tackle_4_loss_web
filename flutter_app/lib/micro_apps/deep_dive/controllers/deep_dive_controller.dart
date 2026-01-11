@@ -4,10 +4,32 @@ import '../models/deep_dive_article.dart';
 
 class DeepDiveController extends ChangeNotifier {
   List<DeepDiveArticle> _articles = [];
+  DeepDiveArticle? _latestArticle;
   bool _isLoading = false;
 
   List<DeepDiveArticle> get articles => _articles;
+  DeepDiveArticle? get latestArticle => _latestArticle;
   bool get isLoading => _isLoading;
+
+  Future<void> loadLatestArticle(String languageCode) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await Supabase.instance.client.functions.invoke(
+        'get-latest-deepdive',
+        body: {'language_code': languageCode},
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      _latestArticle = DeepDiveArticle.fromJson(data);
+    } catch (e) {
+      debugPrint('Error fetching latest deep dive: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> loadAllArticles(String languageCode, {bool forceRefresh = false}) async {
     if (_articles.isNotEmpty && !forceRefresh) return;

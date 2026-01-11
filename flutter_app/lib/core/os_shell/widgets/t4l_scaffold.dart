@@ -19,6 +19,7 @@ class T4LScaffold extends StatelessWidget {
   final VoidCallback? onClose;
   final Widget? bottomNavBarOverride;
   final String? title; // New title param
+  final Widget? titleWidget; // New title widget param
   final List<Widget>? actions;
 
   const T4LScaffold({
@@ -29,6 +30,7 @@ class T4LScaffold extends StatelessWidget {
     this.bottomNavBarOverride,
     this.onClose,
     this.title,
+    this.titleWidget,
     this.actions,
   });
 
@@ -90,6 +92,7 @@ class T4LScaffold extends StatelessWidget {
                   right: 0,
                   child: T4LHeader(
                     title: title,
+                    titleWidget: titleWidget,
                     textColor: headerTextColor,
                     actions: actions,
                   ),
@@ -154,13 +157,13 @@ class T4LScaffold extends StatelessWidget {
                       bottomNavBarOverride ??
                           T4LFloatingNavBar(
                             homeTooltip: l10n.navHome,
-                            appStoreTooltip: l10n.navAppStore,
+                            appStoreTooltip: l10n.navAppHub,
                             historyTooltip: l10n.navHistory,
                             settingsTooltip: l10n.navSettings,
                             favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
                             onHome: () => NavigationService().goHome(context),
                             onAppStore: () =>
-                                NavigationService().openAppStore(context),
+                                NavigationService().openAppHub(context),
                             onHistory: () =>
                                 NavigationService().reopenLastApp(context),
                             onSettings: () {
