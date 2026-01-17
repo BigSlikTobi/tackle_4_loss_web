@@ -5,24 +5,24 @@ import 'package:tackle4loss_mobile/core/app_registry.dart';
 import 'package:tackle4loss_mobile/core/micro_app.dart';
 import 'package:tackle4loss_mobile/core/services/navigation_service.dart';
 
-// Mock MicroApp
-class MockApp extends MicroApp {
+// Mock MicroApp for standings (Game Center)
+class MockStandingsApp extends MicroApp {
   @override
-  String get id => 'app_hub';
+  String get id => 'standings';
   @override
-  String get name => 'App Hub';
+  String get name => 'Game Center';
   @override
-  AppCategory get category => AppCategory.system;
+  AppCategory get category => AppCategory.gameData;
   @override
   WidgetBuilder get page => (context) => Scaffold(
-    appBar: AppBar(title: const Text('Hub')),
-    body: const Text('App Hub Screen'),
+    appBar: AppBar(title: const Text('Game Center')),
+    body: const Text('Game Center Screen'),
   );
   
   // Implement other required overrides with dummies
   @override String get description => '';
-  @override bool get showOnHomePage => false;
-  @override IconData get icon => Icons.apps;
+  @override bool get showOnHomePage => true;
+  @override IconData get icon => Icons.sports;
   @override String get iconAssetPath => '';
   @override Color get themeColor => Colors.blue;
   @override String get storeImageAsset => '';
@@ -43,20 +43,20 @@ void main() {
     NavigationService().reset();
   });
 
-  testWidgets('NavigationService openAppHub prevents multiple opens', (WidgetTester tester) async {
+  testWidgets('NavigationService openGameCenter prevents multiple opens', (WidgetTester tester) async {
     // Setup
-    AppRegistry().register(MockApp());
+    AppRegistry().register(MockStandingsApp());
     final navService = NavigationService(); // Singleton
     
-    // Build a simple app with a button that calls openAppHub
+    // Build a simple app with a button that calls openGameCenter
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
           builder: (context) {
             return Scaffold(
               body: ElevatedButton(
-                onPressed: () => navService.openAppHub(context),
-                child: const Text('Open Hub'),
+                onPressed: () => navService.openGameCenter(context),
+                child: const Text('Open Game Center'),
               ),
             );
           },
@@ -65,30 +65,30 @@ void main() {
     );
 
     // Initial state
-    expect(find.text('App Hub Screen'), findsNothing);
+    expect(find.text('Game Center Screen'), findsNothing);
 
     // Tap once
-    await tester.tap(find.text('Open Hub'));
+    await tester.tap(find.text('Open Game Center'));
     await tester.pump(); // Start animation
     await tester.pump(const Duration(milliseconds: 100)); // Processing
 
     // Verify it opened (partially or fully)
-    expect(find.text('App Hub Screen'), findsOneWidget);
+    expect(find.text('Game Center Screen'), findsOneWidget);
     
     // Tap again IMMEDIATELY (simulate rapid click or double click logic if possible)
-    await tester.tap(find.text('Open Hub'), warnIfMissed: false);
+    await tester.tap(find.text('Open Game Center'), warnIfMissed: false);
     await tester.pump();
     
-    // Close the hub
+    // Close the Game Center
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     
-    expect(find.text('App Hub Screen'), findsNothing);
+    expect(find.text('Game Center Screen'), findsNothing);
     
     // Open again
-    await tester.tap(find.text('Open Hub'));
+    await tester.tap(find.text('Open Game Center'));
     await tester.pumpAndSettle();
-    expect(find.text('App Hub Screen'), findsOneWidget);
+    expect(find.text('Game Center Screen'), findsOneWidget);
   });
   
   testWidgets('NavigationService openSettings prevents multiple dialogs', (WidgetTester tester) async {

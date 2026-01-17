@@ -63,6 +63,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsService()),
+        ChangeNotifierProvider.value(value: InstalledAppsService()),
         ChangeNotifierProxyProvider<SettingsService, RadioController>(
           create: (context) => RadioController(
             languageCode: Provider.of<SettingsService>(context, listen: false).locale.languageCode,

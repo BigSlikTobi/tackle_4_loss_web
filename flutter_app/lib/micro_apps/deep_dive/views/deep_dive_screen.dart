@@ -26,6 +26,7 @@ class DeepDiveScreen extends StatefulWidget {
 class _DeepDiveScreenState extends State<DeepDiveScreen> {
   late final DeepDiveDetailController _controller;
   late final PageController _pageController;
+  final ScrollController _scrollController = ScrollController();
   int _currentPage = 0;
 
   @override
@@ -40,6 +41,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
   void dispose() {
     _controller.dispose();
     _pageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -60,91 +62,99 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
 
             return Stack(
               children: [
-                NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) {
-                    return [
-                      T4LHeroHeader(
-                        title: article.title,
-                        subtitle: article.summary,
-                        imageUrl: article.imageUrl,
-                        videoUrl: article.videoUrl,
-                        isDarkMode: isDarkMode,
-                        heroTag: 'hero-${article.id}',
-                      floatingAction: article.audioUrl == null
-                          ? null
-                          : StreamBuilder<PlaybackState>(
-                              stream: AudioPlayerService().playbackStateStream,
-                              builder: (context, snapshot) {
-                                final playing = snapshot.data?.playing ?? false;
-                                final currentMediaStr =
-                                    AudioPlayerService().currentMediaItem?.id;
-                                final isIsActiveArticle =
-                                    currentMediaStr == article.audioUrl;
-                                final showPause = playing && isIsActiveArticle;
+                controller.isLoading
+                    ? const Center(
+                        child: ShimmerBox(
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      )
+                    : CustomScrollView(
+                        controller: _scrollController,
+                        slivers: [
+                          // 1. Hero Header (Standard Content)
+                          SliverToBoxAdapter(
+                            child: T4LHeroHeader(
+                              title: article.title,
+                              subtitle: article.summary,
+                              imageUrl: article.imageUrl,
+                              videoUrl: article.videoUrl,
+                              height: 440.0,
+                              isDarkMode: isDarkMode,
+                              heroTag: 'hero-${article.id}',
+                              floatingAction: article.audioUrl == null
+                                  ? null
+                                  : StreamBuilder<PlaybackState>(
+                                      stream: AudioPlayerService()
+                                          .playbackStateStream,
+                                      builder: (context, snapshot) {
+                                        final playing =
+                                            snapshot.data?.playing ?? false;
+                                        final currentMediaStr =
+                                            AudioPlayerService()
+                                                .currentMediaItem
+                                                ?.id;
+                                        final isIsActiveArticle =
+                                            currentMediaStr == article.audioUrl;
+                                        final showPause =
+                                            playing && isIsActiveArticle;
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    if (showPause) {
-                                      AudioPlayerService().pause();
-                                    } else {
-                                      if (article.audioUrl != null) {
-                                        AudioPlayerService().play(
-                                          article.audioUrl!,
-                                          article.title,
-                                          article.author,
-                                          article.imageUrl,
-                                        );
-                                      }
-                                    }
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: colors.surface,
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.1,
+                                        return GestureDetector(
+                                          onTap: () {
+                                            if (showPause) {
+                                              AudioPlayerService().pause();
+                                            } else {
+                                              if (article.audioUrl != null) {
+                                                AudioPlayerService().play(
+                                                  article.audioUrl!,
+                                                  article.title,
+                                                  article.author,
+                                                  article.imageUrl,
+                                                );
+                                              }
+                                            }
+                                          },
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 200),
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: BoxDecoration(
+                                              color: colors.surface,
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.1),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
+                                              border: Border.all(
+                                                color: colors.textPrimary
+                                                    .withValues(alpha: 0.1),
+                                                width: 1,
+                                              ),
+                                            ),
+                                            child: Icon(
+                                              showPause
+                                                  ? Icons.pause_rounded
+                                                  : Icons.play_arrow_rounded,
+                                              color: colors.brand,
+                                              size: 32,
+                                            ),
                                           ),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                      border: Border.all(
-                                        color: colors.textPrimary.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        width: 1,
-                                      ),
+                                        );
+                                      },
                                     ),
-                                    child: Icon(
-                                      showPause
-                                          ? Icons.pause_rounded
-                                          : Icons.play_arrow_rounded,
-                                      color: colors.brand,
-                                      size: 32,
-                                    ),
-                                  ),
-                                );
-                              },
                             ),
-                      ),
-                    ];
-                  },
-                  body: controller.isLoading
-                      ? const Center(
-                          child: ShimmerBox(
-                            width: double.infinity,
-                            height: double.infinity,
                           ),
-                        )
-                      : Column(
-                          children: [
-                            if (article.notebookUrl != null)
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+
+                          // 2. Notebook Disclaimer
+                          if (article.notebookUrl != null)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(24, 24, 24, 0),
                                 child: InkWell(
                                   onTap: () async {
                                     final uri = Uri.parse(article.notebookUrl!);
@@ -156,10 +166,12 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: colors.brand.withValues(alpha: 0.1),
+                                      color:
+                                          colors.brand.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: colors.brand.withValues(alpha: 0.2),
+                                        color: colors.brand
+                                            .withValues(alpha: 0.2),
                                       ),
                                     ),
                                     child: Row(
@@ -175,7 +187,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                             l10n.deepDiveNotebookDisclaimer,
                                             style: TextStyle(
                                               color: colors.textPrimary,
-                                              fontSize: 12, // Small caption size
+                                              fontSize: 12,
                                               fontStyle: FontStyle.italic,
                                             ),
                                           ),
@@ -191,124 +203,112 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                   ),
                                 ),
                               ),
-                            Expanded(
-                              child: (sections.isNotEmpty)
-                                  ? PageView.builder(
-                          controller: _pageController,
-                          onPageChanged: (index) {
-                            setState(() {
-                              _currentPage = index;
-                            });
-                          },
-                          itemCount: sections.length,
-                          itemBuilder: (context, index) {
-                            final section = sections[index];
-                            return MediaQuery.removePadding(
-                              context: context,
-                              removeTop: true,
-                              child: SingleChildScrollView(
-                                physics: const BouncingScrollPhysics(),
-                                child: Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    24,
-                                    32,
-                                    24,
-                                    120,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        l10n
-                                            .deepDiveChapter(index + 1)
-                                            .toUpperCase(),
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: colors.brand,
+                            ),
+
+                          // 3. Content Body
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (sections.isNotEmpty)
+                                    Column(
+                                      children: sections
+                                          .asMap()
+                                          .entries
+                                          .map((entry) {
+                                        final index = entry.key;
+                                        final section = entry.value;
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 32.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                l10n
+                                                    .deepDiveChapter(index + 1)
+                                                    .toUpperCase(),
+                                                style: AppTextStyles.caption
+                                                    .copyWith(
+                                                  color: colors.brand,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 2.0,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 16),
+                                              MarkdownBody(
+                                                data: _formatContent(
+                                                    section.content),
+                                                styleSheet: MarkdownStyleSheet(
+                                                  p: TextStyle(
+                                                    color: colors.textSecondary,
+                                                    fontSize: 16,
+                                                    height: 1.6,
+                                                  ),
+                                                  h2: TextStyle(
+                                                    color: colors.textPrimary,
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  h3: TextStyle(
+                                                    color: colors.textPrimary,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  blockquote: TextStyle(
+                                                    color: colors.border,
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                                  code: TextStyle(
+                                                    backgroundColor:
+                                                        colors.surface,
+                                                    color: colors.textPrimary,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                    )
+                                  else if (content != null)
+                                    MarkdownBody(
+                                      data: _formatContent(content),
+                                      styleSheet: MarkdownStyleSheet(
+                                        p: TextStyle(
+                                          color: colors.textSecondary,
+                                          fontSize: 16,
+                                          height: 1.6,
+                                        ),
+                                        h2: TextStyle(
+                                          color: colors.textPrimary,
+                                          fontSize: 24,
                                           fontWeight: FontWeight.bold,
-                                          letterSpacing: 2.0,
+                                        ),
+                                        h3: TextStyle(
+                                          color: colors.textPrimary,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        blockquote: TextStyle(
+                                          color: colors.border,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        code: TextStyle(
+                                          backgroundColor: colors.surface,
+                                          color: colors.textPrimary,
                                         ),
                                       ),
-                                      const SizedBox(height: 16),
-                                      MarkdownBody(
-                                        data: _formatContent(section.content),
-                                        styleSheet: MarkdownStyleSheet(
-                                          p: TextStyle(
-                                            color: colors.textSecondary,
-                                            fontSize: 16,
-                                            height: 1.6,
-                                          ),
-                                          h2: TextStyle(
-                                            color: colors.textPrimary,
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          h3: TextStyle(
-                                            color: colors.textPrimary,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          blockquote: TextStyle(
-                                            color: colors.border,
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                          code: TextStyle(
-                                            backgroundColor: colors.surface,
-                                            color: colors.textPrimary,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                    ),
+                                ],
                               ),
-                            );
-                          },
-                        )
-                      : SingleChildScrollView(
-                          padding: const EdgeInsets.all(24.0),
-                          child: content != null
-                              ? MarkdownBody(
-                                  data: _formatContent(content),
-                                  styleSheet: MarkdownStyleSheet(
-                                    p: TextStyle(
-                                      color: colors.textSecondary,
-                                      fontSize: 16,
-                                      height: 1.6,
-                                    ),
-                                    h2: TextStyle(
-                                      color: colors.textPrimary,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    h3: TextStyle(
-                                      color: colors.textPrimary,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    blockquote: TextStyle(
-                                      color: colors.border,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                    code: TextStyle(
-                                      backgroundColor: colors.surface,
-                                      color: colors.textPrimary,
-                                    ),
-                                  ),
-                                )
-                              : Center(
-                                  child: Text(
-                                    l10n.deepDiveNoContent,
-                                    style: TextStyle(
-                                      color: colors.textSecondary,
-                                    ),
-                                  ),
-                                ),
-                        ),
+                            ),
+                          ),
+                        ],
                       ),
-                          ],
-                        ),
-                ),
 
                 // Progress Overlay
                 if (sections.isNotEmpty && !controller.isLoading)

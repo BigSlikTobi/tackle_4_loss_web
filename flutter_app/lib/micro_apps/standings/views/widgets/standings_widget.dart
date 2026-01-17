@@ -110,7 +110,7 @@ class _StandingsWidgetState extends State<StandingsWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Week ${_controller.currentWeek}',
+              StandingsController.getWeekLabel(_controller.currentWeek),
               style: AppTextStyles.h3.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -186,24 +186,33 @@ class _StandingsWidgetState extends State<StandingsWidget> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          team.logoUrl,
+        Container(
           width: 20,
           height: 20,
-          errorBuilder: (context, error, stackTrace) => Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: team.primaryColor,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                teamCode[0],
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+          ),
+          padding: const EdgeInsets.all(2),
+          child: Image.asset(
+            team.logoUrl,
+            width: 16,
+            height: 16,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: team.primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  teamCode[0],
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

@@ -15,6 +15,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navAppHub => 'App Hub';
 
   @override
+  String get navGameCenter => 'Spielzentrum';
+
+  @override
   String get navHistory => 'Letzte App';
 
   @override
@@ -333,4 +336,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String playerWordleGuessesFormat(int count) {
     return '$count Versuche';
   }
+
+  @override
+  String get playerWordleInstructionStep2 =>
+      '🟩 = Treffer  🟨 = Nah dran  ⬜ = Daneben';
+
+  @override
+  String get playerWordleInstructionStep3 =>
+      'Errate den Spieler in 8 Versuchen!';
+
+  @override
+  String get playerWordleStatYearsUnit => 'Jahre';
+
+  @override
+  String get playerWordleStatLbsUnit => 'lbs';
+
+  @override
+  String playerWordleStatDraftFormat(int year, int round, int pick) {
+    return '$year Rd $round Pick $pick';
+  }
+
+  @override
+  String get playerWordleStartGuessing => 'Fang unten an zu raten!';
 }

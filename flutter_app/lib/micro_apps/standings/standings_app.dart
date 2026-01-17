@@ -20,7 +20,7 @@ class StandingsApp extends MicroApp {
   AppCategory get category => AppCategory.gameData;
 
   @override
-  bool get showOnHomePage => false;
+  bool get showOnHomePage => true;
 
   @override
   IconData get icon => Icons.sports_football_rounded;

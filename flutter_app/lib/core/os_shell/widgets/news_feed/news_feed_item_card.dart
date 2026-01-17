@@ -102,7 +102,9 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
         : (t4lColors?.textMuted ?? Colors.grey);
     final Color headlineColor = isUserTeamMatch
         ? (isDarkMode ? teamColor : Colors.white)
-        : teamColor.withValues(alpha: 0.95);
+        : (isDarkMode
+            ? (t4lColors?.textPrimary ?? Colors.white)
+            : teamColor.withValues(alpha: 0.95));
     final Color accentColor = isUserTeamMatch
         ? teamColor
         : teamColor.withValues(alpha: 0.7);

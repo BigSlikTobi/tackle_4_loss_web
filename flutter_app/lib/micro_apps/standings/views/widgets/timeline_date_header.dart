@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
 import 'package:intl/intl.dart';
+import '../../controllers/standings_controller.dart';
 
 class TimelineDateHeader extends StatelessWidget {
   final DateTime date;
@@ -61,7 +62,7 @@ class TimelineDateHeader extends StatelessWidget {
                 ),
               ),
               Text(
-                'Week $week Regular Season',
+                '${StandingsController.getWeekLabel(week)} ${week <= 18 ? 'Regular Season' : 'Post-Season'}',
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.textSubLight,
                 ),

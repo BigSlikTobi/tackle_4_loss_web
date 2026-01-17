@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
 import '../../core/app_category.dart';
-import 'views/player_wordle_screen.dart';
+import 'views/game_mode_picker_screen.dart';
 
 /// The Player Wordle (NFL Guessing Game) micro app.
 /// Players guess an NFL player within 8 tries using attribute feedback.
@@ -18,7 +18,8 @@ class PlayerWordleApp extends MicroApp {
   @override
   AppCategory get category => AppCategory.games;
 
-  // showOnHomePage defaults to false (App Hub only)
+  @override
+  bool get showOnHomePage => true;
 
   @override
   IconData get icon => Icons.sports_football_rounded;
@@ -39,7 +40,7 @@ class PlayerWordleApp extends MicroApp {
       'lib/micro_apps/player_wordle/store_assets/description.md';
 
   @override
-  WidgetBuilder get page => (context) => const PlayerWordleScreen();
+  WidgetBuilder get page => (context) => const GameModePickerScreen();
 
   @override
   bool get hasWidget => false;

@@ -5,6 +5,7 @@
     "description": "Navigation bar label for the Home screen"
   },
   "navAppHub": "App Hub",
+  "navGameCenter": "Game Center",
   "navHistory": "Last App",
   "navSettings": "Settings",
   "settingsTitle": "Settings",
@@ -131,5 +132,18 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+  "playerWordleInstructionStep2": "🟩 = Match  🟨 = Close  ⬜ = Miss",
+  "playerWordleInstructionStep3": "Win in 8 guesses to earn points!",
+  "playerWordleStatYearsUnit": "yrs",
+  "playerWordleStatLbsUnit": "lbs",
+  "playerWordleStatDraftFormat": "{year} Rd {round} Pick {pick}",
+  "@playerWordleStatDraftFormat": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "round": { "type": "int" },
+      "pick": { "type": "int" }
+    }
+  },
+  "playerWordleStartGuessing": "Start guessing below!"
 }

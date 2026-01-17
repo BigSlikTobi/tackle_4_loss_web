@@ -126,9 +126,21 @@ If your app supports a Home Screen Widget (`hasWidget => true`):
 
 ### The Scaffolding (Container)
 Wrap your entry point in [T4LScaffold](flutter_app/lib/core/os_shell/widgets/t4l_scaffold.dart).
+
+**STRICT RULE:** Use **Standard Mode** (Default) only.
+- Do NOT use `extendBodyBehindHeader: true` unless explicitly authorized.
+- Do NOT use `SliverAppBar` or `NestedScrollView` for main layouts.
+- Rely on `T4LScaffold`'s built-in `Column` layout to ensure zero-overlap spacing.
+
 ```dart
 return T4LScaffold(
-  body: YourMvcView(),
+  title: 'My App',
+  body: Column( // Or ListView/SingleChildScrollView
+    children: [
+       // Content naturally starts BELOW header. No manual spacers needed.
+       ...
+    ],
+  ),
 );
 ```
 

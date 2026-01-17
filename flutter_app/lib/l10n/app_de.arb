@@ -2,6 +2,7 @@
   "@@locale": "de",
   "navHome": "Startseite",
   "navAppHub": "App Hub",
+  "navGameCenter": "Spielzentrum",
   "navHistory": "Letzte App",
   "navSettings": "Einstellungen",
   "settingsTitle": "Einstellungen",
@@ -107,5 +108,11 @@
     "placeholders": {
       "count": { "type": "int" }
     }
-  }
+  },
+  "playerWordleInstructionStep2": "🟩 = Treffer  🟨 = Nah dran  ⬜ = Daneben",
+  "playerWordleInstructionStep3": "Errate den Spieler in 8 Versuchen!",
+  "playerWordleStatYearsUnit": "Jahre",
+  "playerWordleStatLbsUnit": "lbs",
+  "playerWordleStatDraftFormat": "{year} Rd {round} Pick {pick}",
+  "playerWordleStartGuessing": "Fang unten an zu raten!"
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
+import '../../controllers/standings_controller.dart';
 
 /// Horizontal scrollable week selector with animated highlighting.
 class WeekSelector extends StatefulWidget {
@@ -155,6 +156,8 @@ class _WeekChip extends StatelessWidget {
       }
     }
 
+    final (label, subLabel) = StandingsController.getWeekLabels(week);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -176,7 +179,7 @@ class _WeekChip extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Week',
+              label,
               style: TextStyle(
                 fontSize: 10,
                 height: 1.1,
@@ -187,7 +190,7 @@ class _WeekChip extends StatelessWidget {
               ),
             ),
             Text(
-              week.toString(),
+              subLabel,
               style: TextStyle(
                 fontSize: 14,
                 height: 1.1,

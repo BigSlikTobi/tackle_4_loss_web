@@ -3,10 +3,12 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/player_model.dart';
 import '../models/game_state.dart';
+import '../models/guess_result.dart';
 import '../services/player_wordle_service.dart';
 
 /// Controller for the Player Wordle game.
@@ -73,6 +75,31 @@ class PlayerWordleController extends ChangeNotifier {
   bool get hasMoreResults => _hasMoreResults;
   static const int _pageSize = 20; // Smaller pages for smooth loading
 
+  /// Daily Challenge State
+  bool _isDailyChallenge = false;
+  bool get isDailyChallenge => _isDailyChallenge;
+
+  String? _dailyChallengeDate;
+  String? get dailyChallengeDate => _dailyChallengeDate;
+
+  bool _dailyChallengeCompleted = false;
+  bool get dailyChallengeCompleted => _dailyChallengeCompleted;
+
+  int _dailyStreak = 0;
+  int get dailyStreak => _dailyStreak;
+
+  List<String> _dailyTeamsInvolved = [];
+  List<String> get dailyTeamsInvolved => _dailyTeamsInvolved;
+
+  /// Team Hint State (available after 3 guesses without team match)
+  bool _canUseTeamHint = false;
+  bool get canUseTeamHint => _canUseTeamHint;
+
+  String? _revealedTeamHint;
+  String? get revealedTeamHint => _revealedTeamHint;
+
+  static const int _teamHintCost = 50;
+
   /// Default constructor
   PlayerWordleController() : _service = PlayerWordleService();
 
@@ -108,6 +135,9 @@ class PlayerWordleController extends ChangeNotifier {
         mysteryPlayerId: playerId,
         difficulty: _selectedDifficulty,
       );
+      _isDailyChallenge = false; // Reset daily mode
+      _canUseTeamHint = false;
+      _revealedTeamHint = null;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -117,9 +147,92 @@ class PlayerWordleController extends ChangeNotifier {
     }
   }
 
+  /// Starts the daily challenge.
+  /// Same player for all users on the same day.
+  Future<void> startDailyChallenge() async {
+    _isLoading = true;
+    _error = null;
+    _mysteryPlayer = null;
+    _searchResults = [];
+    _isDailyChallenge = true;
+    _canUseTeamHint = false;
+    _revealedTeamHint = null;
+    notifyListeners();
+
+    try {
+      final result = await _service.getDailyPlayerId(difficulty: _selectedDifficulty);
+      
+      // Check if already completed today
+      final prefs = await SharedPreferences.getInstance();
+      final completedDate = prefs.getString(_keyDailyCompletedDate);
+      
+      if (completedDate == result.date) {
+        _dailyChallengeCompleted = true;
+      } else {
+        _dailyChallengeCompleted = false;
+      }
+      
+      _dailyChallengeDate = result.date;
+      _dailyTeamsInvolved = result.teamsInvolved;
+      _dailyStreak = prefs.getInt(_keyDailyStreak) ?? 0;
+      
+      _gameState = GameState.newGame(
+        mysteryPlayerId: result.playerId,
+        difficulty: _selectedDifficulty,
+      );
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = 'Failed to start daily challenge: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Uses the team hint (50 points cost).
+  /// Only available after 3 guesses without guessing the correct team.
+  Future<void> useTeamHint() async {
+    if (!_canUseTeamHint || _revealedTeamHint != null) return;
+    if (_totalPoints < _teamHintCost) return;
+    
+    try {
+      // Fetch mystery player to get team
+      final player = await _service.getPlayerDetails(_gameState!.mysteryPlayerId);
+      _revealedTeamHint = player.teamName ?? player.team;
+      _totalPoints -= _teamHintCost;
+      
+      // Save updated points
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_keyTotalPoints, _totalPoints);
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Failed to use team hint: $e');
+    }
+  }
+
+  /// Checks if team hint should be enabled (after 3 wrong team guesses)
+  void _checkTeamHintAvailability() {
+    if (_gameState == null || _gameState!.guesses.length < 3) {
+      _canUseTeamHint = false;
+      return;
+    }
+    
+    // Check if any guess has correct team
+    final hasCorrectTeam = _gameState!.guesses.any((g) => g.teamMatch == MatchStatus.match);
+    _canUseTeamHint = !hasCorrectTeam && _revealedTeamHint == null;
+  }
+
+  // SharedPreferences keys for daily challenge
+  static const String _keyDailyCompletedDate = 'player_wordle_daily_completed_date';
+  static const String _keyDailyStreak = 'player_wordle_daily_streak';
+
   /// Searches for players by name.
+  /// Allows browsing with filters even without text input.
   Future<void> searchPlayers(String query) async {
-    if (query.length < 2 && _selectedTeamFilter == null && _selectedPositionFilter == null) {
+    // Allow search with empty query if filters are active (browse mode)
+    final hasFilters = _selectedTeamFilter != null || _selectedPositionFilter != null;
+    if (query.isEmpty && !hasFilters) {
       _searchResults = [];
       notifyListeners();
       return;
@@ -276,6 +389,16 @@ class PlayerWordleController extends ChangeNotifier {
       _gameState = _gameState!.addGuess(result);
       _isSubmitting = false;
 
+      // Haptic feedback based on result
+      if (result.isCorrect) {
+        HapticFeedback.heavyImpact();
+      } else {
+        HapticFeedback.lightImpact();
+      }
+
+      // Check if team hint should be available (after 3 guesses)
+      _checkTeamHintAvailability();
+
       // Handle game end
       if (_gameState!.isGameOver) {
         await _handleGameEnd();
@@ -319,7 +442,41 @@ class PlayerWordleController extends ChangeNotifier {
       _mysteryPlayer = await _service.getPlayerDetails(
         _gameState!.mysteryPlayerId,
       );
-      await _updateStatistics(_gameState!.status == GameStatus.won);
+      
+      final won = _gameState!.status == GameStatus.won;
+      await _updateStatistics(won);
+      
+      // Handle daily challenge completion
+      if (_isDailyChallenge && _dailyChallengeDate != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final previousDate = prefs.getString(_keyDailyCompletedDate);
+        
+        // Mark as completed
+        await prefs.setString(_keyDailyCompletedDate, _dailyChallengeDate!);
+        _dailyChallengeCompleted = true;
+        
+        // Update streak if won
+        if (won) {
+          // Check if this continues a streak (previous completion was yesterday)
+          final today = DateTime.now();
+          final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+          final yesterday = today.subtract(const Duration(days: 1));
+          final yesterdayStr = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+          
+          if (previousDate == yesterdayStr) {
+            _dailyStreak++;
+          } else if (previousDate != todayStr) {
+            // Reset streak if missed a day
+            _dailyStreak = 1;
+          }
+          await prefs.setInt(_keyDailyStreak, _dailyStreak);
+        } else {
+          // Lost - reset streak
+          _dailyStreak = 0;
+          await prefs.setInt(_keyDailyStreak, 0);
+        }
+      }
+      
       notifyListeners();
     } catch (e) {
       debugPrint('Failed to handle game end: $e');
@@ -333,9 +490,13 @@ class PlayerWordleController extends ChangeNotifier {
   static const _keyCurrentStreak = 'player_wordle_current_streak';
   static const _keyMaxStreak = 'player_wordle_max_streak';
   static const _keyTotalPoints = 'player_wordle_total_points';
+  static const _keyHasSeenOnboarding = 'player_wordle_has_seen_onboarding';
   
   int _totalPoints = 0;
   int get totalPoints => _totalPoints;
+
+  bool _hasSeenOnboarding = false;
+  bool get hasSeenOnboarding => _hasSeenOnboarding;
 
   Future<void> _loadStatistics() async {
     try {
@@ -345,8 +506,23 @@ class PlayerWordleController extends ChangeNotifier {
       _currentStreak = prefs.getInt(_keyCurrentStreak) ?? 0;
       _maxStreak = prefs.getInt(_keyMaxStreak) ?? 0;
       _totalPoints = prefs.getInt(_keyTotalPoints) ?? 0;
+      _hasSeenOnboarding = prefs.getBool(_keyHasSeenOnboarding) ?? false;
+      
+      // Set default difficulty based on user level
+      _selectedDifficulty = getHighestUnlockedDifficulty();
     } catch (e) {
       debugPrint('Failed to load statistics: $e');
+    }
+  }
+
+  Future<void> markOnboardingSeen() async {
+    _hasSeenOnboarding = true;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyHasSeenOnboarding, true);
+    } catch (e) {
+      debugPrint('Failed to save onboarding state: $e');
     }
   }
 
@@ -396,7 +572,6 @@ class PlayerWordleController extends ChangeNotifier {
     // 8 guesses max. 
     // Win on 1st guess (7 remaining) -> Max points?
     // Formula: Base * (Remaining + 1) / MaxGuesses (approx)
-    // Or simplified: Just Flat Base? Plan said: Base * (Remaining + 1) / Max
     // Actually, simple is better. Let's do: Base + (Remaining * Bonus)
     // Plan: Score = BasePoints * (RemainingGuesses + 1) / MaxGuesses
     // Fan (100) * (7+1)/8 = 100.
@@ -426,6 +601,14 @@ class PlayerWordleController extends ChangeNotifier {
     if (difficulty == Difficulty.pro) return _totalPoints >= 2000;
     if (difficulty == Difficulty.allMadden) return _totalPoints >= 5000;
     return false;
+  }
+  
+  /// Gets the highest difficulty level unlocked by the current points.
+  Difficulty getHighestUnlockedDifficulty() {
+    if (_totalPoints >= 5000) return Difficulty.allMadden;
+    if (_totalPoints >= 2000) return Difficulty.pro;
+    if (_totalPoints >= 500) return Difficulty.rookie;
+    return Difficulty.fan;
   }
 
   /// Win percentage as a value between 0 and 1.

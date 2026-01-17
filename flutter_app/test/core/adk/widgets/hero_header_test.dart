@@ -12,13 +12,15 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CustomScrollView(
-              slivers: [
-                T4LHeroHeader(
-                  title: testTitle,
-                  imageUrl: testImage,
-                ),
-              ],
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  T4LHeroHeader(
+                    title: testTitle,
+                    imageUrl: testImage,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -26,25 +28,22 @@ void main() {
 
       // Verify Title (Upper Case)
       expect(find.text(testTitle.toUpperCase()), findsOneWidget);
-
-      // Verify FlexibleSpaceBar exists
-      expect(find.byType(FlexibleSpaceBar), findsOneWidget);
     });
   });
 
-  testWidgets('T4LHeroHeader respects expandedHeight', (WidgetTester tester) async {
+  testWidgets('T4LHeroHeader respects height', (WidgetTester tester) async {
     const double customHeight = 250.0;
 
     await mockNetworkImagesFor(() async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: CustomScrollView(
-              slivers: [
+            body: Column(
+              children: [
                 T4LHeroHeader(
                   title: 'Short',
                   imageUrl: 'https://example.com/img.png',
-                  expandedHeight: customHeight,
+                  height: customHeight,
                 ),
               ],
             ),
@@ -52,8 +51,8 @@ void main() {
         ),
       );
 
-      final SliverAppBar appBar = tester.widget(find.byType(SliverAppBar));
-      expect(appBar.expandedHeight, customHeight);
+      final SizedBox box = tester.widget(find.byType(SizedBox).first);
+      expect(box.height, customHeight);
     });
   });
 }

@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'App Hub'**
   String get navAppHub;
 
+  /// No description provided for @navGameCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Center'**
+  String get navGameCenter;
+
   /// No description provided for @navHistory.
   ///
   /// In en, this message translates to:
@@ -721,6 +727,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} guesses'**
   String playerWordleGuessesFormat(int count);
+
+  /// No description provided for @playerWordleInstructionStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'🟩 = Match  🟨 = Close  ⬜ = Miss'**
+  String get playerWordleInstructionStep2;
+
+  /// No description provided for @playerWordleInstructionStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Win in 8 guesses to earn points!'**
+  String get playerWordleInstructionStep3;
+
+  /// No description provided for @playerWordleStatYearsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'yrs'**
+  String get playerWordleStatYearsUnit;
+
+  /// No description provided for @playerWordleStatLbsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'lbs'**
+  String get playerWordleStatLbsUnit;
+
+  /// No description provided for @playerWordleStatDraftFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{year} Rd {round} Pick {pick}'**
+  String playerWordleStatDraftFormat(int year, int round, int pick);
+
+  /// No description provided for @playerWordleStartGuessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Start guessing below!'**
+  String get playerWordleStartGuessing;
 }
 
 class _AppLocalizationsDelegate

@@ -290,4 +290,33 @@ class StandingsController extends ChangeNotifier {
 
   /// Whether we can navigate to the next week.
   bool get canGoNext => _weeks.indexOf(_selectedWeek) < _weeks.length - 1;
+
+  /// Returns a human-readable label for the given week number.
+  /// Handles NFL post-season naming (Wild Card, Divisional, etc.).
+  /// Returns a Record with (label, subLabel).
+  static (String, String) getWeekLabels(int week) {
+    if (week <= 18) {
+      return ('Week', week.toString());
+    }
+    return switch (week) {
+      19 => ('Wild', 'Card'),
+      20 => ('Divis-', 'ional'),
+      21 => ('Conf.', 'Champ'),
+      22 => ('Super', 'Bowl'),
+      _ => ('Week', week.toString()),
+    };
+  }
+
+  /// Returns a single line label for a week.
+  static String getWeekLabel(int week) {
+    final (label, sub) = getWeekLabels(week);
+    if (week <= 18) return '$label $sub';
+    return switch (week) {
+      19 => 'Wild Card',
+      20 => 'Divisional',
+      21 => 'Conf. Champ',
+      22 => 'Super Bowl',
+      _ => 'Week $week',
+    };
+  }
 }

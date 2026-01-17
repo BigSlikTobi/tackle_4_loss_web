@@ -9,7 +9,7 @@ class T4LHeroHeader extends StatefulWidget {
   final String? subtitle;
   final String imageUrl;
   final String? videoUrl; // New parameter
-  final double expandedHeight;
+  final double height; // Renamed from expandedHeight
   final bool isDarkMode;
   final Widget? floatingAction;
   final String? heroTag;
@@ -20,7 +20,7 @@ class T4LHeroHeader extends StatefulWidget {
     this.subtitle,
     required this.imageUrl,
     this.videoUrl,
-    this.expandedHeight = 440.0,
+    this.height = 440.0,
     this.isDarkMode = true,
     this.floatingAction,
     this.heroTag,
@@ -108,22 +108,70 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: widget.expandedHeight,
-      floating: false,
-      pinned: true,
-      backgroundColor: widget.isDarkMode
-          ? AppColors.backgroundDark
-          : AppColors.backgroundLight,
-      automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    return SizedBox(
+      height: widget.height,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Base Image (Always there, revealed when video fades)
+          if (widget.heroTag != null)
+            Hero(
+              tag: widget.heroTag!,
+              child: _buildImage(),
+            )
+          else
+            _buildImage(),
+
+          // 2. Video Player Layer (Fades out when finished)
+          if (_videoController != null &&
+              _videoController!.value.isInitialized)
+            AnimatedOpacity(
+              opacity: _isVideoPlaying ? 1.0 : 0.0,
+              duration: const Duration(
+                milliseconds: 1500,
+              ), // Smooth 1.5s fade
+              curve: Curves.easeInOut,
+              child: SizedBox.expand(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _videoController!.value.size.width,
+                    height: _videoController!.value.size.height,
+                    child: VideoPlayer(_videoController!),
+                  ),
+                ),
+              ),
+            ),
+
+          // 3. Gradient Overlay (On top of both)
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  (widget.isDarkMode
+                          ? AppColors.backgroundDark
+                          : AppColors.backgroundLight)
+                      .withValues(alpha: 0.54),
+                  Colors.transparent,
+                  (widget.isDarkMode
+                          ? AppColors.backgroundDark
+                          : AppColors.backgroundLight)
+                      .withValues(alpha: 0.87),
+                ],
+              ),
+            ),
+          ),
+          
+          // 4. Content (Title/Subtitle) - Replaces FlexibleSpaceBar title
+          Positioned(
+            bottom: 32, // Replaces previous align logic
+            left: 16,
+            right: 16,
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
                   widget.title.toUpperCase(),
@@ -140,20 +188,20 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                         blurRadius: 10,
                       ),
                     ],
-                    fontSize: 18,
+                    fontSize: 24, // Slightly larger as it's not scaled down by Sliver
                     color: widget.isDarkMode
                         ? Colors.white
                         : AppColors.textPrimary,
                   ),
                 ),
                 if (widget.subtitle != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     widget.subtitle!,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      fontSize: 11,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color:
                           (widget.isDarkMode
@@ -178,104 +226,33 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
               ],
             ),
           ),
-        ),
-        centerTitle: true,
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            // 1. Base Image (Always there, revealed when video fades)
-            if (widget.heroTag != null)
-              Hero(
-                tag: widget.heroTag!,
-                child: CachedNetworkImage(
-                  imageUrl: widget.imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: (widget.isDarkMode
-                        ? AppColors.backgroundDark
-                        : AppColors.backgroundLight),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: (widget.isDarkMode
-                        ? AppColors.backgroundDark
-                        : AppColors.backgroundLight),
-                    child: const Icon(
-                      Icons.broken_image,
-                      color: Colors.white24,
-                      size: 48,
-                    ),
-                  ),
-                ),
-              )
-            else
-              CachedNetworkImage(
-                imageUrl: widget.imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: (widget.isDarkMode
-                      ? AppColors.backgroundDark
-                      : AppColors.backgroundLight),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: (widget.isDarkMode
-                      ? AppColors.backgroundDark
-                      : AppColors.backgroundLight),
-                  child: const Icon(
-                    Icons.broken_image,
-                    color: Colors.white24,
-                    size: 48,
-                  ),
-                ),
-              ),
 
-            // 2. Video Player Layer (Fades out when finished)
-            if (_videoController != null &&
-                _videoController!.value.isInitialized)
-              AnimatedOpacity(
-                opacity: _isVideoPlaying ? 1.0 : 0.0,
-                duration: const Duration(
-                  milliseconds: 1500,
-                ), // Smooth 1.5s fade
-                curve: Curves.easeInOut,
-                child: SizedBox.expand(
-                  child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                      width: _videoController!.value.size.width,
-                      height: _videoController!.value.size.height,
-                      child: VideoPlayer(_videoController!),
-                    ),
-                  ),
-                ),
-              ),
-
-            // 3. Gradient Overlay (On top of both)
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    (widget.isDarkMode
-                            ? AppColors.backgroundDark
-                            : AppColors.backgroundLight)
-                        .withValues(alpha: 0.54),
-                    Colors.transparent,
-                    (widget.isDarkMode
-                            ? AppColors.backgroundDark
-                            : AppColors.backgroundLight)
-                        .withValues(alpha: 0.87),
-                  ],
-                ),
-              ),
-            ),
-
-            // 4. Floating Action (Play Button)
-            if (widget.floatingAction != null)
-              Positioned(bottom: 132, right: 16, child: widget.floatingAction!),
-          ],
+          // 5. Floating Action (Play Button)
+          if (widget.floatingAction != null)
+            Positioned(bottom: 132, right: 16, child: widget.floatingAction!),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildImage() {
+    return CachedNetworkImage(
+      imageUrl: widget.imageUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        color: (widget.isDarkMode
+            ? AppColors.backgroundDark
+            : AppColors.backgroundLight),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: (widget.isDarkMode
+            ? AppColors.backgroundDark
+            : AppColors.backgroundLight),
+        child: const Icon(
+          Icons.broken_image,
+          color: Colors.white24,
+          size: 48,
         ),
       ),
     );

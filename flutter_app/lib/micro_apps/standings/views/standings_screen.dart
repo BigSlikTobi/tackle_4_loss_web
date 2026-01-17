@@ -48,7 +48,7 @@ class _StandingsScreenContent extends StatelessWidget {
           return Column(
             children: [
               // Floating Header Spacer
-              const SizedBox(height: 130),
+              // Note: T4LScaffold automatically provides header clearance
 
               // Tab Selector
               _buildTabSelector(

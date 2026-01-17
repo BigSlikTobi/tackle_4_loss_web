@@ -126,45 +126,24 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
 
         return SliverMainAxisGroup(
           slivers: [
-            // Filter Toggle Header
+            // Team Logo Watermark Section - No Text
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Divider(
-                        color:
-                            t4lColors?.border.withValues(alpha: 0.7) ??
-                            Colors.grey.withValues(alpha: 0.7),
-                        thickness: 2.0,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'T4L Feed',
-                        style: TextStyle(
-                          color: t4lColors?.textSecondary ?? Colors.grey,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+              child: SizedBox(
+                height: 100,
+                child: settings.selectedTeam != null
+                    ? Center(
+                        child: Opacity(
+                          opacity: 0.15,
+                          child: Image.asset(
+                            settings.selectedTeam!.logoUrl,
+                            width: 180,
+                            height: 180,
+                            fit: BoxFit.contain,
+                            errorBuilder: (c, e, s) => const SizedBox(),
+                          ),
                         ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Divider(
-                        color:
-                            t4lColors?.border.withValues(alpha: 0.7) ??
-                            Colors.grey.withValues(alpha: 0.7),
-                        thickness: 2.0,
-                      ),
-                    ),
-                  ],
-                ),
+                      )
+                    : const SizedBox(),
               ),
             ),
 

@@ -7,7 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 void main() {
   testWidgets('T4LFloatingNavBar renders all buttons', (WidgetTester tester) async {
     bool homePressed = false;
-    bool storePressed = false;
+    bool gameCenterPressed = false;
     bool historyPressed = false;
     bool settingsPressed = false;
     bool teamPressed = false;
@@ -17,7 +17,7 @@ void main() {
         home: Scaffold(
           body: T4LFloatingNavBar(
             onHome: () => homePressed = true,
-            onAppStore: () => storePressed = true,
+            onGameCenter: () => gameCenterPressed = true,
             onHistory: () => historyPressed = true,
             onSettings: () => settingsPressed = true,
             onTeamLogo: () => teamPressed = true,
@@ -29,8 +29,8 @@ void main() {
     // Verify 'H' text for home
     expect(find.text('H'), findsOneWidget);
     
-    // Verify icons
-    expect(find.byIcon(LucideIcons.layoutGrid), findsOneWidget);
+    // Verify icons - trophy for Game Center, history, user
+    expect(find.byIcon(LucideIcons.trophy), findsOneWidget);
     expect(find.byIcon(LucideIcons.history), findsOneWidget);
     expect(find.byIcon(LucideIcons.user), findsOneWidget);
     // Center button uses Image, not Icon
@@ -40,8 +40,8 @@ void main() {
     await tester.tap(find.text('H'));
     expect(homePressed, isTrue);
 
-    await tester.tap(find.byIcon(LucideIcons.layoutGrid));
-    expect(storePressed, isTrue);
+    await tester.tap(find.byIcon(LucideIcons.trophy));
+    expect(gameCenterPressed, isTrue);
 
     await tester.tap(find.byIcon(LucideIcons.history));
     expect(historyPressed, isTrue);
@@ -53,17 +53,17 @@ void main() {
     expect(teamPressed, isTrue);
   });
 
-  testWidgets('T4LFloatingNavBar shows badge when showAppHubBadge is true', (WidgetTester tester) async {
+  testWidgets('T4LFloatingNavBar shows badge when showGameCenterBadge is true', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: T4LFloatingNavBar(
             onHome: () {},
-            onAppStore: () {},
+            onGameCenter: () {},
             onHistory: () {},
             onSettings: () {},
             onTeamLogo: () {},
-            showAppHubBadge: true,
+            showGameCenterBadge: true,
           ),
         ),
       ),
@@ -74,17 +74,17 @@ void main() {
     expect(find.text('1'), findsOneWidget);
   });
 
-  testWidgets('T4LFloatingNavBar hides badge when showAppHubBadge is false', (WidgetTester tester) async {
+  testWidgets('T4LFloatingNavBar hides badge when showGameCenterBadge is false', (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
           body: T4LFloatingNavBar(
             onHome: () {},
-            onAppStore: () {},
+            onGameCenter: () {},
             onHistory: () {},
             onSettings: () {},
             onTeamLogo: () {},
-            showAppHubBadge: false,
+            showGameCenterBadge: false,
           ),
         ),
       ),

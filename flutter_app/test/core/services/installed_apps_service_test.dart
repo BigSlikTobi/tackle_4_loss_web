@@ -7,6 +7,8 @@ import 'package:tackle4loss_mobile/micro_apps/breaking_news/breaking_news_app.da
 import 'package:tackle4loss_mobile/micro_apps/standings/standings_app.dart';
 import 'package:tackle4loss_mobile/micro_apps/radio/radio_app.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/deep_dive_app.dart';
+import 'package:tackle4loss_mobile/micro_apps/player_wordle/player_wordle_app.dart';
+import 'package:tackle4loss_mobile/micro_apps/game_reports/game_reports_app.dart';
 
 void main() {
   group('InstalledAppsService', () {
@@ -17,111 +19,122 @@ void main() {
       
       // Clear registry before each test to ensure deterministic behavior
       final registry = AppRegistry();
-      registry.clear(); // Assuming this method exists or we can just register again
+      registry.clear();
       
       // Register apps with current configuration
-      registry.register(BreakingNewsApp()); // true, false
-      registry.register(DeepDiveApp());     // true, false
-      registry.register(RadioApp());        // true, true
-      registry.register(StandingsApp());    // false
-      registry.register(AppHubApp());       // false
+      // Note: All these apps now have showOnHomePage = true
+      registry.register(BreakingNewsApp()); // on home
+      registry.register(DeepDiveApp());     // on home
+      registry.register(RadioApp());        // on home
+      registry.register(PlayerWordleApp()); // on home
+      registry.register(GameReportsApp());  // on home (feature flagged off)
+      registry.register(StandingsApp());    // on home
+      registry.register(AppHubApp());       // NOT on home (system app)
       
       service = InstalledAppsService();
       await service.init();
     });
 
     group('initialization', () {
-      test('init sets up default grid layout based on showOnHomePage', () async {
+      test('init sets up default ordered list based on showOnHomePage', () async {
         service.resetDefaults();
         
-        expect(service.isInstalled('breaking_news'), isTrue);
-        expect(service.isInstalled('deep_dive'), isTrue);
-        expect(service.isInstalled('radio'), isTrue);
+        final apps = service.rawItems;
+        expect(apps, contains('breaking_news'));
+        expect(apps, contains('deep_dive'));
+        expect(apps, contains('radio'));
+        expect(apps, contains('standings'));
+        expect(apps, contains('player_wordle'));
         
-        // These should NOT be installed on home page
-        expect(service.isInstalled('standings'), isFalse);
+        // App Hub should NOT be installed (system app, showOnHomePage = false)
         expect(service.isInstalled('app_hub'), isFalse);
       });
     });
 
-    group('grid queries', () {
-      test('isEmpty returns true for empty slots', () {
-        service.resetDefaults();
-        bool hasEmptySlot = false;
-        for (int i = 0; i < 20; i++) {
-          if (service.isEmpty(i)) {
-            hasEmptySlot = true;
-            break;
-          }
-        }
-        expect(hasEmptySlot, isTrue);
-      });
-
-      test('isWidget returns true for widget slots', () {
-        service.resetDefaults();
-        // Radio is a widget (3x1)
-        // Check if any slot is a widget
-        bool hasWidget = false;
-        for (int i = 0; i < 20; i++) {
-          if (service.isWidget(i)) {
-            hasWidget = true;
-            break;
-          }
-        }
-        expect(hasWidget, isTrue);
-      });
-
-      test('isInstalled checks if app is in grid', () {
+    group('queries', () {
+      test('isInstalled checks if app is in list', () {
         service.resetDefaults();
         expect(service.isInstalled('breaking_news'), isTrue);
-        expect(service.isInstalled('unknown_app'), isFalse);
+        expect(service.isInstalled('standings'), isTrue); // Now on home
       });
-
-      test('isInstalledAsWidget checks widget status', () {
-        service.resetDefaults();
-        expect(service.isInstalledAsWidget('radio'), isTrue);
-        expect(service.isInstalledAsWidget('breaking_news'), isFalse);
+      
+      test('rawItems returns correct list', () {
+         service.resetDefaults();
+         expect(service.rawItems.length, greaterThan(0));
+         expect(service.rawItems, isA<List<String>>());
       });
     });
 
-    group('install', () {
-      test('install places 1x1 app in first empty slot', () {
+    group('install/uninstall', () {
+      test('install adds app to the end of the list', () {
         service.resetDefaults();
-        service.install('player_wordle');
-        expect(service.isInstalled('player_wordle'), isTrue);
+        // First uninstall to test install behavior
+        service.uninstall('standings');
+        expect(service.isInstalled('standings'), isFalse);
+        
+        service.install('standings');
+        
+        expect(service.isInstalled('standings'), isTrue);
+        expect(service.rawItems.last, equals('standings'));
       });
 
-      test('install with asWidget places widget correctly', () {
+      test('install does not duplicate existing app', () {
         service.resetDefaults();
-        // Uninstall radio first since it's already installed as widget
-        service.uninstall('radio');
-        // Re-install as widget
-        service.install('radio', asWidget: true);
-        expect(service.isInstalledAsWidget('radio'), isTrue);
+        int initialCount = service.rawItems.length;
+        
+        service.install('breaking_news');
+        
+        expect(service.rawItems.length, equals(initialCount));
       });
-    });
 
-    group('uninstall', () {
-      test('uninstall removes app from grid', () {
+      test('uninstall removes app from list', () {
         service.resetDefaults();
         expect(service.isInstalled('breaking_news'), isTrue);
+        
         service.uninstall('breaking_news');
+        
         expect(service.isInstalled('breaking_news'), isFalse);
       });
 
       test('uninstall does not remove app_hub', () {
-        // Even if not on home page by default, if installed manually it should be protected
         service.install('app_hub');
         service.uninstall('app_hub');
         expect(service.isInstalled('app_hub'), isTrue);
       });
     });
 
-    group('resetDefaults', () {
-      test('resetDefaults restores grid based on manifest', () {
-        service.install('player_wordle');
+    group('moveApp', () {
+      test('moveApp reorders items correctly', () {
+        // Setup a simple known state
         service.resetDefaults();
-        expect(service.isInstalled('player_wordle'), isFalse);
+        
+        // Let's force a clean slate for precise move testing
+        for (var app in service.rawItems) {
+          service.uninstall(app);
+        }
+        service.install('app1');
+        service.install('app2');
+        service.install('app3');
+        
+        // Initial state: [app1, app2, app3]
+        expect(service.rawItems, equals(['app1', 'app2', 'app3']));
+        
+        // Move app1 to end
+        service.moveApp(0, 2);
+        expect(service.rawItems, equals(['app2', 'app3', 'app1']));
+        
+        // Move app1 back to start
+        service.moveApp(2, 0);
+        expect(service.rawItems, equals(['app1', 'app2', 'app3']));
+      });
+    });
+    
+    group('resetDefaults', () {
+      test('resetDefaults restores original list', () {
+        service.uninstall('breaking_news');
+        expect(service.isInstalled('breaking_news'), isFalse);
+        
+        service.resetDefaults();
         expect(service.isInstalled('breaking_news'), isTrue);
       });
     });
