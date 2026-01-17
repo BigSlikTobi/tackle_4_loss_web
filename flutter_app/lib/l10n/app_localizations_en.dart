@@ -15,6 +15,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navAppHub => 'App Hub';
 
   @override
+  String get navGameCenter => 'Game Center';
+
+  @override
   String get navHistory => 'Last App';
 
   @override
@@ -333,4 +336,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String playerWordleGuessesFormat(int count) {
     return '$count guesses';
   }
+
+  @override
+  String get playerWordleInstructionStep2 => '🟩 = Match  🟨 = Close  ⬜ = Miss';
+
+  @override
+  String get playerWordleInstructionStep3 => 'Win in 8 guesses to earn points!';
+
+  @override
+  String get playerWordleStatYearsUnit => 'yrs';
+
+  @override
+  String get playerWordleStatLbsUnit => 'lbs';
+
+  @override
+  String playerWordleStatDraftFormat(int year, int round, int pick) {
+    return '$year Rd $round Pick $pick';
+  }
+
+  @override
+  String get playerWordleStartGuessing => 'Start guessing below!';
 }

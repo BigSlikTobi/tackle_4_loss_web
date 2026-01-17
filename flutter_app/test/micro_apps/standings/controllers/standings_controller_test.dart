@@ -305,6 +305,44 @@ void main() {
         expect(controller.isLoadingStandings, isFalse);
       });
     });
+
+    group('week labeling', () {
+      test('getWeekLabels returns Week X for regular season (1-18)', () {
+        final (label, sub) = StandingsController.getWeekLabels(1);
+        expect(label, 'Week');
+        expect(sub, '1');
+
+        final (label18, sub18) = StandingsController.getWeekLabels(18);
+        expect(label18, 'Week');
+        expect(sub18, '18');
+      });
+
+      test('getWeekLabels returns proper names for post-season (19-22)', () {
+        final (l19, s19) = StandingsController.getWeekLabels(19);
+        expect(l19, 'Wild');
+        expect(s19, 'Card');
+
+        final (l20, s20) = StandingsController.getWeekLabels(20);
+        expect(l20, 'Divis-');
+        expect(s20, 'ional');
+
+        final (l21, s21) = StandingsController.getWeekLabels(21);
+        expect(l21, 'Conf.');
+        expect(s21, 'Champ');
+
+        final (l22, s22) = StandingsController.getWeekLabels(22);
+        expect(l22, 'Super');
+        expect(s22, 'Bowl');
+      });
+
+      test('getWeekLabel returns single line strings', () {
+        expect(StandingsController.getWeekLabel(1), 'Week 1');
+        expect(StandingsController.getWeekLabel(19), 'Wild Card');
+        expect(StandingsController.getWeekLabel(20), 'Divisional');
+        expect(StandingsController.getWeekLabel(21), 'Conf. Champ');
+        expect(StandingsController.getWeekLabel(22), 'Super Bowl');
+      });
+    });
   });
 }
 

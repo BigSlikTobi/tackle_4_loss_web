@@ -7,30 +7,30 @@ import '../../widgets/notification_badge.dart';
 
 class T4LFloatingNavBar extends StatefulWidget {
   final VoidCallback onHome;
-  final VoidCallback onAppStore;
+  final VoidCallback onGameCenter;
   final VoidCallback onHistory;
   final VoidCallback onSettings;
   final VoidCallback onTeamLogo;
   final String? favoriteTeamLogoUrl;
   final String? homeTooltip;
-  final String? appStoreTooltip;
+  final String? gameCenterTooltip;
   final String? historyTooltip;
   final String? settingsTooltip;
-  final bool showAppHubBadge;
+  final bool showGameCenterBadge;
 
   const T4LFloatingNavBar({
     super.key,
     required this.onHome,
-    required this.onAppStore,
+    required this.onGameCenter,
     required this.onHistory,
     required this.onSettings,
     required this.onTeamLogo,
     this.favoriteTeamLogoUrl,
     this.homeTooltip,
-    this.appStoreTooltip,
+    this.gameCenterTooltip,
     this.historyTooltip,
     this.settingsTooltip,
-    this.showAppHubBadge = false,
+    this.showGameCenterBadge = false,
   });
 
   @override
@@ -63,6 +63,24 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Adaptive glass colors
+    final glassColor = isDark 
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.6);
+    
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.white.withValues(alpha: 0.4);
+        
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.3)
+        : Colors.black.withValues(alpha: 0.1);
+
+    final iconColor = isDark ? Colors.white70 : AppColors.textPrimary.withValues(alpha: 0.7);
+    final activeIconColor = isDark ? Colors.white : AppColors.textPrimary;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       height: 64,
@@ -77,15 +95,15 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
+                    color: glassColor,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.12),
+                      color: borderColor,
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
+                        color: shadowColor,
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -107,27 +125,28 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                 child: Text(
                   'H',
                   style: GoogleFonts.anton(
-                    color: Colors.white,
+                    color: activeIconColor,
                     fontSize: 24,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
 
-              // Slot 2: App Store with optional badge
+              // Slot 2: Game Center with optional badge
               Stack(
                 clipBehavior: Clip.none,
                 children: [
                   _NavBarButton(
-                    onTap: widget.onAppStore,
-                    tooltip: widget.appStoreTooltip,
-                    icon: LucideIcons.layoutGrid,
+                    onTap: widget.onGameCenter,
+                    tooltip: widget.gameCenterTooltip,
+                    icon: LucideIcons.trophy,
+                    color: iconColor,
                   ),
-                  if (widget.showAppHubBadge)
+                  if (widget.showGameCenterBadge)
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: NotificationBadge(show: widget.showAppHubBadge),
+                      child: NotificationBadge(show: widget.showGameCenterBadge),
                     ),
                 ],
               ),
@@ -141,6 +160,7 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                 tooltip: widget.historyTooltip,
                 icon: LucideIcons.history,
                 opacity: 0.6,
+                color: iconColor,
               ),
 
               // Slot 5: Settings
@@ -148,6 +168,7 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                 onTap: widget.onSettings,
                 tooltip: widget.settingsTooltip,
                 icon: LucideIcons.user,
+                color: iconColor,
               ),
             ],
           ),
@@ -228,6 +249,7 @@ class _NavBarButton extends StatelessWidget {
   final Widget? child;
   final String? tooltip;
   final double opacity;
+  final Color? color;
 
   const _NavBarButton({
     required this.onTap,
@@ -235,6 +257,7 @@ class _NavBarButton extends StatelessWidget {
     this.child,
     this.tooltip,
     this.opacity = 1.0,
+    this.color,
   });
 
   @override
@@ -250,7 +273,7 @@ class _NavBarButton extends StatelessWidget {
             width: 48,
             height: 48,
             alignment: Alignment.center,
-            child: child ?? Icon(icon, color: Colors.white70, size: 24),
+            child: child ?? Icon(icon, color: color ?? Colors.white70, size: 24),
           ),
         ),
       ),

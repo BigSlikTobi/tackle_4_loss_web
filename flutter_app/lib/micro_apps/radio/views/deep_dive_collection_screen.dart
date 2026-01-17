@@ -30,8 +30,7 @@ class DeepDiveCollectionScreen extends StatelessWidget {
             )
           : CustomScrollView(
               slivers: [
-                // Header Spacer to avoid overlap with T4LScaffold title
-                const SliverToBoxAdapter(child: SizedBox(height: 124)),
+              // Note: T4LScaffold automatically provides header clearance
 
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(

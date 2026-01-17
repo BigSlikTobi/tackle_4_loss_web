@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../../design_tokens.dart';
 import '../../services/team_service.dart';
 import '../../services/settings_service.dart';
+import '../../theme/t4l_theme.dart';
 
 class TeamSelectorDialog extends StatelessWidget {
   const TeamSelectorDialog({super.key});
@@ -11,9 +12,11 @@ class TeamSelectorDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final teams = TeamService().getTeams();
     final settings = Provider.of<SettingsService>(context);
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Dialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         padding: const EdgeInsets.all(24.0),
@@ -25,10 +28,10 @@ class TeamSelectorDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'SELECT YOUR TEAM',
               style: TextStyle(
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 2.0,
@@ -58,24 +61,33 @@ class TeamSelectorDialog extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? team.primaryColor.withValues(alpha: 0.2)
-                            : Colors.white.withValues(alpha: 0.05),
+                            : (isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.03)),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
                               ? team.primaryColor
-                              : Colors.white10,
+                              : (isDark ? Colors.white10 : Colors.black12),
                           width: 2,
                         ),
                       ),
-                      child: Image.asset(
-                        team.logoUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.error_outline,
-                              color: Colors.white24,
-                              size: 20,
-                            ),
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isDark ? Colors.white : Colors.transparent,
+                        ),
+                        child: Image.asset(
+                          team.logoUrl,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Icon(
+                                Icons.error_outline,
+                                color: isDark ? Colors.black26 : Colors.grey,
+                                size: 20,
+                              ),
+                        ),
                       ),
                     ),
                   );
@@ -87,9 +99,9 @@ class TeamSelectorDialog extends StatelessWidget {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text(
+                child: Text(
                   'CANCEL',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: colors.textSecondary),
                 ),
               ),
             ),

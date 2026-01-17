@@ -50,7 +50,7 @@ class _RadioScreenState extends State<RadioScreen> {
             // Header Space (Handled by T4LScaffold, but we need spacing for it if it's floating)
             // T4LScaffold uses a Stack for header, so body goes BEHIND it.
             // We need a top spacer.
-            const SizedBox(height: 100), // Approx header height
+            // Note: T4LScaffold automatically provides header clearance
             // Categories
             SizedBox(
               height: 40,

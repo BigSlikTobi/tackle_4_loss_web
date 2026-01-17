@@ -85,7 +85,7 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
           children: [
             Column(
               children: [
-                const SizedBox(height: 130),
+                // Note: T4LScaffold automatically provides header clearance
 
                 // Filter & Sort Bar
                 Consumer<BreakingNewsController>(

@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/theme/t4l_theme.dart';
 import '../../models/player_model.dart';
 
 /// Search bar with autocomplete for player names.
@@ -121,21 +122,24 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    // Theme extraction
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildSearchField(),
+        _buildSearchField(colors),
         if (_showDropdown && widget.searchResults.isNotEmpty)
-          _buildDropdown(),
+          _buildDropdown(colors),
       ],
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(T4LThemeColors colors) {
     final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppBorders.radiusXl),
         boxShadow: AppShadows.base,
       ),
@@ -145,16 +149,17 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
         enableInteractiveSelection: false, // Prevent gesture crash on long press
         enabled: widget.enabled && !widget.isSubmitting,
         onChanged: _onTextChanged,
-        style: const TextStyle(
+        textInputAction: TextInputAction.search,
+        style: TextStyle(
           fontSize: AppTypography.fontSizeMd,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         decoration: InputDecoration(
           hintText: widget.enabled 
               ? l10n.playerWordleSearchHint 
               : l10n.playerWordleGameOverSearchHint,
           hintStyle: TextStyle(
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           prefixIcon: widget.isSearching
               ? const Padding(
@@ -165,17 +170,26 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 )
-              : const Icon(Icons.search, color: AppColors.textSecondary),
-          suffixIcon: _controller.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppColors.textSecondary),
-                  onPressed: () {
-                    _controller.clear();
-                    widget.onClear();
-                    setState(() => _showDropdown = false);
-                  },
+              : Icon(Icons.search, color: colors.textSecondary),
+          suffixIcon: widget.isSubmitting
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
                 )
-              : null,
+              : _controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear, color: colors.textSecondary),
+                      onPressed: () {
+                        _controller.clear();
+                        widget.onClear();
+                        setState(() => _showDropdown = false);
+                      },
+                    )
+                  : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.space2,
@@ -186,12 +200,12 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
     );
   }
 
-  Widget _buildDropdown() {
+  Widget _buildDropdown(T4LThemeColors colors) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 250),
       margin: const EdgeInsets.only(top: AppSpacing.space1),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppBorders.radiusLg),
         boxShadow: AppShadows.md,
       ),
@@ -204,7 +218,7 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
           itemCount: widget.searchResults.length + (widget.isSearching ? 1 : 0),
           separatorBuilder: (_, __) => Divider(
             height: 1,
-            color: AppColors.neutralBorder,
+            color: colors.border,
           ),
           itemBuilder: (context, index) {
             if (index == widget.searchResults.length) {
@@ -220,14 +234,14 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
               );
             }
             final player = widget.searchResults[index];
-            return _buildPlayerTile(player);
+            return _buildPlayerTile(player, colors);
           },
         ),
       ),
     );
   }
 
-  Widget _buildPlayerTile(Player player) {
+  Widget _buildPlayerTile(Player player, T4LThemeColors colors) {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space2,
@@ -239,15 +253,15 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
             ? NetworkImage(player.headshot!)
             : null,
         onForegroundImageError: (_, __) {}, // Silently handle network errors
-        backgroundColor: AppColors.neutralBorder,
-        child: const Icon(Icons.person, color: AppColors.textSecondary),
+        backgroundColor: colors.border,
+        child: Icon(Icons.person, color: colors.textSecondary),
       ),
       title: Text(
         player.displayName,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: AppTypography.fontSizeMd,
           fontWeight: AppTypography.fontWeightBold,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
       ),
       subtitle: Builder(
@@ -257,7 +271,7 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
             '${player.team ?? l10n.playerWordleNotAvailable} · ${player.position ?? l10n.playerWordleNotAvailable}',
             style: TextStyle(
               fontSize: AppTypography.fontSizeSm,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           );
         },

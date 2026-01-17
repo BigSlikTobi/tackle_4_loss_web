@@ -1,7 +1,9 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
+import '../../../../design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/theme/t4l_theme.dart';
 import '../../models/guess_result.dart';
 
 /// Colors for match status feedback.
@@ -46,13 +48,13 @@ class _GuessCardState extends State<GuessCard> {
 
   Future<void> _animateReveal() async {
     // Initial delay before starting
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 150));
     
     for (int i = 1; i <= _totalAttributes; i++) {
       if (!mounted) return;
       
-      // Delay between reveals (Adjusted to 600ms for slower reveal)
-      await Future.delayed(const Duration(milliseconds: 600));
+      // Delay between reveals (250ms for snappy but readable pace)
+      await Future.delayed(const Duration(milliseconds: 250));
       
       if (mounted) {
         setState(() {
@@ -64,6 +66,7 @@ class _GuessCardState extends State<GuessCard> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final player = widget.guess.guessedPlayer;
     final isCorrect = widget.guess.isCorrect;
     
@@ -76,14 +79,14 @@ class _GuessCardState extends State<GuessCard> {
           vertical: AppSpacing.space1,
         ),
         decoration: BoxDecoration(
-          color: isCorrect 
+          color: isCorrect
               ? FeedbackColors.match.withValues(alpha: 0.1)
-              : AppColors.surface,
+              : colors.surface,
           borderRadius: BorderRadius.circular(AppBorders.radiusXl),
           border: Border.all(
             color: isCorrect 
                 ? FeedbackColors.match 
-                : (widget.isLatest ? AppColors.brandBase : AppColors.neutralBorder),
+                : (widget.isLatest ? colors.brand : colors.border),
             width: isCorrect || widget.isLatest ? 2 : 1,
           ),
           boxShadow: widget.isLatest ? AppShadows.md : AppShadows.sm,
@@ -92,7 +95,7 @@ class _GuessCardState extends State<GuessCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Player header
-            _buildPlayerHeader(player),
+            _buildPlayerHeader(player, colors),
             
             AnimatedCrossFade(
               firstChild: Padding(
@@ -106,7 +109,7 @@ class _GuessCardState extends State<GuessCard> {
               secondChild: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Divider(height: 1, color: AppColors.neutralBorder),
+                  Divider(height: 1, color: colors.border),
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.space2),
                     child: _buildAttributeGrid(),
@@ -167,7 +170,7 @@ class _GuessCardState extends State<GuessCard> {
     );
   }
 
-  Widget _buildPlayerHeader(player) {
+  Widget _buildPlayerHeader(player, T4LThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.space2),
       child: Row(
@@ -177,7 +180,7 @@ class _GuessCardState extends State<GuessCard> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: AppColors.brandBase, // Keep brand color for badge
+              color: colors.brand, // Keep brand color for badge
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -199,8 +202,8 @@ class _GuessCardState extends State<GuessCard> {
                 ? NetworkImage(player.headshot!)
                 : null,
             onForegroundImageError: (_, __) {},
-            backgroundColor: AppColors.neutralBorder,
-            child: const Icon(Icons.person, size: 22, color: AppColors.textSecondary),
+            backgroundColor: colors.border,
+            child: Icon(Icons.person, size: 22, color: colors.textSecondary),
           ),
           const SizedBox(width: AppSpacing.space2),
           // Player name and team
@@ -210,10 +213,10 @@ class _GuessCardState extends State<GuessCard> {
               children: [
                 Text(
                   player.displayName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -222,7 +225,7 @@ class _GuessCardState extends State<GuessCard> {
                   '${player.team ?? AppLocalizations.of(context)!.playerWordleNotAvailable} • ${player.position ?? AppLocalizations.of(context)!.playerWordleNotAvailable}',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -386,7 +389,7 @@ class _RevealingChipState extends State<_RevealingChip> with SingleTickerProvide
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700), // Slower pulse/shake
+      duration: const Duration(milliseconds: 400), // Quick pulse/shake
     );
 
     _shakeAnimation = TweenSequence<double>([
@@ -438,11 +441,11 @@ class _RevealingChipState extends State<_RevealingChip> with SingleTickerProvide
         );
       },
       child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 600), // Slower blur
-        tween: Tween(begin: 10.0, end: 0.0), // Blur amount
+        duration: const Duration(milliseconds: 300), // Quick blur
+        tween: Tween(begin: 8.0, end: 0.0), // Blur amount
         builder: (context, blur, child) {
           return TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 500), // Slower fade in
+            duration: const Duration(milliseconds: 250), // Quick fade in
             tween: Tween(begin: 0.0, end: 1.0), // Opacity
             builder: (context, opacity, _) {
               // Combining effects

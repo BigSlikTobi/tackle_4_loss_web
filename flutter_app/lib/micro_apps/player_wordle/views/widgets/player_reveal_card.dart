@@ -7,6 +7,7 @@ import '../../../../design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../models/player_model.dart';
 import '../../models/game_state.dart';
+import '../../services/share_result_service.dart';
 
 /// Card displaying the mystery player after game ends.
 class PlayerRevealCard extends StatelessWidget {
@@ -22,12 +23,16 @@ class PlayerRevealCard extends StatelessWidget {
   /// Callback to start a new game
   final VoidCallback onPlayAgain;
 
+  /// The game state for sharing results
+  final GameState? gameState;
+
   const PlayerRevealCard({
     super.key,
     required this.player,
     required this.gameStatus,
     this.guessCount,
     required this.onPlayAgain,
+    this.gameState,
   });
 
   @override
@@ -54,8 +59,8 @@ class PlayerRevealCard extends StatelessWidget {
           _buildPlayerInfo(context),
           // Stats grid
           _buildStatsGrid(context),
-          // Play again button
-          _buildPlayAgainButton(context),
+          // Buttons row
+          _buildButtonsRow(context),
         ],
       ),
     );
@@ -167,14 +172,14 @@ class PlayerRevealCard extends StatelessWidget {
   Widget _buildStatsGrid(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final stats = <MapEntry<String, String>>[
-      if (player.age != null) MapEntry(l10n.playerWordleStatAge, '${player.age} yrs'),
+      if (player.age != null) MapEntry(l10n.playerWordleStatAge, '${player.age} ${l10n.playerWordleStatYearsUnit}'),
       if (player.height != null) MapEntry(l10n.playerWordleStatHeight, player.displayHeight),
-      if (player.weight != null) MapEntry(l10n.playerWordleStatWeight, '${player.weight} lbs'),
+      if (player.weight != null) MapEntry(l10n.playerWordleStatWeight, '${player.weight} ${l10n.playerWordleStatLbsUnit}'),
       if (player.college != null) MapEntry(l10n.playerWordleStatCollege, player.college!),
       if (player.yearsExperience != null) 
-        MapEntry(l10n.playerWordleStatExperience, '${player.yearsExperience} yrs'),
+        MapEntry(l10n.playerWordleStatExperience, '${player.yearsExperience} ${l10n.playerWordleStatYearsUnit}'),
       if (player.draftYear != null && player.draftRound != null && player.draftPick != null)
-        MapEntry(l10n.playerWordleStatDraft, '${player.draftYear} Rd ${player.draftRound} Pick ${player.draftPick}'),
+        MapEntry(l10n.playerWordleStatDraft, l10n.playerWordleStatDraftFormat(player.draftYear!, player.draftRound!, player.draftPick!)),
     ];
 
     if (stats.isEmpty) return const SizedBox();
@@ -223,30 +228,55 @@ class PlayerRevealCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayAgainButton(BuildContext context) {
+  Widget _buildButtonsRow(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.space3),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: onPlayAgain,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.brandBase,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.space2),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppBorders.radiusXl),
+      child: Row(
+        children: [
+          // Share button
+          if (gameState != null)
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => ShareResultService.shareResult(
+                  gameState!,
+                  playerName: player.displayName,
+                ),
+                icon: const Icon(Icons.share),
+                label: const Text('Share'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.brandBase,
+                  side: const BorderSide(color: AppColors.brandBase),
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.space2),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppBorders.radiusXl),
+                  ),
+                ),
+              ),
+            ),
+          if (gameState != null) const SizedBox(width: AppSpacing.space2),
+          // Play again button
+          Expanded(
+            child: ElevatedButton(
+              onPressed: onPlayAgain,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandBase,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.space2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppBorders.radiusXl),
+                ),
+              ),
+              child: Text(
+                l10n.playerWordlePlayAgain,
+                style: TextStyle(
+                  fontSize: AppTypography.fontSizeMd,
+                  fontWeight: AppTypography.fontWeightBold,
+                ),
+              ),
             ),
           ),
-          child: Text(
-            l10n.playerWordlePlayAgain,
-            style: TextStyle(
-              fontSize: AppTypography.fontSizeMd,
-              fontWeight: AppTypography.fontWeightBold,
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }

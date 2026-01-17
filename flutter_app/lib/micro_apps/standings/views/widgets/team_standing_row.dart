@@ -57,16 +57,15 @@ class TeamStandingRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.space2),
 
           // Team Logo
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              padding: const EdgeInsets.all(2),
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(2),
+            child: ClipOval(
               child: CachedNetworkImage(
                 imageUrl: standing.logoUrl,
                 width: 24,

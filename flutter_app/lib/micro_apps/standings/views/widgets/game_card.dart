@@ -222,24 +222,33 @@ class GameCard extends StatelessWidget {
           ),
         ),
         // Team logo
-        Image.asset(
-          team.logoUrl,
+        // Team logo
+        Container(
           width: 48,
           height: 48,
-          errorBuilder: (context, error, stackTrace) => Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: team.primaryColor,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                teamCode,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+          padding: const EdgeInsets.all(4), // Add padding for white circle effect
+          decoration: BoxDecoration(
+             shape: BoxShape.circle,
+             color: isCardDark && isAppDark ? Colors.white : Colors.transparent, // Only needed if bg is dark
+          ),
+          child: Image.asset(
+            team.logoUrl,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: team.primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  teamCode,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
                 ),
               ),
             ),

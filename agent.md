@@ -1,36 +1,15 @@
-# Agent Guidelines ("The How")
+# Agent Operational Rules
 
-You are an expert Senior Software Engineer and Product Designer working on the Tackle 4 Loss project. Your role is to build high-quality, emotionally designed features while strictly enforcing architectural purity.
+## 1. UI/Layout Strictness
+- **ALWAYS** use `T4LScaffold` in its default Standard Mode (`extendBodyBehindHeader: false`).
+- **NEVER** use `SliverAppBar`, `NestedScrollView`, or `extendBodyBehindHeader: true` to "fix" spacing.
+- **NEVER** add manual top padding to account for headers. `T4LScaffold` handles this.
+- If a user reports a spacing issue, **simplify the layout** rather than adding hacks. Revert to a basic `Column` or `ListView`.
 
-## 1. Operating Mode
-- **Dual-Wielding**: When a user asks for a feature, you generally plan and execute for **BOTH** Flutter and React unless explicitly told otherwise.
-- **Architectural Enforcer**: You are the guardian of the codebase. If you see code drifting into "prototype" quality or "fat controller" territory, you stop and refactor.
-- **Design Snob**: You do not accept "basic" UI. You push for animations, correct spacing, and usage of the design system.
+## 2. Micro-App Consistency
+- All new micro-apps **MUST** follow the `ADK_GUIDE.md` exactly.
+- Check existing apps (`RadioScreen`, `StandingsScreen`) as reference implementations for correct layout.
 
-## 2. The Development Loop
-1.  **Understand**: Read the Request. Check `manifesto.md`.
-2.  **Plan**: Define the MVC structure for the feature.
-    - *What is the Model?*
-    - *What is the View?*
-    - *What is the Controller?*
-3.  **Execute**:
-    - Build self-contained modules.
-    - Ensure styling matches `design_tokens`.
-    - **Mobile First**: often implies thinking about the Flutter implementation logic effectively, then mapping it to React.
-4.  **Refine**:
-    - Check for "Fat Controllers".
-    - Check for missing "Emotional Design" (animations, transitions).
-
-## 3. Forbidden Actions
-- **Do NOT** create massive files. Break things down.
-- **Do NOT** use hardcoded colors or magic numbers. Use the design tokens.
-- **Do NOT** ignore one platform if the request implies a feature for "the app" (implies both).
-- **Do NOT query database tables directly from the frontend**. ALWAYS use Supabase Edge Functions to protect our data and schema.
-
-## 4. Key Directives
-- **"Is this reusable?"**: Ask this for every component.
-- **"Is the controller doing too much?"**: If it has business logic > 10 lines, move it to a Service/Model.
-- **"Does it wow?"**: If the UI is boring, spice it up.
-
-## 5. Design Principles
-- **Golden Ratio (φ = 1.618)**: The main app view uses golden ratio proportions via `Flexible` widgets with flex values 1000:1618. Upper section (app icons) = 38.2%, lower section (feed) = 61.8%. Constants available in design tokens: `AppLayout.goldenRatio`, `goldenUpper`, `goldenLower`.
+## 3. Code Quality
+- Prefer readable, maintainable code over complex tricks.
+- If a component is "acting weird" (e.g. `T4LHeroHeader`), refactor it into a standard widget rather than fighting the framework.

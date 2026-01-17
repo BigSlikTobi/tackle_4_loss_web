@@ -27,9 +27,49 @@ class AppHubController {
     );
   }
 
+  /// Returns a list of apps for the "Quick View" highlights section.
+  /// Prioritizes featured apps, then falls back to other apps.
+  List<MicroApp> getQuickViewApps() {
+    final allApps = _appRegistry.apps;
+    
+    // 1. Get explicitly featured apps
+    final featured = allApps.where(
+      (app) => _appRegistry.getMetadata(app.id).isFeatured
+    ).toList();
+    
+    // 2. If we have fewer than 3, fill with others (excluding system apps like app_hub)
+    if (featured.length < 3) {
+      final others = allApps.where(
+        (app) => !featured.contains(app) && 
+                 app.id != 'app_hub' &&
+                 app.category != AppCategory.system
+      ).toList();
+      
+      featured.addAll(others.take(3 - featured.length));
+    }
+    
+    return featured.take(3).toList();
+  }
+
   /// Returns list of apps for the grid view (including featured app if it matches category).
   List<MicroApp> getOtherApps({AppCategory? category}) {
     return getAppsByCategory(category);
+  }
+
+  /// Returns apps grouped by category for the new category-based layout.
+  Map<AppCategory, List<MicroApp>> getAppsByCategories() {
+    final apps = getAllApps();
+    final Map<AppCategory, List<MicroApp>> grouped = {};
+    
+    for (final category in AppCategory.values) {
+      if (category == AppCategory.system) continue; // Skip system apps
+      final categoryApps = apps.where((app) => app.category == category).toList();
+      if (categoryApps.isNotEmpty) {
+        grouped[category] = categoryApps;
+      }
+    }
+    
+    return grouped;
   }
 
   /// Get all available categories (excluding system).

@@ -62,11 +62,6 @@ class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
 
             return CustomScrollView(
               slivers: [
-                const SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 120,
-                  ), // Height of Header + SafeArea + 8px padding
-                ),
 
                 // Featured Article (First Item)
                 if (controller.articles.isNotEmpty)

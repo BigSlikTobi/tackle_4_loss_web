@@ -32,15 +32,15 @@ class NavigationService {
   /// Returns the ID of the last used micro-app.
   String? get lastAppId => _lastAppId;
 
-  /// Navigates to the App Hub.
-  void openAppHub(BuildContext context) {
+  /// Navigates to the Game Center (Standings/Schedule).
+  void openGameCenter(BuildContext context) {
     if (_isAppHubOpen) return;
 
-    final hub = AppRegistry().getApp('app_hub');
-    if (hub != null) {
+    final gameCenter = AppRegistry().getApp('standings');
+    if (gameCenter != null) {
       _isAppHubOpen = true;
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => hub.page(context)),
+        MaterialPageRoute(builder: (context) => gameCenter.page(context)),
       ).then((_) {
         _isAppHubOpen = false;
       });

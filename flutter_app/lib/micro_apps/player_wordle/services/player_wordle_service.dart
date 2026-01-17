@@ -40,6 +40,33 @@ class PlayerWordleService {
     }
   }
 
+  /// Fetches the daily challenge player ID.
+  /// Returns the same player for all users on the same day.
+  Future<DailyPlayerResult> getDailyPlayerId({Difficulty difficulty = Difficulty.pro}) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'get-daily-player',
+        body: {'difficulty': difficulty.name},
+      );
+
+      if (response.status != 200) {
+        throw Exception('Failed to get daily player: ${response.status}');
+      }
+
+      final data = response.data as Map<String, dynamic>;
+      return DailyPlayerResult(
+        playerId: data['playerId'] as String,
+        date: data['date'] as String,
+        teamsInvolved: (data['teamsInvolved'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList() ?? [],
+      );
+    } catch (e) {
+      debugPrint('PlayerWordleService.getDailyPlayerId error: $e');
+      rethrow;
+    }
+  }
+
   /// Searches for players by name (autocomplete) with optional filters.
   Future<List<Player>> searchPlayers(
     String query, {
@@ -49,8 +76,9 @@ class PlayerWordleService {
     String? position,
     String difficulty = 'pro',
   }) async {
-    // Require query length >= 2 OR at least one filter
-    if (query.length < 2 && team == null && position == null) return [];
+    // Allow search with empty query if filters are active (browse mode)
+    final hasFilters = team != null || position != null;
+    if (query.isEmpty && !hasFilters) return [];
 
     try {
       final response = await _supabase.functions.invoke(
@@ -130,4 +158,17 @@ class PlayerWordleService {
 class _DummySupabaseClient implements SupabaseClient {
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+/// Result from daily player endpoint.
+class DailyPlayerResult {
+  final String playerId;
+  final String date;
+  final List<String> teamsInvolved;
+
+  const DailyPlayerResult({
+    required this.playerId,
+    required this.date,
+    required this.teamsInvolved,
+  });
 }

@@ -89,8 +89,7 @@ class _NewsCollectionScreenState extends State<NewsCollectionScreen> {
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    // Header Spacer to avoid overlap with T4LScaffold title
-                    const SizedBox(height: 124),
+                    // Note: T4LScaffold automatically provides header clearance
 
                     // Daily Briefing Card
                     Padding(

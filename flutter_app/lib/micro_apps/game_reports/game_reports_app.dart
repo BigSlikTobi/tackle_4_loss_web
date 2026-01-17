@@ -18,7 +18,8 @@ class GameReportsApp extends MicroApp {
   @override
   AppCategory get category => AppCategory.gameData;
 
-  // showOnHomePage defaults to false (App Hub only)
+  @override
+  bool get showOnHomePage => true;
 
   @override
   IconData get icon => Icons.article_rounded;
