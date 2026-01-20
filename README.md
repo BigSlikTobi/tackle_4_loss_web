@@ -24,6 +24,7 @@ The core of the application is the **OS Shell** (`lib/core/os_shell/`). It acts 
 *   **Homescreen Grid**: A familiar, drag-and-drop enabled grid (16 slots) for app icons.
 *   **Dock**: A persistent floating navigation bar.
 *   **News Feed**: An infinite-scrolling feed of personalized news, videos, and articles integrated directly into the homescreen.
+*   **Team Center**: A comprehensive overlay for team intelligence, featuring Roster, Depth Charts, Injury Reports, and a Games Timeline.
 *   **System Services**:
     *   `InstalledAppsService`: Manages which apps are "installed" on the user's grid.
     *   `AppRegistry`: The central database of all available MicroApps.
@@ -31,6 +32,13 @@ The core of the application is the **OS Shell** (`lib/core/os_shell/`). It acts 
     *   `FeatureFlagService`: Controls the visibility and availability of features and micro-apps.
 
 This architecture allows us to build features as completely standalone **MicroApps** that plug into the shell.
+
+## ☁️ Backend & Data
+
+The application leverages **Supabase Edge Functions** for high-performance, server-side logic:
+*   **Data Aggregation**: Functions like `get-team-roster`, `get-team-injuries`, and `get-team-depth-chart` aggregate live NFL data.
+*   **Game Logic**: `get-daily-player` ensures a synchronized daily challenge for all Wordle users.
+*   **Content Delivery**: `get-news-feed` and `get-team-article-detail` serve dynamic content.
 
 ---
 
@@ -62,6 +70,11 @@ The hands-free audio companion.
 A premium NFL game schedule and results viewer.
 *   **Purpose**: Tracks the season's progress with real-time data.
 *   **Key Feature**: Emotional design with team-specific highlights and a 2x2 home screen widget.
+
+### [6. Player Wordle 🧩](lib/micro_apps/player_wordle/README.md)
+The ultimate daily NFL guessing game.
+*   **Purpose**: Engage users with a daily trivia challenge to guess the mystery player.
+*   **Key Feature**: "Daily Challenge" mode with streak tracking, difficulty levels, and onboarding.
 
 ---
 
