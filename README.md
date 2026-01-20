@@ -21,7 +21,7 @@
 
 The core of the application is the **OS Shell** (`lib/core/os_shell/`). It acts as a mini-operating system within the app, providing:
 
-*   **Homescreen Grid**: A familiar, drag-and-drop enabled grid (16 slots) for app icons.
+*   **Horizontal App Strip**: A sleek, scrollable list of installed apps for quick access and streamlined navigation.
 *   **Dock**: A persistent floating navigation bar.
 *   **News Feed**: An infinite-scrolling feed of personalized news, videos, and articles integrated directly into the homescreen.
 *   **Team Center**: A comprehensive overlay for team intelligence, featuring Roster, Depth Charts, Injury Reports, and a Games Timeline.
