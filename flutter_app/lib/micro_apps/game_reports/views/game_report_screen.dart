@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/os_shell/widgets/t4l_scaffold.dart';
 import '../../standings/models/game_model.dart';
 import '../../standings/services/standings_service.dart';
+import '../../../../core/services/team_logo_service.dart';
 import '../controllers/game_report_controller.dart';
 import 'widgets/chat_interface.dart';
 import 'widgets/quick_action_chips.dart';
@@ -285,24 +286,25 @@ class _GameReportScreenState extends State<GameReportScreen> {
   }
 
   Widget _buildTeamLogo(String teamCode) {
-    const teamCodeOverrides = {
-      'la': 'lar',
-      'oak': 'lv',
-      'sd': 'lac',
-      'stl': 'lar',
-    };
-    
-    final normalizedCode = teamCodeOverrides[teamCode.toLowerCase()] 
-        ?? teamCode.toLowerCase();
-    final logoPath = 'assets/logos/teams/$normalizedCode.png';
+    // TeamLogoService handles normalization and path retrieval
+    final logoPath = TeamLogoService.getLogoPath(teamCode);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: Image.asset(
-        logoPath,
-        width: 28,
-        height: 28,
-        errorBuilder: (_, __, ___) => Container(
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.white : Colors.transparent,
+        shape: BoxShape.circle,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.asset(
+          logoPath,
+          width: 28,
+          height: 28,
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) => Container(
           width: 28,
           height: 28,
           decoration: BoxDecoration(
@@ -317,7 +319,8 @@ class _GameReportScreenState extends State<GameReportScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildChatArea() {

@@ -168,18 +168,26 @@ class PlayerWordleController extends ChangeNotifier {
       
       if (completedDate == result.date) {
         _dailyChallengeCompleted = true;
+        // Load result and show "Already Played" state
+        final resultStatus = prefs.getString(_keyDailyResult) ?? 'lost';
+        _mysteryPlayer = await _service.getPlayerDetails(result.playerId);
+        
+        _gameState = GameState(
+          mysteryPlayerId: result.playerId,
+          status: resultStatus == 'won' ? GameStatus.won : GameStatus.lost,
+          difficulty: _selectedDifficulty,
+        );
       } else {
         _dailyChallengeCompleted = false;
+        _gameState = GameState.newGame(
+          mysteryPlayerId: result.playerId,
+          difficulty: _selectedDifficulty,
+        );
       }
       
       _dailyChallengeDate = result.date;
       _dailyTeamsInvolved = result.teamsInvolved;
       _dailyStreak = prefs.getInt(_keyDailyStreak) ?? 0;
-      
-      _gameState = GameState.newGame(
-        mysteryPlayerId: result.playerId,
-        difficulty: _selectedDifficulty,
-      );
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -225,6 +233,7 @@ class PlayerWordleController extends ChangeNotifier {
 
   // SharedPreferences keys for daily challenge
   static const String _keyDailyCompletedDate = 'player_wordle_daily_completed_date';
+  static const String _keyDailyResult = 'player_wordle_daily_result';
   static const String _keyDailyStreak = 'player_wordle_daily_streak';
 
   /// Searches for players by name.
@@ -336,10 +345,15 @@ class PlayerWordleController extends ChangeNotifier {
   void setTeamFilter(String? team) {
     if (_selectedTeamFilter == team) return;
     _selectedTeamFilter = team;
+    // Reset position when team changes
+    _selectedPositionFilter = null;
     notifyListeners();
-    // Refresh search if we have a valid query OR a valid filter
-    if (_lastSearchQuery.length >= 2 || _selectedTeamFilter != null || _selectedPositionFilter != null) {
-      searchPlayers(_lastSearchQuery);
+    // Auto-load players when both filters are set
+    if (_selectedTeamFilter != null && _selectedPositionFilter != null) {
+      searchPlayers('');
+    } else if (_selectedTeamFilter != null || _selectedPositionFilter != null) {
+      // Load with current filters
+      searchPlayers('');
     } else {
       clearSearch();
     }
@@ -350,9 +364,11 @@ class PlayerWordleController extends ChangeNotifier {
     if (_selectedPositionFilter == position) return;
     _selectedPositionFilter = position;
     notifyListeners();
-    // Refresh search if we have a valid query OR a valid filter
-    if (_lastSearchQuery.length >= 2 || _selectedTeamFilter != null || _selectedPositionFilter != null) {
-      searchPlayers(_lastSearchQuery);
+    // Auto-load players when both filters are set
+    if (_selectedTeamFilter != null && _selectedPositionFilter != null) {
+      searchPlayers('');
+    } else if (_selectedTeamFilter != null || _selectedPositionFilter != null) {
+      searchPlayers('');
     } else {
       clearSearch();
     }
@@ -453,6 +469,7 @@ class PlayerWordleController extends ChangeNotifier {
         
         // Mark as completed
         await prefs.setString(_keyDailyCompletedDate, _dailyChallengeDate!);
+        await prefs.setString(_keyDailyResult, won ? 'won' : 'lost');
         _dailyChallengeCompleted = true;
         
         // Update streak if won

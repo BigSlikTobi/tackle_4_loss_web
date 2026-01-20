@@ -30,6 +30,12 @@ class DeepDiveApp extends MicroApp {
   String get iconAssetPath => 'lib/micro_apps/deep_dive/store_assets/deep_dive_icon.png';
 
   @override
+  String? get iconLightAssetPath => 'lib/micro_apps/deep_dive/store_assets/deep_dive_lite.svg';
+
+  @override
+  String? get iconDarkAssetPath => 'lib/micro_apps/deep_dive/store_assets/deep_dive_dark.svg';
+
+  @override
   Color get themeColor => const Color(0xFF0f3d2e); // Brand Green
 
   @override

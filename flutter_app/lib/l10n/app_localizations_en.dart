@@ -190,7 +190,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playerWordleInstructionSecondary =>
-      'Start typing a name below to begin.';
+      '1. Select Team  2. Position  3. Player';
 
   @override
   String playerWordlePointsToNext(int points, String rank) {

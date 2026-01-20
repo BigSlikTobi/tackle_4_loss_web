@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../design_tokens.dart';
 import '../../widgets/notification_badge.dart';
 
@@ -122,14 +122,7 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
               _NavBarButton(
                 onTap: widget.onHome,
                 tooltip: widget.homeTooltip,
-                child: Text(
-                  'H',
-                  style: GoogleFonts.anton(
-                    color: activeIconColor,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                svgAsset: 'assets/icons/home.svg',
               ),
 
               // Slot 2: Game Center with optional badge
@@ -139,8 +132,7 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                   _NavBarButton(
                     onTap: widget.onGameCenter,
                     tooltip: widget.gameCenterTooltip,
-                    icon: LucideIcons.trophy,
-                    color: iconColor,
+                    svgAsset: 'assets/icons/schedule.svg',
                   ),
                   if (widget.showGameCenterBadge)
                     Positioned(
@@ -158,17 +150,14 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
               _NavBarButton(
                 onTap: widget.onHistory,
                 tooltip: widget.historyTooltip,
-                icon: LucideIcons.history,
-                opacity: 0.6,
-                color: iconColor,
+                svgAsset: 'assets/icons/back.svg',
               ),
 
               // Slot 5: Settings
               _NavBarButton(
                 onTap: widget.onSettings,
                 tooltip: widget.settingsTooltip,
-                icon: LucideIcons.user,
-                color: iconColor,
+                svgAsset: 'assets/icons/settings.svg',
               ),
             ],
           ),
@@ -246,6 +235,7 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
 class _NavBarButton extends StatelessWidget {
   final VoidCallback onTap;
   final IconData? icon;
+  final String? svgAsset;
   final Widget? child;
   final String? tooltip;
   final double opacity;
@@ -254,6 +244,7 @@ class _NavBarButton extends StatelessWidget {
   const _NavBarButton({
     required this.onTap,
     this.icon,
+    this.svgAsset,
     this.child,
     this.tooltip,
     this.opacity = 1.0,
@@ -273,7 +264,19 @@ class _NavBarButton extends StatelessWidget {
             width: 48,
             height: 48,
             alignment: Alignment.center,
-            child: child ?? Icon(icon, color: color ?? Colors.white70, size: 24),
+            child: child ?? (svgAsset != null
+                ? SvgPicture.asset(
+                    svgAsset!,
+                    width: 24,
+                    height: 24,
+                    colorFilter: Theme.of(context).brightness == Brightness.dark
+                        ? ColorFilter.mode(
+                            Colors.white.withValues(alpha: 0.9),
+                            BlendMode.srcIn,
+                          )
+                        : null,
+                  )
+                : Icon(icon, color: color ?? Colors.white70, size: 24)),
           ),
         ),
       ),

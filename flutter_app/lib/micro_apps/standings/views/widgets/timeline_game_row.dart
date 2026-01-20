@@ -190,6 +190,7 @@ class TimelineGameRow extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildTeamDisplay(
+                context,
                 teamService,
                 game.awayTeam,
                 game.awayScore,
@@ -207,6 +208,7 @@ class TimelineGameRow extends StatelessWidget {
                 ),
               ),
               _buildTeamDisplay(
+                context,
                 teamService,
                 game.homeTeam,
                 game.homeScore,
@@ -241,6 +243,7 @@ class TimelineGameRow extends StatelessWidget {
 
   /// Single team display with logo and score
   Widget _buildTeamDisplay(
+    BuildContext context,
     TeamService teamService,
     String teamId,
     int? score,
@@ -261,7 +264,7 @@ class TimelineGameRow extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),

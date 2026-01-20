@@ -13,7 +13,7 @@ class AppStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final installedAppsService = Provider.of<InstalledAppsService>(context);
-    final apps = installedAppsService.installedApps;
+    final apps = installedAppsService.installedApps.where((app) => app.id != 'standings').toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Theme-aware glassmorphism

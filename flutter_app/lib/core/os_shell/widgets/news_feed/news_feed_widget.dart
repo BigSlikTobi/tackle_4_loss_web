@@ -8,6 +8,7 @@ import '../../../theme/t4l_theme.dart';
 import 'news_feed_item_card.dart';
 import 'video_feed_item_card.dart';
 import 'personalized_feed_item_card.dart';
+import 'deep_dive_feed_item_card.dart';
 import '../../../widgets/shimmer_skeleton.dart';
 
 /// News feed widget with infinite scroll for the home screen
@@ -176,6 +177,8 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                     ),
                     PersonalizedFeedItem personalizedItem =>
                       PersonalizedFeedItemCard(item: personalizedItem),
+                    DeepDiveFeedItem deepDiveItem =>
+                      DeepDiveFeedItemCard(item: deepDiveItem),
                   };
                 },
                 childCount:

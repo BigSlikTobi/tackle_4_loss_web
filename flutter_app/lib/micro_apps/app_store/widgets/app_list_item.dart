@@ -43,26 +43,35 @@ class AppStoreListItem extends StatelessWidget {
         child: Row(
           children: [
             // App Icon
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: iconColor,
-                borderRadius: BorderRadius.circular(
-                  14,
-                ), // Apple-ish Squircle radius
-                boxShadow: AppShadows.sm,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.asset(
-                  iconAssetPath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(icon, color: Colors.white, size: 30);
-                  },
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                final backgroundColor = isDarkMode
+                    ? AppColors.neutralBase
+                    : AppColors.backgroundDark;
+                return Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: AppShadows.sm,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Image.asset(
+                        iconAssetPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(icon, color: isDarkMode ? AppColors.backgroundDark : AppColors.neutralBase, size: 30);
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(width: 16),
 

@@ -188,7 +188,7 @@ class _LastGameCard extends StatelessWidget {
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white,
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
                           ),
                           padding: const EdgeInsets.all(4),
                           child: Image.asset(opponent.logoUrl),
@@ -314,7 +314,7 @@ class _TeamBadge extends StatelessWidget {
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
         border: Border.all(
           color: colors.brand.withValues(alpha: 0.3),
           width: 1,

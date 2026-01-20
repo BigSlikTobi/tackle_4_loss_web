@@ -40,7 +40,7 @@ serve(async (req) => {
         // Get today's date in UTC for consistent seeding across timezones
         const today = new Date()
         const dateString = today.toISOString().split('T')[0] // "2026-01-17"
-        
+
         console.log(`Daily challenge for ${dateString}, difficulty: ${difficulty}`)
 
         // 1. Find upcoming games (games without a result)
@@ -92,6 +92,7 @@ serve(async (req) => {
                 .from('players')
                 .select('player_id')
                 .in('team', teamAbbrs)
+                .order('player_id', { ascending: true })
 
             if (error) throw error
             if (data) playerIds = data.map(p => p.player_id)
@@ -103,6 +104,7 @@ serve(async (req) => {
                 .select('player_id')
                 .in('team', teamAbbrs)
                 .or('position.eq.QB,position.eq.RB,position.eq.WR,position.eq.TE,position.eq.DE,position.eq.CB')
+                .order('player_id', { ascending: true })
 
             if (error) throw error
             if (data) playerIds = data.map(p => p.player_id)
@@ -124,15 +126,34 @@ serve(async (req) => {
             // Get starters (rank 1 or 2 for fan mode)
             const maxRank = difficulty === 'fan' ? 2 : 1
 
-            const { data, error } = await supabaseClient
+            const { data: depthData, error: depthError } = await supabaseClient
                 .from('depth_charts')
-                .select('player_id, team')
+                .select('player_id')
                 .eq('version', latestVersion)
                 .lte('pos_rank', maxRank)
                 .in('team', teamAbbrs)
+                .order('player_id', { ascending: true })
 
-            if (error) throw error
-            if (data) playerIds = data.map(p => p.player_id)
+            if (depthError) throw depthError
+
+            if (depthData && depthData.length > 0) {
+                const starterIds = depthData.map(d => d.player_id)
+
+                // For Fan mode, we MUST restrict to popular positions
+                if (difficulty === 'fan') {
+                    const { data: playerData, error: playerError } = await supabaseClient
+                        .from('players')
+                        .select('player_id')
+                        .in('player_id', starterIds)
+                        .or('position.eq.QB,position.eq.RB,position.eq.WR,position.eq.TE,position.eq.DE,position.eq.CB')
+
+                    if (playerError) throw playerError
+                    if (playerData) playerIds = playerData.map(p => p.player_id)
+                } else {
+                    // Pro mode: All starters are valid
+                    playerIds = starterIds
+                }
+            }
         }
 
         if (playerIds.length === 0) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../design_tokens.dart';
 import '../../../../core/theme/t4l_theme.dart';
+import '../../../../core/services/team_logo_service.dart';
 import '../../models/team_standing.dart';
 
 /// A single team's row in the standings table.
@@ -66,13 +66,12 @@ class TeamStandingRow extends StatelessWidget {
             ),
             padding: const EdgeInsets.all(2),
             child: ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: standing.logoUrl,
+              child: Image.asset(
+                TeamLogoService.getLogoPath(standing.teamId),
                 width: 24,
                 height: 24,
                 fit: BoxFit.contain,
-                placeholder: (context, url) => const SizedBox(),
-                errorWidget: (context, url, error) =>
+                errorBuilder: (_, __, ___) =>
                     const Icon(Icons.sports_football, size: 16),
               ),
             ),
