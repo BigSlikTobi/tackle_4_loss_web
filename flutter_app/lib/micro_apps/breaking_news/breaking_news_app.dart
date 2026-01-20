@@ -27,6 +27,12 @@ class BreakingNewsApp implements MicroApp {
   String get iconAssetPath => 'lib/micro_apps/breaking_news/store_assets/breaking_news_icon.png';
 
   @override
+  String? get iconDarkAssetPath => 'lib/micro_apps/breaking_news/store_assets/news_breaking_dark.svg';
+
+  @override
+  String? get iconLightAssetPath => 'lib/micro_apps/breaking_news/store_assets/breaking_news_lite.svg';
+
+  @override
   Color get themeColor => const Color(0xFFD32F2F); // Red
   
   @override

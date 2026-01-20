@@ -3,6 +3,7 @@ enum FeedItemType {
   newsUpdate,
   video,       // Future: video content
   personalized, // Future: personalized recommendations
+  deepDive,    // Deep dive article content
 }
 
 /// Base class for all feed items - extensible for future content types
@@ -25,6 +26,8 @@ sealed class FeedItem {
         return VideoFeedItem.fromJson(json);
       case 'personalized':
         return PersonalizedFeedItem.fromJson(json);
+      case 'deepDive':
+        return DeepDiveFeedItem.fromJson(json);
       case 'newsUpdate':
       default:
         return NewsFeedItem.fromJson(json);
@@ -124,3 +127,33 @@ class PersonalizedFeedItem extends FeedItem {
   }
 }
 
+/// Deep dive article feed item
+class DeepDiveFeedItem extends FeedItem {
+  final String articleId;
+  final String title;
+  final String summary;
+  final String? imageUrl;
+  final String author;
+
+  DeepDiveFeedItem({
+    required super.id,
+    required this.articleId,
+    required this.title,
+    required this.summary,
+    this.imageUrl,
+    required this.author,
+    required super.createdAt,
+  }) : super(type: FeedItemType.deepDive);
+
+  factory DeepDiveFeedItem.fromJson(Map<String, dynamic> json) {
+    return DeepDiveFeedItem(
+      id: json['id'] as String,
+      articleId: json['articleId'] as String,
+      title: json['title'] as String? ?? '',
+      summary: json['summary'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String?,
+      author: json['author'] as String? ?? '',
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../standings/models/game_model.dart';
+import '../../../../core/services/team_logo_service.dart';
 
 /// Widget for selecting a completed game to generate a report for.
 class GameSelector extends StatelessWidget {
@@ -163,25 +164,23 @@ class _TeamLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Normalize team codes that don't match asset filenames
-    const teamCodeOverrides = {
-      'la': 'lar',    // LA Rams uses "lar.png"
-      'oak': 'lv',    // Old Oakland -> Las Vegas
-      'sd': 'lac',    // Old San Diego -> LA Chargers
-      'stl': 'lar',   // Old St. Louis -> LA Rams
-    };
-    
-    final normalizedCode = teamCodeOverrides[teamCode.toLowerCase()] 
-        ?? teamCode.toLowerCase();
-    final logoPath = 'assets/logos/teams/$normalizedCode.png';
-    
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: Image.asset(
-        logoPath,
-        width: 24,
-        height: 24,
-        errorBuilder: (context, error, stackTrace) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.white : Colors.transparent,
+        shape: BoxShape.circle,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: Image.asset(
+          TeamLogoService.getLogoPath(teamCode),
+          width: 24,
+          height: 24,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
           return Container(
             width: 24,
             height: 24,
@@ -198,6 +197,7 @@ class _TeamLogo extends StatelessWidget {
           );
         },
       ),
-    );
+    ),
+  );
   }
 }

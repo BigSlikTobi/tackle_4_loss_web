@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tackle4loss_mobile/micro_apps/radio/controllers/radio_controller.dart';
 import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'package:mocktail/mocktail.dart';
 
 // Simple mock since we are testing state logic primarily
 class MockAudioPlayerService extends AudioPlayerService {
@@ -13,8 +16,37 @@ class MockAudioPlayerService extends AudioPlayerService {
   }
 }
 
+class MockHttpClient extends Mock implements http.Client {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  
+  setUpAll(() async {
+    // Register fallback values if needed
+    registerFallbackValue(Uri());
+    SharedPreferences.setMockInitialValues({});
+
+    final mockHttpClient = MockHttpClient();
+    
+    // Mock success response for Supabase Edge Functions (POST)
+    when(() => mockHttpClient.post(
+      any(), 
+      headers: any(named: 'headers'), 
+      body: any(named: 'body')
+    )).thenAnswer((_) async => http.Response('[]', 200));
+
+    // Initialize Supabase with mock client
+    // Check if already initialized to avoid errors
+    try {
+      Supabase.instance;
+    } catch (_) {
+      await Supabase.initialize(
+        url: 'https://example.com',
+        anonKey: 'dummy',
+        httpClient: mockHttpClient,
+      );
+    }
+  });
   
   group('RadioController', () {
     late RadioController controller;
@@ -39,7 +71,7 @@ void main() {
 
     test('stations filter by category', () async {
       // wait for load
-      await Future.delayed(const Duration(seconds: 2)); 
+      await Future.delayed(const Duration(milliseconds: 100)); 
       
       controller.selectCategory('deep_dive');
       final deepDives = controller.stations;

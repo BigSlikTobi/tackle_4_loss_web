@@ -29,6 +29,14 @@ class PlayerWordleApp extends MicroApp {
       'lib/micro_apps/player_wordle/store_assets/player_wordle_icon.png';
 
   @override
+  String? get iconLightAssetPath =>
+      'lib/micro_apps/player_wordle/store_assets/wordle_light.svg';
+
+  @override
+  String? get iconDarkAssetPath =>
+      'lib/micro_apps/player_wordle/store_assets/wordle_dark.svg';
+
+  @override
   Color get themeColor => const Color(0xFF8B5CF6); // Purple for games
 
   @override

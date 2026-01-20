@@ -28,6 +28,12 @@ class RadioApp extends MicroApp {
   String get iconAssetPath => 'lib/micro_apps/radio/store_assets/radio_icon.png';
 
   @override
+  String? get iconDarkAssetPath => 'lib/micro_apps/radio/store_assets/radio_dark.svg';
+
+  @override
+  String? get iconLightAssetPath => 'lib/micro_apps/radio/store_assets/radio_lite.svg';
+
+  @override
   Color get themeColor => AppColors.brandBase;
 
   @override

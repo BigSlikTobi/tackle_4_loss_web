@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @playerWordleInstructionSecondary.
   ///
   /// In en, this message translates to:
-  /// **'Start typing a name below to begin.'**
+  /// **'1. Select Team  2. Position  3. Player'**
   String get playerWordleInstructionSecondary;
 
   /// No description provided for @playerWordlePointsToNext.

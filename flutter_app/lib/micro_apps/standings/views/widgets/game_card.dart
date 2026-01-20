@@ -229,7 +229,7 @@ class GameCard extends StatelessWidget {
           padding: const EdgeInsets.all(4), // Add padding for white circle effect
           decoration: BoxDecoration(
              shape: BoxShape.circle,
-             color: isCardDark && isAppDark ? Colors.white : Colors.transparent, // Only needed if bg is dark
+             color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.transparent,
           ),
           child: Image.asset(
             team.logoUrl,

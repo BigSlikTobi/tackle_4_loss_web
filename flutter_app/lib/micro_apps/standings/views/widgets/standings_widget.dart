@@ -189,9 +189,9 @@ class _StandingsWidgetState extends State<StandingsWidget> {
         Container(
           width: 20,
           height: 20,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
           ),
           padding: const EdgeInsets.all(2),
           child: Image.asset(

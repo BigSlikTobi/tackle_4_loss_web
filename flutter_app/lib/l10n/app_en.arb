@@ -74,7 +74,7 @@
   "playerWordleLevelPro": "Pro",
   "playerWordleLevelAllMadden": "All-Madden",
   "playerWordleInstructionPrimary": "Guess the mystery NFL player!",
-  "playerWordleInstructionSecondary": "Start typing a name below to begin.",
+  "playerWordleInstructionSecondary": "1. Select Team  2. Position  3. Player",
   "playerWordlePointsToNext": "{points} pts to {rank}",
   "@playerWordlePointsToNext": {
     "placeholders": {

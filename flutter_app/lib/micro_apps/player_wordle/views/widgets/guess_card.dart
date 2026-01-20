@@ -100,7 +100,7 @@ class _GuessCardState extends State<GuessCard> {
             AnimatedCrossFade(
               firstChild: Padding(
                 padding: const EdgeInsets.only(
-                  left: 72, // Align with text
+                  left: 40, // Align with text (Badge 24 + Gap 8 + Padding 8)
                   right: AppSpacing.space2,
                   bottom: AppSpacing.space2,
                 ), 
@@ -174,11 +174,12 @@ class _GuessCardState extends State<GuessCard> {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.space2),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Guess number badge
           Container(
-            width: 28,
-            height: 28,
+            width: 24,
+            height: 24,
             decoration: BoxDecoration(
               color: colors.brand, // Keep brand color for badge
               shape: BoxShape.circle,
@@ -189,24 +190,14 @@ class _GuessCardState extends State<GuessCard> {
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14,
+                  fontSize: 12,
                 ),
               ),
             ),
           ),
           const SizedBox(width: AppSpacing.space2),
-          // Player photo
-          CircleAvatar(
-            radius: 22,
-            foregroundImage: player.headshot != null
-                ? NetworkImage(player.headshot!)
-                : null,
-            onForegroundImageError: (_, __) {},
-            backgroundColor: colors.border,
-            child: Icon(Icons.person, size: 22, color: colors.textSecondary),
-          ),
-          const SizedBox(width: AppSpacing.space2),
-          // Player name and team
+          
+          // Player name and team (Left aligned)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,20 +212,44 @@ class _GuessCardState extends State<GuessCard> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 2),
                 Text(
                   '${player.team ?? AppLocalizations.of(context)!.playerWordleNotAvailable} • ${player.position ?? AppLocalizations.of(context)!.playerWordleNotAvailable}',
                   style: TextStyle(
                     fontSize: 13,
                     color: colors.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
-          // Result icon (revealed last) - ONLY show on Latest (Full) card or if it is the Correct one?
-          // Actually, for compact view, the green dots tell the story. But a checkmark is nice if correct.
-          if (_revealedCount >= _totalAttributes && widget.guess.isCorrect)
-            const Icon(Icons.check_circle, color: FeedbackColors.match, size: 28),
+          
+          const SizedBox(width: AppSpacing.space2),
+          
+          // Player photo (Right aligned, larger)
+          Hero(
+            tag: 'player_headshot_${player.playerId}_${widget.guessNumber}',
+            child: Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.surface,
+                border: Border.all(color: colors.border, width: 1),
+                boxShadow: AppShadows.sm,
+              ),
+              child: ClipOval(
+                child: player.headshot != null
+                    ? Image.network(
+                        player.headshot!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(Icons.person, size: 32, color: colors.textSecondary),
+                      )
+                    : Icon(Icons.person, size: 32, color: colors.textSecondary),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -242,18 +257,17 @@ class _GuessCardState extends State<GuessCard> {
 
   Widget _buildAttributeGrid() {
     final l10n = AppLocalizations.of(context)!;
-    return Wrap(
-      spacing: AppSpacing.space1,
-      runSpacing: AppSpacing.space1,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildRevealingChip(
-          0, l10n.playerWordleHeaderConf, widget.guess.guessedPlayer.conference ?? '?', 
+        _buildVerticalAttribute(
+          0, 'CONF', widget.guess.guessedPlayer.conference ?? '?', 
           widget.guess.conferenceMatch == MatchStatus.match,
           widget.guess.conferenceMatch == MatchStatus.miss,
           widget.guess.conferenceMatch == MatchStatus.match ? FeedbackColors.match : FeedbackColors.miss
         ),
-        _buildRevealingChip(
-          1, l10n.playerWordleHeaderDiv, _shortDivision(widget.guess.guessedPlayer.division),
+        _buildVerticalAttribute(
+          1, 'DIV', _shortDivision(widget.guess.guessedPlayer.division),
           widget.guess.divisionMatch == MatchStatus.match,
           widget.guess.divisionMatch == MatchStatus.miss,
           switch (widget.guess.divisionMatch) {
@@ -262,8 +276,8 @@ class _GuessCardState extends State<GuessCard> {
             MatchStatus.miss => FeedbackColors.miss,
           }
         ),
-        _buildRevealingChip(
-          2, l10n.playerWordleHeaderTeam, widget.guess.guessedPlayer.team ?? '?',
+        _buildVerticalAttribute(
+          2, 'TEAM', widget.guess.guessedPlayer.team ?? '?',
           widget.guess.teamMatch == MatchStatus.match,
           widget.guess.teamMatch == MatchStatus.miss,
           switch (widget.guess.teamMatch) {
@@ -272,8 +286,8 @@ class _GuessCardState extends State<GuessCard> {
             MatchStatus.miss => FeedbackColors.miss,
           }
         ),
-        _buildRevealingChip(
-          3, l10n.playerWordleHeaderPos, widget.guess.guessedPlayer.position ?? '?',
+        _buildVerticalAttribute(
+          3, 'POS', widget.guess.guessedPlayer.position ?? '?',
           widget.guess.positionMatch == MatchStatus.match,
           widget.guess.positionMatch == MatchStatus.miss,
           switch (widget.guess.positionMatch) {
@@ -282,68 +296,90 @@ class _GuessCardState extends State<GuessCard> {
             MatchStatus.miss => FeedbackColors.miss,
           }
         ),
-        _buildRevealingNumericChip(
-          4, l10n.playerWordleHeaderNum, widget.guess.guessedPlayer.jerseyNumber?.toString() ?? '?',
+        _buildVerticalNumericAttribute(
+          4, '#', widget.guess.guessedPlayer.jerseyNumber?.toString() ?? '?',
           widget.guess.jerseyComparison
         ),
-        _buildRevealingNumericChip(
-          5, l10n.playerWordleHeaderAge, widget.guess.guessedPlayer.age?.toString() ?? '?',
+        _buildVerticalNumericAttribute(
+          5, 'AGE', widget.guess.guessedPlayer.age?.toString() ?? '?',
           widget.guess.ageComparison
         ),
-        _buildRevealingNumericChip(
-          6, l10n.playerWordleHeaderHt, widget.guess.guessedPlayer.displayHeight,
+        _buildVerticalNumericAttribute(
+          6, 'HT', widget.guess.guessedPlayer.displayHeight,
           widget.guess.heightComparison
         ),
       ],
     );
   }
 
-  Widget _buildRevealingChip(int index, String label, String value, bool isMatch, bool isMiss, Color color) {
-    return _RevealingChip(
-      isRevealed: index < _revealedCount,
-      isMatch: isMatch,
-      isMiss: isMiss,
-      color: color,
-      child: _buildChipContent(label, value),
+  Widget _buildVerticalAttribute(int index, String label, String value, bool isMatch, bool isMiss, Color color) {
+    return Expanded(
+      child: _RevealingChip(
+        isRevealed: index < _revealedCount,
+        isMatch: isMatch,
+        isMiss: isMiss,
+        color: color,
+        child: _buildVerticalContent(label, value, color),
+      ),
     );
   }
 
-  Widget _buildRevealingNumericChip(int index, String label, String value, NumericComparison comparison) {
+  Widget _buildVerticalNumericAttribute(int index, String label, String value, NumericComparison comparison) {
     final color = comparison.match 
         ? FeedbackColors.match 
         : (comparison.isClose ? FeedbackColors.partial : FeedbackColors.miss);
 
     String displayValue = value;
     if (!comparison.match && comparison.direction != NumericDirection.exact) {
-      displayValue = '$value ${comparison.direction == NumericDirection.up ? "↑" : "↓"}';
+      displayValue = '$value${comparison.direction == NumericDirection.up ? "↑" : "↓"}';
     }
 
-    return _RevealingChip(
-      isRevealed: index < _revealedCount,
-      isMatch: comparison.match,
-      isMiss: !comparison.match && !comparison.isClose,
-      color: color,
-      child: _buildChipContent(label, displayValue),
+    return Expanded(
+      child: _RevealingChip(
+        isRevealed: index < _revealedCount,
+        isMatch: comparison.match,
+        isMiss: !comparison.match && !comparison.isClose,
+        color: color,
+        child: _buildVerticalContent(label, displayValue, color),
+      ),
     );
   }
 
-  Widget _buildChipContent(String label, String value) {
-    return Row(
+  Widget _buildVerticalContent(String label, String value, Color color) {
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Label outside the box
         Text(
-          '$label: ',
+          label,
           style: TextStyle(
-            fontSize: 12,
-            color: Colors.white.withValues(alpha: 0.8),
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+            color: colors.textSecondary,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.clip,
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+        const SizedBox(height: 4),
+        // Colored box with value
+        Container(
+          height: 32, // Fixed height for uniformity
+          width: double.infinity,
+          alignment: Alignment.center,
+          margin: const EdgeInsets.symmetric(horizontal: 2), // Spacing between boxes
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(AppBorders.radiusMd),
+          ),
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
           ),
         ),
       ],
@@ -453,14 +489,7 @@ class _RevealingChipState extends State<_RevealingChip> with SingleTickerProvide
                 opacity: opacity,
                 child: ImageFiltered(
                   imageFilter: ui.ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: widget.color,
-                      borderRadius: BorderRadius.circular(AppBorders.radiusMd),
-                    ),
-                    child: widget.child,
-                  ),
+                  child: widget.child,
                 ),
               );
             },

@@ -36,24 +36,35 @@ class AppHubCompactCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // App Icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: app.themeColor,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: AppShadows.sm,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  app.iconAssetPath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(app.icon, color: Colors.white, size: 24);
-                  },
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                final backgroundColor = isDarkMode
+                    ? AppColors.neutralBase
+                    : AppColors.backgroundDark;
+                return Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: AppShadows.sm,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Image.asset(
+                        app.iconAssetPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(app.icon, color: isDarkMode ? AppColors.backgroundDark : AppColors.neutralBase, size: 24);
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 12),
 

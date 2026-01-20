@@ -101,8 +101,9 @@ flutter:
     - lib/micro_apps/standings/store_assets/
     - lib/micro_apps/game_reports/store_assets/
     - lib/micro_apps/player_wordle/store_assets/
-    - assets/logos/teams/
+
     - assets/creative_logos/
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -56,7 +56,7 @@
   "playerWordleLevelPro": "Pro",
   "playerWordleLevelAllMadden": "All-Madden",
   "playerWordleInstructionPrimary": "Errate den geheimnisvollen NFL-Spieler!",
-  "playerWordleInstructionSecondary": "Tippe einen Namen, um zu beginnen.",
+  "playerWordleInstructionSecondary": "1. Select Team  2. Position  3. Player",
   "playerWordlePointsToNext": "{points} Pkt bis {rank}",
   "playerWordleMaxLevel": "Max Level",
   "playerWordleSearchHint": "Suche nach einem NFL-Spieler...",

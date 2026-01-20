@@ -28,6 +28,12 @@ abstract class MicroApp {
   /// Convention: 'lib/micro_apps/<id>/store_assets/<id>_icon.png'
   String get iconAssetPath;
 
+  /// Optional: Path to a dark theme specific SVG icon asset.
+  String? get iconDarkAssetPath => null;
+
+  /// Optional: Path to a light theme specific SVG icon asset.
+  String? get iconLightAssetPath => null;
+
   /// The primary theme color for the app icon and branding.
   Color get themeColor;
 

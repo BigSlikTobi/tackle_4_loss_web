@@ -20,21 +20,39 @@ serve(async (req) => {
 
         const { language_code, limit = 20, offset = 0 } = await req.json()
 
-        // Fetch news updates from content schema (including players and teams)
-        let query = supabaseClient
+        // Fetch news updates from content schema
+        let newsQuery = supabaseClient
             .schema('content')
             .from('news_updates')
             .select('id, created_at, x_post, image_file, url, headline, players, teams')
             .order('created_at', { ascending: false })
-            .range(offset, offset + limit - 1)
 
         if (language_code) {
-            query = query.eq('language_code', language_code)
+            newsQuery = newsQuery.eq('language_code', language_code)
         }
 
-        const { data: newsData, error: newsError } = await query
+        // Fetch deep dives from content schema
+        let deepDiveQuery = supabaseClient
+            .schema('content')
+            .from('deepdive_article')
+            .select('id, created_at, title, subtitle, hero_image_url, author')
+            .order('created_at', { ascending: false })
 
-        if (newsError) throw newsError
+        if (language_code) {
+            deepDiveQuery = deepDiveQuery.eq('language_code', language_code)
+        }
+
+        // Execute both queries in parallel
+        const [newsResult, deepDiveResult] = await Promise.all([
+            newsQuery,
+            deepDiveQuery
+        ])
+
+        if (newsResult.error) throw newsResult.error
+        if (deepDiveResult.error) throw deepDiveResult.error
+
+        const newsData = newsResult.data ?? []
+        const deepDiveData = deepDiveResult.data ?? []
 
         // Get unique URLs to fetch sources from news_urls table (public schema)
         const urls = [...new Set(newsData.map((item: any) => item.url).filter(Boolean))]
@@ -74,9 +92,8 @@ serve(async (req) => {
             }
         }
 
-        const mappedData = newsData.map((item: any) => {
-            // Enrich players with headshot_url
-            // Defensive check: ensure players is an array before mapping
+        // Map news items with type discriminator
+        const mappedNewsData = newsData.map((item: any) => {
             const playersArray = Array.isArray(item.players) ? item.players : []
             const enrichedPlayers = playersArray.map((p: any) => {
                 const details = playersMap.get(p.player_id)
@@ -86,13 +103,13 @@ serve(async (req) => {
                 }
             })
 
-            // Construct image URL
             let imageUrl = item.image_file
             if (imageUrl && !imageUrl.startsWith('http')) {
                 imageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${imageUrl}`
             }
 
             return {
+                type: 'newsUpdate',
                 id: item.id,
                 xPost: item.x_post,
                 imageUrl: imageUrl,
@@ -104,9 +121,36 @@ serve(async (req) => {
             }
         })
 
+        // Map deep dive items with type discriminator
+        const mappedDeepDiveData = deepDiveData.map((item: any) => {
+            let imageUrl = item.hero_image_url
+            if (imageUrl && !imageUrl.startsWith('http')) {
+                imageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${imageUrl}`
+            }
+
+            return {
+                type: 'deepDive',
+                id: `deepdive-${item.id}`,
+                articleId: item.id,
+                title: item.title,
+                summary: item.subtitle,
+                imageUrl: imageUrl,
+                author: item.author,
+                createdAt: item.created_at,
+            }
+        })
+
+        // Merge and sort by createdAt descending
+        const allItems = [...mappedNewsData, ...mappedDeepDiveData]
+        allItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+        // Apply pagination to merged results
+        const paginatedItems = allItems.slice(offset, offset + limit)
+        const hasMore = allItems.length > offset + limit
+
         return new Response(JSON.stringify({
-            items: mappedData,
-            hasMore: newsData.length === limit
+            items: paginatedItems,
+            hasMore: hasMore
         }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,

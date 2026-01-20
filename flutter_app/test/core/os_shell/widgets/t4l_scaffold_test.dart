@@ -57,8 +57,8 @@ void main() {
     // Verify Close Button exists
     expect(find.byIcon(Icons.close), findsOneWidget);
 
-    // Verify NavBar exists (by finding the 'H')
-    expect(find.text('H'), findsOneWidget);
+    // Verify NavBar exists (by finding the Home tooltip)
+    expect(find.byTooltip('Home'), findsOneWidget);
   });
 
   testWidgets('T4LScaffold hides navbar when showNavBar is false', (WidgetTester tester) async {
@@ -72,6 +72,6 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('H'), findsNothing);
+    expect(find.byTooltip('Home'), findsNothing);
   });
 }

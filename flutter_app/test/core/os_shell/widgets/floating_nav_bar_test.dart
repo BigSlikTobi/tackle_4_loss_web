@@ -21,32 +21,35 @@ void main() {
             onHistory: () => historyPressed = true,
             onSettings: () => settingsPressed = true,
             onTeamLogo: () => teamPressed = true,
+            homeTooltip: 'Home',
+            gameCenterTooltip: 'Game Center',
+            historyTooltip: 'History',
+            settingsTooltip: 'Settings',
           ),
         ),
       ),
     );
 
-    // Verify 'H' text for home
-    expect(find.text('H'), findsOneWidget);
+    // Verify buttons by tooltip
+    expect(find.byTooltip('Home'), findsOneWidget);
+    expect(find.byTooltip('Game Center'), findsOneWidget);
+    expect(find.byTooltip('History'), findsOneWidget);
+    expect(find.byTooltip('Settings'), findsOneWidget);
     
-    // Verify icons - trophy for Game Center, history, user
-    expect(find.byIcon(LucideIcons.trophy), findsOneWidget);
-    expect(find.byIcon(LucideIcons.history), findsOneWidget);
-    expect(find.byIcon(LucideIcons.user), findsOneWidget);
     // Center button uses Image, not Icon
     expect(find.byType(Image), findsOneWidget);
 
     // Test Taps
-    await tester.tap(find.text('H'));
+    await tester.tap(find.byTooltip('Home'));
     expect(homePressed, isTrue);
 
-    await tester.tap(find.byIcon(LucideIcons.trophy));
+    await tester.tap(find.byTooltip('Game Center'));
     expect(gameCenterPressed, isTrue);
 
-    await tester.tap(find.byIcon(LucideIcons.history));
+    await tester.tap(find.byTooltip('History'));
     expect(historyPressed, isTrue);
 
-    await tester.tap(find.byIcon(LucideIcons.user));
+    await tester.tap(find.byTooltip('Settings'));
     expect(settingsPressed, isTrue);
 
     await tester.tap(find.byType(Image));

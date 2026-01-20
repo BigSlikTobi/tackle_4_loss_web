@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../design_tokens.dart';
 import '../../../../core/theme/t4l_theme.dart';
+import '../../../../core/services/team_logo_service.dart';
 import '../../models/team_standing.dart';
 
 /// Expandable card showing a team's standings.
@@ -150,10 +150,10 @@ class TeamStandingsCard extends StatelessWidget {
         ],
       ),
       padding: const EdgeInsets.all(4),
-      child: CachedNetworkImage(
-        imageUrl: team.logoUrl,
-        placeholder: (context, url) => const SizedBox(),
-        errorWidget: (context, url, error) => const Icon(Icons.error),
+      child: Image.asset(
+        TeamLogoService.getLogoPath(team.teamId),
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => const Icon(Icons.error),
       ),
     );
   }

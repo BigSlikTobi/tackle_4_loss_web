@@ -541,7 +541,7 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
 
   String _formatTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
-    final difference = now.difference(dateTime);
+    final difference = now.difference(dateTime.toLocal());
 
     if (difference.inMinutes < 60) {
       return '${difference.inMinutes}m';
