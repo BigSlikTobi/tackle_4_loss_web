@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/news_feed_item.dart';
 
@@ -16,10 +17,19 @@ class NewsFeedController extends ChangeNotifier {
   String? _error;
   int _offset = 0;
   
+  /// Set of item IDs for efficient de-duplication
+  final Set<String> _itemIds = {};
+  
+  /// Supabase Client to use (injectable for testing)
+  final SupabaseClient supabaseClient;
+  
   /// Supabase Realtime channel for listening to new news updates
   RealtimeChannel? _realtimeChannel;
 
-  NewsFeedController({required this.languageCode});
+  NewsFeedController({
+    required this.languageCode,
+    SupabaseClient? client,
+  }) : supabaseClient = client ?? Supabase.instance.client;
 
   List<FeedItem> get items => _items;
   bool get isLoading => _isLoading;
@@ -30,6 +40,7 @@ class NewsFeedController extends ChangeNotifier {
   Future<void> loadInitial() async {
     _offset = 0;
     _items = [];
+    _itemIds.clear();
     _hasMore = true;
     _error = null;
     
@@ -44,7 +55,7 @@ class NewsFeedController extends ChangeNotifier {
     // Remove existing subscription if any
     _unsubscribeFromRealtime();
     
-    _realtimeChannel = Supabase.instance.client
+    _realtimeChannel = supabaseClient
         .channel('news-feed-updates')
         .onPostgresChanges(
           event: PostgresChangeEvent.insert,
@@ -67,59 +78,59 @@ class NewsFeedController extends ChangeNotifier {
 
     // Check if we already have this item (avoid duplicates)
     final newId = newRecord['id']?.toString();
-    if (newId != null && _items.any((item) => item.id == newId)) {
+    if (newId == null || _itemIds.contains(newId)) {
       return;
     }
 
-    // Fetch the full item details via edge function to get enriched data
-    // (source name, player headshots, etc.)
-    _fetchAndPrependNewItem(newId);
-  }
-
-  /// Fetch a single item and prepend it to the list
-  Future<void> _fetchAndPrependNewItem(String? itemId) async {
-    if (itemId == null) return;
-
+    // Construct the item directly from the realtime payload
+    // Note: This won't have enriched data (source name, player headshots)
+    // but the item will be fully enriched on next refresh
     try {
-      // Fetch just the first item (offset 0, limit 1) to get the newest item
-      // This ensures we get the fully enriched data from the edge function
-      final response = await Supabase.instance.client.functions.invoke(
-        'get-news-feed',
-        body: {
-          'language_code': languageCode,
-          'limit': 1,
-          'offset': 0,
-        },
-      );
-
-      if (response.status != 200) {
-        return;
-      }
-
-      final data = response.data as Map<String, dynamic>;
-      final List<dynamic> itemsJson = data['items'] as List<dynamic>;
-      
-      if (itemsJson.isNotEmpty) {
-        final newItem = FeedItem.fromJson(itemsJson.first as Map<String, dynamic>);
-        
-        // Check again for duplicates (in case of race conditions)
-        if (!_items.any((item) => item.id == newItem.id)) {
-          // Prepend the new item to the beginning of the list
-          _items.insert(0, newItem);
-          _offset += 1; // Adjust offset to account for new item
-          notifyListeners();
-        }
+      final newItem = _createItemFromPayload(newRecord);
+      if (newItem != null) {
+        _items.insert(0, newItem);
+        _itemIds.add(newItem.id);
+        _offset += 1; // Adjust offset to account for new item
+        notifyListeners();
       }
     } catch (e) {
       // Silently fail - the item will appear on next refresh
-      debugPrint('Failed to fetch new realtime item: $e');
+      debugPrint('Failed to create item from realtime payload: $e');
     }
+  }
+
+  /// Create a NewsFeedItem from the realtime payload
+  /// Returns null if the payload cannot be parsed
+  NewsFeedItem? _createItemFromPayload(Map<String, dynamic> record) {
+    final id = record['id']?.toString();
+    final createdAt = record['created_at'] as String?;
+    
+    if (id == null || createdAt == null) return null;
+
+    // Build the image URL if image_file is present
+    String? imageUrl = record['image_file'] as String?;
+    if (imageUrl != null && !imageUrl.startsWith('http')) {
+      // Construct full URL using dotenv
+      final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
+      imageUrl = '$supabaseUrl/storage/v1/object/public/content/$imageUrl';
+    }
+
+    return NewsFeedItem(
+      id: id,
+      xPost: record['x_post'] as String? ?? '',
+      imageUrl: imageUrl,
+      source: null, // Not available in realtime payload, will be enriched on refresh
+      headline: record['headline'] as String?,
+      players: record['players'] as List<dynamic>?,
+      teams: record['teams'] as List<dynamic>?,
+      createdAt: DateTime.parse(createdAt),
+    );
   }
 
   /// Unsubscribe from realtime channel
   void _unsubscribeFromRealtime() {
     if (_realtimeChannel != null) {
-      Supabase.instance.client.removeChannel(_realtimeChannel!);
+      supabaseClient.removeChannel(_realtimeChannel!);
       _realtimeChannel = null;
     }
   }
@@ -136,7 +147,7 @@ class NewsFeedController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await Supabase.instance.client.functions.invoke(
+      final response = await supabaseClient.functions.invoke(
         'get-news-feed',
         body: {
           'language_code': languageCode,
@@ -155,9 +166,18 @@ class NewsFeedController extends ChangeNotifier {
           .map((json) => FeedItem.fromJson(json as Map<String, dynamic>))
           .toList();
 
-      _items.addAll(newItems);
+      // De-duplicate: only add items we don't already have
+      // This handles the race condition where realtime adds an item
+      // that's also in the paginated results
+      for (final item in newItems) {
+        if (!_itemIds.contains(item.id)) {
+          _items.add(item);
+          _itemIds.add(item.id);
+        }
+      }
+
       _hasMore = data['hasMore'] as bool? ?? false;
-      _offset += newItems.length;
+      _offset += newItems.length; // Advance offset by fetched count, not added count
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -177,3 +197,4 @@ class NewsFeedController extends ChangeNotifier {
     super.dispose();
   }
 }
+
