@@ -145,7 +145,7 @@ serve(async (req) => {
                         .from('players')
                         .select('player_id')
                         .in('player_id', starterIds)
-                        .or('position.eq.QB,position.eq.RB,position.eq.WR,position.eq.TE,position.eq.DE,position.eq.CB')
+                        .or('position.eq.QB,position.eq.RB,position.eq.FB,position.eq.HB,position.eq.WR,position.eq.TE,position.eq.DE,position.eq.EDGE,position.eq.EOLB,position.eq.CB,position.eq.RCB,position.eq.LCB')
 
                     if (playerError) throw playerError
                     if (playerData) playerIds = playerData.map(p => p.player_id)

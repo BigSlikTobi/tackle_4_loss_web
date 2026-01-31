@@ -134,7 +134,14 @@ serve(async (req) => {
                 // Retrying query with more fields
                 const { data: detailedData, error: detailedError } = await supabaseClient
                     .from('depth_charts')
-                    .select('player_id, pos_rank, pos_grp')
+                    .select(`
+                        player_id, 
+                        pos_rank, 
+                        pos_grp,
+                        players!inner (
+                            position
+                        )
+                    `)
                     .eq('version', latestVersion)
                     .lte('pos_rank', 2)
 
@@ -143,7 +150,22 @@ serve(async (req) => {
                 playerIds = detailedData.filter((row: any) => {
                     const group = (row.pos_grp || '').toUpperCase()
                     const rank = row.pos_rank
+                    const actualPos = (row.players?.position || '').toUpperCase()
 
+                    // STRICT Position Check for Fan Mode
+                    // Must be one of the allowed positions in search-players
+                    const allowedPositions = [
+                        'QB',
+                        'RB', 'FB', 'HB',
+                        'WR',
+                        'TE',
+                        'DE', 'EDGE', 'EOLB',
+                        'CB', 'RCB', 'LCB'
+                    ]
+
+                    if (!allowedPositions.includes(actualPos)) return false
+
+                    // Additional Depth Chart Logic (Backup)
                     // QB, RB, TE -> Rank 1 only
                     if (group === 'QB' || group.includes('QUARTERBACK')) return rank === 1
                     if (group === 'RB' || group === 'HB' || group.includes('RUNNING')) return rank === 1
@@ -154,12 +176,7 @@ serve(async (req) => {
 
                     // Defense: DE and DB/CB ONLY. (No DT, No LB)
                     if (group === 'DE' || group === 'EDGE' || group.includes('DEFENSIVE END')) return rank <= 2
-
-                    // DBs: CB ONLY. (No S, No DB)
-                    // User Req: "as we only look for CB in the Defensive Backs, we should only load CBs in fan mode"
                     if (group === 'CB' || group.includes('CORNER')) return rank <= 2
-                    // if (group === 'S' || group === 'FS' || group === 'SS' || group.includes('SAFETY')) return rank <= 2
-                    // if (group === 'DB' || group.includes('DEFENSIVE BACK')) return rank <= 2
 
                     return false
                 }).map((p: any) => p.player_id)
