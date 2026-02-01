@@ -10,14 +10,36 @@ import '../../models/game_state.dart';
 List<String> getPositionsForDifficulty(Difficulty difficulty) {
   // Fan & Rookie: Only popular positions (QB, WR, TE, RB, DE, CB)
   // Pro & All Madden: All positions
-  
+
   const restrictedPositions = ['QB', 'RB', 'WR', 'TE', 'DE', 'CB'];
-  const allPositions = ['QB', 'RB', 'FB', 'WR', 'TE', 'K', 'P', 'DE', 'DT', 'NT', 'OLB', 'ILB', 'MLB', 'CB', 'S', 'FS', 'SS', 'OT', 'G', 'C', 'LS'];
+  const allPositions = [
+    'QB',
+    'RB',
+    'FB',
+    'WR',
+    'TE',
+    'K',
+    'P',
+    'DE',
+    'DT',
+    'NT',
+    'OLB',
+    'ILB',
+    'MLB',
+    'CB',
+    'S',
+    'FS',
+    'SS',
+    'OT',
+    'G',
+    'C',
+    'LS'
+  ];
   // Also define a comprehensive "Pro" list if All Madden has extras, but user said "Pro and All Madden show all".
   // Let's assume standard comprehensive list for Pro, and maybe the full-full list for All Madden if there's a distinction in data.
   // Actually, user said "Pro and All Madden we show all positions". I'll use the fullest list for both to be safe, or just the standard full set.
   // Let's use the full detailed list for both to ensure nothing is missed.
-  
+
   switch (difficulty) {
     case Difficulty.fan:
     case Difficulty.rookie:

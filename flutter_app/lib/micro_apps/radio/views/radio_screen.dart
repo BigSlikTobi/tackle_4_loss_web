@@ -93,12 +93,10 @@ class _RadioScreenState extends State<RadioScreen> {
                         translatedLabel,
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? Colors.white
-                              : colors.textSecondary,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          color:
+                              isSelected ? Colors.white : colors.textSecondary,
                         ),
                       ),
                     ),
@@ -131,9 +129,9 @@ class _RadioScreenState extends State<RadioScreen> {
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       ChangeNotifierProvider.value(
-                                        value: _controller,
-                                        child: const NewsCollectionScreen(),
-                                      ),
+                                    value: _controller,
+                                    child: const NewsCollectionScreen(),
+                                  ),
                                 ),
                               );
                             } else if (station.id == 'deep_dive_collection') {
@@ -141,9 +139,9 @@ class _RadioScreenState extends State<RadioScreen> {
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       ChangeNotifierProvider.value(
-                                        value: _controller,
-                                        child: const DeepDiveCollectionScreen(),
-                                      ),
+                                    value: _controller,
+                                    child: const DeepDiveCollectionScreen(),
+                                  ),
                                 ),
                               );
                             } else {

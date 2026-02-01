@@ -30,7 +30,7 @@ class _CircularDialMenuState extends State<CircularDialMenu>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _animation = AlwaysStoppedAnimation(0);
+    _animation = const AlwaysStoppedAnimation(0);
   }
 
   @override
@@ -73,9 +73,8 @@ class _CircularDialMenuState extends State<CircularDialMenu>
         child: AnimatedBuilder(
           animation: _controller,
           builder: (context, child) {
-            final angle = _controller.isAnimating
-                ? _animation.value
-                : _currentAngle;
+            final angle =
+                _controller.isAnimating ? _animation.value : _currentAngle;
             return Stack(
               alignment: Alignment.center,
               children: [
@@ -103,7 +102,7 @@ class _CircularDialMenuState extends State<CircularDialMenu>
 
                 // Items
                 ...List.generate(widget.children.length, (index) {
-                  final itemBaseAngle = -math.pi / 2;
+                  const itemBaseAngle = -math.pi / 2;
                   final itemOffset = index * widget.itemSpacing;
                   final finalAngle = itemBaseAngle + angle + itemOffset;
 

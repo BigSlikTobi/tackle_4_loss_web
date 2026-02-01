@@ -8,8 +8,10 @@ import 'guess_result.dart';
 enum GameStatus {
   /// Game is in progress, player can still guess
   playing,
+
   /// Player guessed correctly
   won,
+
   /// Player ran out of guesses
   lost,
 }
@@ -18,10 +20,13 @@ enum GameStatus {
 enum Difficulty {
   /// Specific starters (QB1, RB1, WR1/2, etc.)
   fan,
+
   /// Top positions only (QB, RB, WR, TE, DE, CB)
   rookie,
+
   /// All starting positions
   pro,
+
   /// All players including backups
   allMadden,
 }
@@ -30,16 +35,22 @@ enum Difficulty {
 class GameState {
   /// ID of the mystery player to guess
   final String mysteryPlayerId;
+
   /// List of guesses made so far
   final List<GuessResult> guesses;
+
   /// Current game status
   final GameStatus status;
+
   /// Difficulty level
   final Difficulty difficulty;
+
   /// Maximum allowed guesses (default: 8)
   final int maxGuesses;
+
   /// Whether the hint was used
   final bool hintUsed;
+
   /// College name if hint was revealed
   final String? revealedHint;
 
@@ -75,7 +86,7 @@ class GameState {
   /// Creates a new state after adding a guess.
   GameState addGuess(GuessResult guess) {
     final newGuesses = [...guesses, guess];
-    
+
     GameStatus newStatus = status;
     if (guess.isCorrect) {
       newStatus = GameStatus.won;

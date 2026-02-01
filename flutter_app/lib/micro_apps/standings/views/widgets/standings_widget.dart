@@ -51,7 +51,7 @@ class _StandingsWidgetState extends State<StandingsWidget> {
       },
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [AppColors.brandBase, AppColors.brandLight],
@@ -63,8 +63,8 @@ class _StandingsWidgetState extends State<StandingsWidget> {
         child: _controller.isLoading
             ? _buildLoadingState()
             : _controller.error != null
-            ? _buildErrorState()
-            : _buildContent(isDark),
+                ? _buildErrorState()
+                : _buildContent(isDark),
       ),
     );
   }
@@ -179,9 +179,9 @@ class _StandingsWidgetState extends State<StandingsWidget> {
 
   Widget _buildTeamInfo(TeamService teamService, String teamCode, int? score) {
     final team = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == teamCode.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == teamCode.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -191,7 +191,9 @@ class _StandingsWidgetState extends State<StandingsWidget> {
           height: 20,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.9),
           ),
           padding: const EdgeInsets.all(2),
           child: Image.asset(

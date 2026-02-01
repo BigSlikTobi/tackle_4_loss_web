@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class RadioController extends ChangeNotifier {
   final AudioPlayerService _audioService = AudioPlayerService();
-  
+
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -17,9 +17,9 @@ class RadioController extends ChangeNotifier {
   String get selectedCategoryId => _selectedCategoryId;
 
   final List<RadioCategory> _categories = [
-    RadioCategory(id: 'all', label: 'radioCategoryAll'),
-    RadioCategory(id: 'deep_dive', label: 'radioCategoryDeepDive'),
-    RadioCategory(id: 'news', label: 'radioCategoryNews'),
+    const RadioCategory(id: 'all', label: 'radioCategoryAll'),
+    const RadioCategory(id: 'deep_dive', label: 'radioCategoryDeepDive'),
+    const RadioCategory(id: 'news', label: 'radioCategoryNews'),
   ];
   List<RadioCategory> get categories => _categories;
 
@@ -41,6 +41,8 @@ class RadioController extends ChangeNotifier {
 
   Timer? _newsTimer;
   Set<String> _currentPlaylistIds = {};
+  StreamSubscription<void>? _queueExhaustedSub;
+  String _activeLanguageCode = 'en';
 
   RadioController({String? languageCode}) {
     _initAndLoad(languageCode ?? 'en');
@@ -49,19 +51,49 @@ class RadioController extends ChangeNotifier {
   @override
   void dispose() {
     _newsTimer?.cancel();
+    _queueExhaustedSub?.cancel();
     super.dispose();
   }
 
   void _initAndLoad(String languageCode) async {
     await _loadPlayedNews();
     await loadStations(languageCode);
-    
+
     // Listen for playback changes to mark as played
     _audioService.mediaItemStream.listen((mediaItem) {
       if (mediaItem != null) {
         _markAsPlayed(mediaItem.id);
       }
     });
+
+    // Listen for queue exhaustion to auto-fetch more content for continuous playback
+    _queueExhaustedSub = _audioService.onQueueExhausted.listen((_) {
+      _onQueueExhausted();
+    });
+  }
+
+  /// Called when the audio queue is exhausted - fetches more unplayed content
+  Future<void> _onQueueExhausted() async {
+    try {
+      final allNews = await fetchNewsTracks(_activeLanguageCode);
+
+      // Filter out already played items
+      final unplayedNews = allNews
+          .where((track) => !_playedNewsIds.contains(track['url']))
+          .toList();
+
+      // Also filter out items already in current playlist
+      final newItems = unplayedNews
+          .where((track) => !_currentPlaylistIds.contains(track['url']))
+          .toList();
+
+      if (newItems.isNotEmpty) {
+        await _audioService.appendToQueue(newItems);
+        _currentPlaylistIds.addAll(newItems.map((e) => e['url']!));
+      }
+    } catch (e) {
+      debugPrint("RadioController: Error fetching more content: $e");
+    }
   }
 
   void selectCategory(String id) {
@@ -79,12 +111,12 @@ class RadioController extends ChangeNotifier {
       final newsTracks = await fetchNewsTracks(languageCode);
       if (newsTracks.isNotEmpty) {
         _newsImages = newsTracks
-            .map((e) => (e['imageUrl']) ??
+            .map((e) =>
+                (e['imageUrl']) ??
                 'https://placehold.co/400/1a1a1a/ffffff?text=News')
             .toList();
         _latestNewsImage = _newsImages.first;
-        _latestNewsHeadline =
-            (newsTracks.first['title']) ?? 'News';
+        _latestNewsHeadline = (newsTracks.first['title']) ?? 'News';
       }
     } catch (e) {
       debugPrint("Error loading news images for UI: $e");
@@ -97,23 +129,30 @@ class RadioController extends ChangeNotifier {
         'get-radio-deepdives',
         body: {'language_code': languageCode},
       );
-      
-      if (response.status == 200 && response.data != null && response.data is List) {
+
+      if (response.status == 200 &&
+          response.data != null &&
+          response.data is List) {
         final List<dynamic> ddData = response.data;
         deepDiveStations = ddData
-          .map<RadioStation>((item) => RadioStation(
-            id: 'dd_${item['id']}',
-            title: item['title'] ?? '',
-            description: item['subtitle'] ?? '',
-            imageUrl: item['hero_image_url'] ?? 'https://placehold.co/400/1a1a1a/ffffff?text=Deep+Dive',
-            categoryId: 'deep_dive',
-            streamUrl: item['audio_file'] as String?, // Store the URL directly for easy access
-          )).toList();
+            .map<RadioStation>((item) => RadioStation(
+                  id: 'dd_${item['id']}',
+                  title: item['title'] ?? '',
+                  description: item['subtitle'] ?? '',
+                  imageUrl: item['hero_image_url'] ??
+                      'https://placehold.co/400/1a1a1a/ffffff?text=Deep+Dive',
+                  categoryId: 'deep_dive',
+                  streamUrl: item['audio_file']
+                      as String?, // Store the URL directly for easy access
+                ))
+            .toList();
       } else {
-        debugPrint("RadioController: get-radio-deepdives failed: ${response.data}");
+        debugPrint(
+            "RadioController: get-radio-deepdives failed: ${response.data}");
       }
     } catch (e) {
-      debugPrint("RadioController: Error fetching deep dives via Edge Function: $e");
+      debugPrint(
+          "RadioController: Error fetching deep dives via Edge Function: $e");
     }
 
     _allDeepDives = deepDiveStations;
@@ -121,10 +160,12 @@ class RadioController extends ChangeNotifier {
     // Create a Collection Station for Deep Dives
     final deepDiveCollection = RadioStation(
       id: 'deep_dive_collection',
-      title: 'radioStationDeepDiveCollectionTitle', // Needs localization key or update
-      description: 'radioStationDeepDiveCollectionDesc', // Needs localization key or update
-      imageUrl: deepDiveStations.isNotEmpty 
-          ? deepDiveStations.first.imageUrl 
+      title:
+          'radioStationDeepDiveCollectionTitle', // Needs localization key or update
+      description:
+          'radioStationDeepDiveCollectionDesc', // Needs localization key or update
+      imageUrl: deepDiveStations.isNotEmpty
+          ? deepDiveStations.first.imageUrl
           : 'https://placehold.co/400/1a1a1a/ffffff?text=Deep+Dives',
       slideshowImages: deepDiveStations.map((e) => e.imageUrl).toList(),
       categoryId: 'deep_dive',
@@ -135,7 +176,8 @@ class RadioController extends ChangeNotifier {
         id: 'news',
         title: 'radioStationNewsTitle',
         description: 'radioStationNewsDesc',
-        imageUrl: _latestNewsImage ?? 'https://placehold.co/400/1a1a1a/ffffff?text=News',
+        imageUrl: _latestNewsImage ??
+            'https://placehold.co/400/1a1a1a/ffffff?text=News',
         slideshowImages: _newsImages.isNotEmpty ? _newsImages : null,
         categoryId: 'news',
       ),
@@ -147,15 +189,18 @@ class RadioController extends ChangeNotifier {
   }
 
   RadioStation get dailyBriefingStation => RadioStation(
-    id: 'news_briefing',
-    title: 'radioStationDailyBriefingTitle',
-    description: 'radioStationDailyBriefingDesc',
-    imageUrl: _latestNewsImage ?? 'https://placehold.co/400/1a1a1a/ffffff?text=Daily+Briefing',
-    slideshowImages: _newsImages.isNotEmpty ? _newsImages : null,
-    categoryId: 'news',
-  );
+        id: 'news_briefing',
+        title: 'radioStationDailyBriefingTitle',
+        description: 'radioStationDailyBriefingDesc',
+        imageUrl: _latestNewsImage ??
+            'https://placehold.co/400/1a1a1a/ffffff?text=Daily+Briefing',
+        slideshowImages: _newsImages.isNotEmpty ? _newsImages : null,
+        categoryId: 'news',
+      );
 
   Future<void> playStation(RadioStation station, {String? languageCode}) async {
+    _activeLanguageCode =
+        languageCode ?? 'en'; // Store for queue exhaustion handler
     _newsTimer?.cancel(); // Cancel any existing polling
     List<Map<String, String>> playlist = [];
 
@@ -166,13 +211,14 @@ class RadioController extends ChangeNotifier {
         // 1. We keep ALL news in the playlist (so user can go back to history).
         // 2. We start playing from the first UNPLAYED item.
         playlist = allNews;
-        
+
         // Track current playlist to avoid duplicates during polling
         _currentPlaylistIds = playlist.map((e) => e['url']!).toSet();
 
         int initialIndex = 0;
-        final unplayedIndex = allNews.indexWhere((track) => !_playedNewsIds.contains(track['url']));
-        
+        final unplayedIndex = allNews
+            .indexWhere((track) => !_playedNewsIds.contains(track['url']));
+
         if (unplayedIndex != -1) {
           initialIndex = unplayedIndex;
         } else {
@@ -183,8 +229,9 @@ class RadioController extends ChangeNotifier {
         }
 
         if (playlist.isNotEmpty) {
-          await _audioService.playPlaylist(playlist, initialIndex: initialIndex);
-          
+          await _audioService.playPlaylist(playlist,
+              initialIndex: initialIndex);
+
           // Start polling for new news every 30 seconds
           _newsTimer = Timer.periodic(const Duration(seconds: 30), (_) {
             _checkForNewNews(languageCode ?? 'en');
@@ -193,7 +240,7 @@ class RadioController extends ChangeNotifier {
         return; // Return early since we handled playback
       } catch (e) {
         debugPrint('Error fetching news tracks: $e');
-        return; 
+        return;
       }
     } else if (station.id == 'news_collection') {
       // Logic handled by UI (navigation), but if played directly, maybe play all?
@@ -214,13 +261,15 @@ class RadioController extends ChangeNotifier {
       // Manual/Legacy Stations
       playlist = [
         {
-          'url': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+          'url':
+              'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
           'title': 'Intro: ${station.title}',
           'author': 'T4L Team',
           'imageUrl': station.imageUrl,
         },
         {
-          'url': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+          'url':
+              'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
           'title': 'Deep Dive Part 1',
           'author': 'Tobias Latta',
           'imageUrl': station.imageUrl,
@@ -233,19 +282,20 @@ class RadioController extends ChangeNotifier {
   Future<void> _checkForNewNews(String languageCode) async {
     try {
       final latestNews = await fetchNewsTracks(languageCode);
-      
+
       // Filter for tracks that are NOT in the current playlist
       // We assume track['url'] is the unique identifier
-      final newTracks = latestNews.where((track) => 
-        !_currentPlaylistIds.contains(track['url'])
-      ).toList();
+      final newTracks = latestNews
+          .where((track) => !_currentPlaylistIds.contains(track['url']))
+          .toList();
 
       if (newTracks.isNotEmpty) {
-        debugPrint("RadioController: Found ${newTracks.length} new news tracks. Inserting into queue.");
-        
+        debugPrint(
+            "RadioController: Found ${newTracks.length} new news tracks. Inserting into queue.");
+
         // Insert tracks to be played NEXT
         await _audioService.insertNext(newTracks);
-        
+
         // Update local awareness of what's in the playlist
         _currentPlaylistIds.addAll(newTracks.map((e) => e['url']!));
       }
@@ -265,25 +315,29 @@ class RadioController extends ChangeNotifier {
     try {
       final response = await Supabase.instance.client.functions.invoke(
         'get-radio-news',
-        body: {'language_code': languageCode}, 
+        body: {'language_code': languageCode},
       );
 
       if (response.data == null) return [];
 
       final List<dynamic> data = response.data;
-      return data.map<Map<String, String>>((item) {
-        final team = item['primaryTeam'];
-        return {
-          'id': item['id']?.toString() ?? '', 
-          'url': item['audioUrl'] ?? '',
-          'title': item['title'] ?? 'News Update',
-          'author': team != null ? team['team_name'] ?? 'T4L News' : 'T4L News',
-          'imageUrl': item['imageUrl'] ?? 'https://placehold.co/400x400/png',
-          'teamName': team != null ? team['team_name'] ?? '' : '',
-          'teamLogoUrl': team != null ? team['logo_url'] ?? '' : '',
-        };
-      }).where((track) => track['url'] != null && track['url']!.isNotEmpty).toList();
-
+      return data
+          .map<Map<String, String>>((item) {
+            final team = item['primaryTeam'];
+            return {
+              'id': item['id']?.toString() ?? '',
+              'url': item['audioUrl'] ?? '',
+              'title': item['title'] ?? 'News Update',
+              'author':
+                  team != null ? team['team_name'] ?? 'T4L News' : 'T4L News',
+              'imageUrl':
+                  item['imageUrl'] ?? 'https://placehold.co/400x400/png',
+              'teamName': team != null ? team['team_name'] ?? '' : '',
+              'teamLogoUrl': team != null ? team['logo_url'] ?? '' : '',
+            };
+          })
+          .where((track) => track['url'] != null && track['url']!.isNotEmpty)
+          .toList();
     } catch (e) {
       debugPrint('Error in fetchNewsTracks: $e');
       rethrow;
@@ -301,7 +355,7 @@ class RadioController extends ChangeNotifier {
 
   Future<void> _markAsPlayed(String id) async {
     if (_playedNewsIds.contains(id)) return;
-    
+
     _playedNewsIds.add(id);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('played_news_ids', _playedNewsIds.toList());

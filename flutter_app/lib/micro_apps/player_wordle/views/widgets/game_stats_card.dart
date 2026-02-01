@@ -10,13 +10,13 @@ import '../../../../core/theme/t4l_theme.dart';
 class GameStatsCard extends StatelessWidget {
   /// Current win streak
   final int currentStreak;
-  
+
   /// Maximum win streak achieved
   final int maxStreak;
-  
+
   /// Total games played
   final int gamesPlayed;
-  
+
   /// Total games won
   final int gamesWon;
 
@@ -31,9 +31,8 @@ class GameStatsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-    final winPercentage = gamesPlayed > 0 
-        ? ((gamesWon / gamesPlayed) * 100).round() 
-        : 0;
+    final winPercentage =
+        gamesPlayed > 0 ? ((gamesWon / gamesPlayed) * 100).round() : 0;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space2),

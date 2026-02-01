@@ -48,7 +48,7 @@ class DeepDiveArticle {
     }
 
     String? content = json['content'] as String?;
-    
+
     // Fallback: If content is missing but sections exist, concatenate them
     if ((content == null || content.isEmpty) && parsedSections != null) {
       content = parsedSections.map((s) => s.content).join('\n\n');
@@ -89,8 +89,10 @@ Gone are the days of the statue in the pocket. The modern quarterback must be a 
 
 This Deep Dive explores the mathematical principles behind the modern spread and why the linebacker position is becoming an endangered species.
       ''',
-      imageUrl: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=3538&auto=format&fit=crop',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Free test audio
+      imageUrl:
+          'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?q=80&w=3538&auto=format&fit=crop',
+      audioUrl:
+          'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Free test audio
       notebookUrl: 'https://colab.research.google.com/',
       publishedAt: DateTime.now(),
       author: 'Tobias Latta',

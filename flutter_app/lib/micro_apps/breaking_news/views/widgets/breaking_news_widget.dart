@@ -59,14 +59,14 @@ class _BreakingNewsWidgetContent extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: article == null
             ? (controller.isLoading
-                  ? const ShimmerBox(borderRadius: 24)
-                  : Center(
-                      child: Icon(
-                        Icons.flash_on_rounded,
-                        color: colors.textSecondary,
-                        size: 40,
-                      ),
-                    ))
+                ? const ShimmerBox(borderRadius: 24)
+                : Center(
+                    child: Icon(
+                      Icons.flash_on_rounded,
+                      color: colors.textSecondary,
+                      size: 40,
+                    ),
+                  ))
             : Stack(
                 fit: StackFit.expand,
                 children: [
@@ -151,7 +151,8 @@ class _BreakingNewsWidgetContent extends StatelessWidget {
                                 Text(
                                   AppLocalizations.of(
                                     context,
-                                  )!.breakingNewsSavedLabel,
+                                  )!
+                                      .breakingNewsSavedLabel,
                                   style: TextStyle(
                                     color: colors.brand,
                                     fontSize: 12,

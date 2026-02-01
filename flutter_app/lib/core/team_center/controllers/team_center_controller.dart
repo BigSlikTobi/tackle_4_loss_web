@@ -15,7 +15,7 @@ import '../models/injury_player.dart';
 class TeamCenterController extends ChangeNotifier {
   final StandingsService _standingsService = StandingsService();
   final AudioPlayerService _audioService = AudioPlayerService();
-  
+
   bool _isLoading = false;
   String? _error;
   Game? _lastGame;
@@ -24,7 +24,7 @@ class TeamCenterController extends ChangeNotifier {
 
   /// All games for the team in chronological order
   List<Game> _allTeamGames = [];
-  
+
   /// Index to start the carousel at (first upcoming game)
   int _startIndex = 0;
 
@@ -40,12 +40,14 @@ class TeamCenterController extends ChangeNotifier {
   Future<void> playArticleAudio() async {
     final audioUrl = _todaysArticle?.audioUrl;
     if (audioUrl == null || audioUrl.isEmpty) return;
-    
+
     await _audioService.play(
       audioUrl,
       _todaysArticle!.title,
       "T4L Daily Update", // Author
-      _todaysArticle!.imageUrl.isNotEmpty ? _todaysArticle!.imageUrl : 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390',
+      _todaysArticle!.imageUrl.isNotEmpty
+          ? _todaysArticle!.imageUrl
+          : 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390',
     );
   }
 
@@ -61,15 +63,16 @@ class TeamCenterController extends ChangeNotifier {
       final normalizedId = team.id.toUpperCase();
 
       // Get all games for this team
-      final teamGames = allGames.where((g) =>
-        g.homeTeam.toUpperCase() == normalizedId || 
-        g.awayTeam.toUpperCase() == normalizedId
-      ).toList();
-      
+      final teamGames = allGames
+          .where((g) =>
+              g.homeTeam.toUpperCase() == normalizedId ||
+              g.awayTeam.toUpperCase() == normalizedId)
+          .toList();
+
       // Sort chronologically (oldest first)
       teamGames.sort((a, b) => a.gameday.compareTo(b.gameday));
       _allTeamGames = teamGames;
-      
+
       // Find index of first upcoming game (or last game if all played)
       _startIndex = 0;
       for (int i = 0; i < _allTeamGames.length; i++) {
@@ -92,7 +95,6 @@ class TeamCenterController extends ChangeNotifier {
 
       // Load Daily Update
       await _loadDailyUpdate(team.id, languageCode ?? 'en');
-
     } catch (e) {
       _error = 'Failed to load team data: $e';
       debugPrint('TeamCenterController error: $e');
@@ -126,6 +128,7 @@ class TeamCenterController extends ChangeNotifier {
       );
     }
   }
+
   List<RosterPlayer> _offenseRoster = [];
   List<RosterPlayer> _defenseRoster = [];
   List<RosterPlayer> _specialTeamsRoster = [];
@@ -141,7 +144,9 @@ class TeamCenterController extends ChangeNotifier {
   /// Loads the team roster.
   Future<void> loadTeamRoster(String teamId) async {
     // If we already have data, don't reload
-    if (_offenseRoster.isNotEmpty || _defenseRoster.isNotEmpty || _specialTeamsRoster.isNotEmpty) {
+    if (_offenseRoster.isNotEmpty ||
+        _defenseRoster.isNotEmpty ||
+        _specialTeamsRoster.isNotEmpty) {
       return;
     }
 
@@ -150,7 +155,8 @@ class TeamCenterController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('Loading roster for team: ${teamId.toUpperCase()}'); // Debug log
+      debugPrint(
+          'Loading roster for team: ${teamId.toUpperCase()}'); // Debug log
       final response = await Supabase.instance.client.functions.invoke(
         'get-team-roster',
         body: {'team_id': teamId.toUpperCase()},
@@ -187,16 +193,21 @@ class TeamCenterController extends ChangeNotifier {
   bool _isDepthChartLoading = false;
   String? _depthChartError;
 
-  Map<String, List<DepthChartPlayer>> get offenseDepthChart => _offenseDepthChart;
-  Map<String, List<DepthChartPlayer>> get defenseDepthChart => _defenseDepthChart;
-  Map<String, List<DepthChartPlayer>> get specialTeamsDepthChart => _specialTeamsDepthChart;
+  Map<String, List<DepthChartPlayer>> get offenseDepthChart =>
+      _offenseDepthChart;
+  Map<String, List<DepthChartPlayer>> get defenseDepthChart =>
+      _defenseDepthChart;
+  Map<String, List<DepthChartPlayer>> get specialTeamsDepthChart =>
+      _specialTeamsDepthChart;
   bool get isDepthChartLoading => _isDepthChartLoading;
   String? get depthChartError => _depthChartError;
 
   /// Loads the team depth chart.
   Future<void> loadDepthChart(String teamId) async {
     // If we already have data, don't reload
-    if (_offenseDepthChart.isNotEmpty || _defenseDepthChart.isNotEmpty || _specialTeamsDepthChart.isNotEmpty) {
+    if (_offenseDepthChart.isNotEmpty ||
+        _defenseDepthChart.isNotEmpty ||
+        _specialTeamsDepthChart.isNotEmpty) {
       return;
     }
 
@@ -229,17 +240,18 @@ class TeamCenterController extends ChangeNotifier {
   /// Parses a depth chart group from JSON.
   Map<String, List<DepthChartPlayer>> _parseDepthChartGroup(dynamic group) {
     if (group == null) return {};
-    
+
     final Map<String, List<DepthChartPlayer>> result = {};
     final Map<String, dynamic> groupMap = group as Map<String, dynamic>;
-    
+
     for (final entry in groupMap.entries) {
       final players = (entry.value as List?)
-          ?.map((e) => DepthChartPlayer.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [];
+              ?.map((e) => DepthChartPlayer.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [];
       result[entry.key] = players;
     }
-    
+
     return result;
   }
 
@@ -259,7 +271,9 @@ class TeamCenterController extends ChangeNotifier {
   /// Loads the team injury report.
   Future<void> loadInjuries(String teamId) async {
     // If we already have data, don't reload
-    if (_outInjuries.isNotEmpty || _doubtfulInjuries.isNotEmpty || _questionableInjuries.isNotEmpty) {
+    if (_outInjuries.isNotEmpty ||
+        _doubtfulInjuries.isNotEmpty ||
+        _questionableInjuries.isNotEmpty) {
       return;
     }
 

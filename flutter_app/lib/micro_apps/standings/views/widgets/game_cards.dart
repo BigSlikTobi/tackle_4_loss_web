@@ -33,8 +33,7 @@ class GameResultCard extends StatelessWidget {
 
     final isWin =
         teamScore != null && opponentScore != null && teamScore > opponentScore;
-    final isTie =
-        teamScore != null &&
+    final isTie = teamScore != null &&
         opponentScore != null &&
         teamScore == opponentScore;
 
@@ -44,9 +43,9 @@ class GameResultCard extends StatelessWidget {
     final resultText = isWin ? 'W' : (isTie ? 'T' : 'L');
 
     final opponent = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     return GestureDetector(
       onTap: onTap,
@@ -176,14 +175,14 @@ class UpcomingGameCard extends StatelessWidget {
     final opponentId = isHome ? game.awayTeam : game.homeTeam;
 
     final team = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == teamId,
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == teamId,
+          orElse: () => teamService.getTeams().first,
+        );
 
     final opponent = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     final dayFormat = DateFormat('EEE');
     final gameDateTime = '${dayFormat.format(game.gameday)} ${game.gametime}';

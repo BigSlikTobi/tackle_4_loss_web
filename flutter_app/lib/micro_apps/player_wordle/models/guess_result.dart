@@ -8,8 +8,10 @@ import 'player_model.dart';
 enum MatchStatus {
   /// Exact match (green)
   match,
+
   /// No match (grey/red)
   miss,
+
   /// Partial match - e.g., same side of ball (yellow)
   partial,
 }
@@ -18,8 +20,10 @@ enum MatchStatus {
 enum NumericDirection {
   /// Target is higher than guess (↑)
   up,
+
   /// Target is lower than guess (↓)
   down,
+
   /// Exact match
   exact,
 }
@@ -28,8 +32,10 @@ enum NumericDirection {
 class NumericComparison {
   /// Whether it's an exact match
   final bool match;
+
   /// Direction to the target (up/down/exact)
   final NumericDirection direction;
+
   /// Whether the guess is "close" (within 2)
   final bool isClose;
 
@@ -75,20 +81,28 @@ class NumericComparison {
 class GuessResult {
   /// The player that was guessed
   final Player guessedPlayer;
+
   /// Conference match status
   final MatchStatus conferenceMatch;
+
   /// Division match status
   final MatchStatus divisionMatch;
+
   /// Team match status
   final MatchStatus teamMatch;
+
   /// Position match status (partial = same side of ball)
   final MatchStatus positionMatch;
+
   /// Jersey number comparison
   final NumericComparison jerseyComparison;
+
   /// Age comparison
   final NumericComparison ageComparison;
+
   /// Height comparison
   final NumericComparison heightComparison;
+
   /// Whether this guess is correct (guessed player is the mystery player)
   final bool isCorrect;
 
@@ -106,7 +120,7 @@ class GuessResult {
 
   factory GuessResult.fromJson(Map<String, dynamic> json) {
     final comparison = json['comparison'] as Map<String, dynamic>? ?? {};
-    
+
     return GuessResult(
       guessedPlayer: Player.fromJson(json['guessedPlayer'] ?? {}),
       conferenceMatch: _parseMatchStatus(comparison['conference']),

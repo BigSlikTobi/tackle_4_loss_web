@@ -144,9 +144,8 @@ class _WeekChip extends StatelessWidget {
       }
     } else {
       // Unselected
-      backgroundColor = isDark
-          ? AppColors.backgroundDark
-          : AppColors.neutralSoft;
+      backgroundColor =
+          isDark ? AppColors.backgroundDark : AppColors.neutralSoft;
       textColor = isDark ? AppColors.textSubDark : AppColors.textSubLight;
       borderColor = Colors.transparent;
 
@@ -184,9 +183,8 @@ class _WeekChip extends StatelessWidget {
                 fontSize: 10,
                 height: 1.1,
                 fontWeight: FontWeight.normal,
-                color: isSelected
-                    ? textColor.withValues(alpha: 0.8)
-                    : textColor,
+                color:
+                    isSelected ? textColor.withValues(alpha: 0.8) : textColor,
               ),
             ),
             Text(

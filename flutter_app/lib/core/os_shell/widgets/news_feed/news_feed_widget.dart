@@ -24,7 +24,6 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   bool _initialized = false;
   String? _currentLanguageCode;
 
-
   void _initializeController(SettingsService settings) {
     _controller = NewsFeedController(
       languageCode: settings.locale.languageCode,
@@ -169,12 +168,12 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                   // Handle different feed item types
                   return switch (item) {
                     NewsFeedItem newsItem => NewsFeedItemCard(
-                      item: newsItem,
-                      userTeamId: userTeamId,
-                    ),
+                        item: newsItem,
+                        userTeamId: userTeamId,
+                      ),
                     VideoFeedItem videoItem => VideoFeedItemCard(
-                      item: videoItem,
-                    ),
+                        item: videoItem,
+                      ),
                     PersonalizedFeedItem personalizedItem =>
                       PersonalizedFeedItemCard(item: personalizedItem),
                     DeepDiveFeedItem deepDiveItem =>

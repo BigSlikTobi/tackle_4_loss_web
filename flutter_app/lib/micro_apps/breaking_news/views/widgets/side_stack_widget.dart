@@ -21,7 +21,7 @@ class SideStackWidget extends StatelessWidget {
     if (articles.isEmpty) return const SizedBox.shrink();
 
     final count = articles.length;
-    
+
     return GestureDetector(
       onTap: onStackTap,
       behavior: HitTestBehavior.opaque,
@@ -43,7 +43,11 @@ class SideStackWidget extends StatelessWidget {
             child: Text(
               "$count",
               style: TextStyle(
-                color: (color == Colors.white ? Colors.black87 : color).computeLuminance() > 0.5 ? Colors.black : Colors.white,
+                color: (color == Colors.white ? Colors.black87 : color)
+                            .computeLuminance() >
+                        0.5
+                    ? Colors.black
+                    : Colors.white,
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),

@@ -127,8 +127,8 @@ class TeamStandingRow extends StatelessWidget {
                 color: standing.netPoints > 0
                     ? Colors.green
                     : standing.netPoints < 0
-                    ? AppColors.breakingNewsRed
-                    : colors.contrastText.withValues(alpha: 0.7),
+                        ? AppColors.breakingNewsRed
+                        : colors.contrastText.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.right,
             ),

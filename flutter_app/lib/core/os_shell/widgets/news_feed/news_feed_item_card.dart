@@ -79,8 +79,7 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
     final isDarkMode = theme.brightness == Brightness.dark;
 
     // Check if this item matches the user's team
-    final bool isUserTeamMatch =
-        widget.userTeamId != null &&
+    final bool isUserTeamMatch = widget.userTeamId != null &&
         widget.item.teams != null &&
         widget.item.teams!.any(
           (team) =>
@@ -91,8 +90,8 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
     // Inverted colors for matching team items
     final Color bgColor = isUserTeamMatch
         ? (isDarkMode
-              ? Colors.white.withValues(alpha: 0.95)
-              : const Color(0xFF1A1A1A))
+            ? Colors.white.withValues(alpha: 0.95)
+            : const Color(0xFF1A1A1A))
         : Colors.transparent;
     final Color textPrimary = isUserTeamMatch
         ? (isDarkMode ? Colors.black87 : Colors.white)
@@ -105,9 +104,8 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
         : (isDarkMode
             ? (t4lColors?.textPrimary ?? Colors.white)
             : teamColor.withValues(alpha: 0.95));
-    final Color accentColor = isUserTeamMatch
-        ? teamColor
-        : teamColor.withValues(alpha: 0.7);
+    final Color accentColor =
+        isUserTeamMatch ? teamColor : teamColor.withValues(alpha: 0.7);
 
     return FadeTransition(
       opacity: _fadeAnim,
@@ -140,9 +138,8 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                       : EdgeInsets.zero,
                   decoration: BoxDecoration(
                     color: bgColor,
-                    borderRadius: isUserTeamMatch
-                        ? BorderRadius.circular(16)
-                        : null,
+                    borderRadius:
+                        isUserTeamMatch ? BorderRadius.circular(16) : null,
                     border: isUserTeamMatch
                         ? Border.all(
                             color: teamColor.withValues(alpha: 0.5),
@@ -175,15 +172,15 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                               color: teamColor,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.star,
                                   size: 12,
                                   color: Colors.white,
                                 ),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 Text(
                                   'YOUR TEAM',
                                   style: TextStyle(
@@ -251,8 +248,8 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                                       // Source (Small)
                                       if (widget.item.source != null) ...[
                                         TextSpan(
-                                          text: widget.item.source!
-                                              .toUpperCase(),
+                                          text:
+                                              widget.item.source!.toUpperCase(),
                                           style: TextStyle(
                                             color: textMuted.withValues(
                                               alpha: 0.8,
@@ -310,8 +307,7 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                                 Row(
                                   children: [
                                     ...widget.item.teams!.take(3).map((team) {
-                                      final teamId =
-                                          team['team_id']
+                                      final teamId = team['team_id']
                                               ?.toString()
                                               .toLowerCase() ??
                                           '';
@@ -338,17 +334,18 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                                           ),
                                           child: ClipOval(
                                             child: Image.asset(
-                                              TeamLogoService.getLogoPath(teamId),
+                                              TeamLogoService.getLogoPath(
+                                                  teamId),
                                               width: 26,
                                               height: 26,
                                               errorBuilder: (_, __, ___) =>
                                                   Icon(
-                                                    Icons.sports_football,
-                                                    size: 14,
-                                                    color: teamColor.withValues(
-                                                      alpha: 0.5,
-                                                    ),
-                                                  ),
+                                                Icons.sports_football,
+                                                size: 14,
+                                                color: teamColor.withValues(
+                                                  alpha: 0.5,
+                                                ),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -409,21 +406,18 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                                                 ),
                                                 placeholder: (context, url) =>
                                                     Container(
-                                                      color: teamColor
-                                                          .withValues(
-                                                            alpha: 0.1,
-                                                          ),
-                                                    ),
+                                                  color: teamColor.withValues(
+                                                    alpha: 0.1,
+                                                  ),
+                                                ),
                                                 errorWidget:
                                                     (context, url, error) =>
                                                         Icon(
-                                                          Icons.person,
-                                                          size: 16,
-                                                          color:
-                                                              t4lColors
-                                                                  ?.textMuted ??
-                                                              Colors.grey,
-                                                        ),
+                                                  Icons.person,
+                                                  size: 16,
+                                                  color: t4lColors?.textMuted ??
+                                                      Colors.grey,
+                                                ),
                                               ),
                                             ),
                                           ),

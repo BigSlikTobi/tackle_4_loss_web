@@ -21,7 +21,8 @@ class PlayerWordleService {
   PlayerWordleService.testing() : _supabase = _DummySupabaseClient();
 
   /// Fetches a random player ID for a new game.
-  Future<String> getRandomPlayerId({Difficulty difficulty = Difficulty.pro}) async {
+  Future<String> getRandomPlayerId(
+      {Difficulty difficulty = Difficulty.pro}) async {
     try {
       final response = await _supabase.functions.invoke(
         'get-random-player',
@@ -42,7 +43,8 @@ class PlayerWordleService {
 
   /// Fetches the daily challenge player ID.
   /// Returns the same player for all users on the same day.
-  Future<DailyPlayerResult> getDailyPlayerId({Difficulty difficulty = Difficulty.pro}) async {
+  Future<DailyPlayerResult> getDailyPlayerId(
+      {Difficulty difficulty = Difficulty.pro}) async {
     try {
       final response = await _supabase.functions.invoke(
         'get-daily-player',
@@ -58,8 +60,9 @@ class PlayerWordleService {
         playerId: data['playerId'] as String,
         date: data['date'] as String,
         teamsInvolved: (data['teamsInvolved'] as List<dynamic>?)
-            ?.map((e) => e as String)
-            .toList() ?? [],
+                ?.map((e) => e as String)
+                .toList() ??
+            [],
       );
     } catch (e) {
       debugPrint('PlayerWordleService.getDailyPlayerId error: $e');
@@ -84,12 +87,12 @@ class PlayerWordleService {
       final response = await _supabase.functions.invoke(
         'search-players',
         body: {
-          'query': query, 
+          'query': query,
           'limit': limit,
           'offset': offset,
           if (team != null) 'team': team,
           if (position != null) 'position': position,
-          'difficulty': difficulty, 
+          'difficulty': difficulty,
         },
       );
 

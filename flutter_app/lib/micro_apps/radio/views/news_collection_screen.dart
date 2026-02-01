@@ -80,8 +80,8 @@ class _NewsCollectionScreenState extends State<NewsCollectionScreen> {
           final displayedTracks = _selectedTeamName == null
               ? allTracks
               : allTracks
-                    .where((t) => t['teamName'] == _selectedTeamName)
-                    .toList();
+                  .where((t) => t['teamName'] == _selectedTeamName)
+                  .toList();
 
           return CustomScrollView(
             slivers: [
@@ -137,7 +137,6 @@ class _NewsCollectionScreenState extends State<NewsCollectionScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -264,8 +263,8 @@ class _NewsCollectionScreenState extends State<NewsCollectionScreen> {
                     final double ratio = (index % 3 == 0)
                         ? 1.0
                         : (index % 3 == 1)
-                        ? 0.75
-                        : 1.25;
+                            ? 0.75
+                            : 1.25;
                     return _buildNewsCard(context, track, controller, ratio);
                   },
                 ),

@@ -81,12 +81,12 @@ void main() {
       });
 
       test('setFavoriteTeam updates selected team', () async {
-        final team = Team(
+        const team = Team(
           id: 'KC',
           name: 'Kansas City Chiefs',
           logoUrl: 'assets/logos/teams/kc.svg',
-          primaryColor: const Color(0xFFE31837),
-          secondaryColor: const Color(0xFFFFB81C),
+          primaryColor: Color(0xFFE31837),
+          secondaryColor: Color(0xFFFFB81C),
         );
 
         await service.setFavoriteTeam(team);
@@ -99,12 +99,12 @@ void main() {
         bool notified = false;
         service.addListener(() => notified = true);
 
-        final team = Team(
+        const team = Team(
           id: 'SF',
           name: 'San Francisco 49ers',
           logoUrl: 'assets/logos/teams/sf.svg',
-          primaryColor: const Color(0xFFAA0000),
-          secondaryColor: const Color(0xFFB3995D),
+          primaryColor: Color(0xFFAA0000),
+          secondaryColor: Color(0xFFB3995D),
         );
 
         await service.setFavoriteTeam(team);
@@ -113,12 +113,12 @@ void main() {
       });
 
       test('setFavoriteTeam does not notify if same team', () async {
-        final team = Team(
+        const team = Team(
           id: 'KC',
           name: 'Kansas City Chiefs',
           logoUrl: 'assets/logos/teams/kc.svg',
-          primaryColor: const Color(0xFFE31837),
-          secondaryColor: const Color(0xFFFFB81C),
+          primaryColor: Color(0xFFE31837),
+          secondaryColor: Color(0xFFFFB81C),
         );
 
         await service.setFavoriteTeam(team);
@@ -136,7 +136,7 @@ void main() {
     group('backgroundGradient', () {
       test('returns default gradient when no team selected (light mode)', () {
         final gradient = service.backgroundGradient;
-        
+
         expect(gradient, isA<LinearGradient>());
         expect(gradient.colors.length, 2);
       });
@@ -144,42 +144,44 @@ void main() {
       test('returns dark gradient when dark mode and no team', () async {
         await service.toggleTheme();
         final gradient = service.backgroundGradient;
-        
+
         expect(gradient, isA<LinearGradient>());
         expect(service.isDarkMode, isTrue);
       });
 
-      test('returns team-colored gradient when team selected (light mode)', () async {
-        final team = Team(
+      test('returns team-colored gradient when team selected (light mode)',
+          () async {
+        const team = Team(
           id: 'KC',
           name: 'Kansas City Chiefs',
           logoUrl: 'assets/logos/teams/kc.svg',
-          primaryColor: const Color(0xFFE31837),
-          secondaryColor: const Color(0xFFFFB81C),
+          primaryColor: Color(0xFFE31837),
+          secondaryColor: Color(0xFFFFB81C),
         );
 
         await service.setFavoriteTeam(team);
         final gradient = service.backgroundGradient;
-        
+
         expect(gradient, isA<LinearGradient>());
         // In light mode with team, gradient should incorporate team color
         expect(gradient.colors.length, 2);
       });
 
-      test('returns team-colored gradient when team selected (dark mode)', () async {
-        final team = Team(
+      test('returns team-colored gradient when team selected (dark mode)',
+          () async {
+        const team = Team(
           id: 'SF',
           name: 'San Francisco 49ers',
           logoUrl: 'assets/logos/teams/sf.svg',
-          primaryColor: const Color(0xFFAA0000),
-          secondaryColor: const Color(0xFFB3995D),
+          primaryColor: Color(0xFFAA0000),
+          secondaryColor: Color(0xFFB3995D),
         );
 
         await service.setFavoriteTeam(team);
         await service.toggleTheme();
-        
+
         final gradient = service.backgroundGradient;
-        
+
         expect(gradient, isA<LinearGradient>());
         expect(service.isDarkMode, isTrue);
       });

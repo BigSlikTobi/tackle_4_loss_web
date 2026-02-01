@@ -32,7 +32,7 @@ class ReportCard extends StatelessWidget {
         children: [
           // Header with score and badge
           _buildHeader(context),
-          
+
           // Content
           Padding(
             padding: const EdgeInsets.all(16),
@@ -79,7 +79,7 @@ class ReportCard extends StatelessWidget {
 
   Widget _buildHeader(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -160,7 +160,8 @@ class ReportCard extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                color:
+                    theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(

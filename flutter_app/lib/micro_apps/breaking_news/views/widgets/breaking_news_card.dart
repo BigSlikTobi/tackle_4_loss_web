@@ -151,8 +151,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final l10n = AppLocalizations.of(context)!;
 
-    final imageUrl =
-        widget.article.imageUrl ??
+    final imageUrl = widget.article.imageUrl ??
         'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=3540&auto=format&fit=crop';
 
     return Container(
@@ -233,7 +232,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                       DateFormat(
                         'h:mm a',
                       ).format(widget.article.createdAt.toLocal()),
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -246,7 +245,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                 // Headline
                 Text(
                   widget.article.headline,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontFamily: 'RussoOne',
                     color: Colors.white,
                     fontSize: 28,
@@ -260,7 +259,7 @@ class _BreakingNewsCardState extends State<BreakingNewsCard>
                   const SizedBox(height: 12),
                   Text(
                     widget.article.subHeader!,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 16,
                       height: 1.4,

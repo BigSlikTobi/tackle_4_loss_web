@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../design_tokens.dart';
 import '../../services/team_service.dart';
 import '../../services/settings_service.dart';
 import '../../theme/t4l_theme.dart';
@@ -81,12 +80,11 @@ class TeamSelectorDialog extends StatelessWidget {
                         child: Image.asset(
                           team.logoUrl,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Icon(
-                                Icons.error_outline,
-                                color: isDark ? Colors.black26 : Colors.grey,
-                                size: 20,
-                              ),
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.error_outline,
+                            color: isDark ? Colors.black26 : Colors.grey,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),

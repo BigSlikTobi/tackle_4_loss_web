@@ -12,7 +12,7 @@ class MockPlayerWordleService extends Mock implements PlayerWordleService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  
+
   setUpAll(() {
     registerFallbackValue(Difficulty.fan);
   });
@@ -21,7 +21,7 @@ void main() {
     late PlayerWordleController controller;
     late MockPlayerWordleService mockService;
 
-    final dummyPlayer = Player(
+    const dummyPlayer = Player(
       playerId: '123',
       displayName: 'Test Player',
       team: 'ARI',
@@ -35,13 +35,13 @@ void main() {
       yearsExperience: 2,
     );
 
-    final exactNumeric = NumericComparison(
+    const exactNumeric = NumericComparison(
       match: true,
       direction: NumericDirection.exact,
       isClose: false,
     );
 
-    final correctGuessResult = GuessResult(
+    const correctGuessResult = GuessResult(
       guessedPlayer: dummyPlayer,
       conferenceMatch: MatchStatus.match,
       divisionMatch: MatchStatus.match,
@@ -56,11 +56,12 @@ void main() {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
       mockService = MockPlayerWordleService();
-      
+
       // Default mock behaviors
-      when(() => mockService.getRandomPlayerId(difficulty: any(named: 'difficulty')))
+      when(() => mockService.getRandomPlayerId(
+              difficulty: any(named: 'difficulty')))
           .thenAnswer((_) async => 'mystery_123');
-      
+
       when(() => mockService.getPlayerDetails(any()))
           .thenAnswer((_) async => dummyPlayer);
 
@@ -78,7 +79,8 @@ void main() {
     });
 
     test('startNewGame resets state and gets new mystery player', () async {
-      when(() => mockService.getRandomPlayerId(difficulty: any(named: 'difficulty')))
+      when(() => mockService.getRandomPlayerId(
+              difficulty: any(named: 'difficulty')))
           .thenAnswer((_) async => 'new_mystery_456');
 
       await controller.startNewGame();
@@ -91,14 +93,18 @@ void main() {
 
     test('setDifficulty changes difficulty and restarts game', () async {
       await controller.setDifficulty(Difficulty.pro);
-      
+
       expect(controller.selectedDifficulty, Difficulty.pro);
-      verify(() => mockService.getRandomPlayerId(difficulty: Difficulty.pro)).called(1);
+      verify(() => mockService.getRandomPlayerId(difficulty: Difficulty.pro))
+          .called(1);
     });
 
     test('searchPlayers updates searchResults', () async {
       final searchResults = [dummyPlayer];
-      when(() => mockService.searchPlayers(any(), limit: any(named: 'limit'), offset: any(named: 'offset'), difficulty: any(named: 'difficulty')))
+      when(() => mockService.searchPlayers(any(),
+              limit: any(named: 'limit'),
+              offset: any(named: 'offset'),
+              difficulty: any(named: 'difficulty')))
           .thenAnswer((_) async => searchResults);
 
       await controller.searchPlayers('Test');
@@ -109,7 +115,7 @@ void main() {
 
     test('submitGuess updates game state correctly (Correct Guess)', () async {
       await controller.startNewGame();
-      
+
       when(() => mockService.compareGuess(
             guessedPlayerId: dummyPlayer.playerId,
             mysteryPlayerId: any(named: 'mysteryPlayerId'),
@@ -124,16 +130,18 @@ void main() {
       expect(controller.mysteryPlayer, isNotNull); // Should be loaded on end
     });
 
-    test('submitGuess updates game state correctly (Incorrect Guess)', () async {
+    test('submitGuess updates game state correctly (Incorrect Guess)',
+        () async {
       await controller.startNewGame();
-      
-      final incorrectResult = GuessResult(
+
+      const incorrectResult = GuessResult(
         guessedPlayer: dummyPlayer,
         conferenceMatch: MatchStatus.miss,
         divisionMatch: MatchStatus.miss,
         teamMatch: MatchStatus.miss,
         positionMatch: MatchStatus.miss,
-        jerseyComparison: NumericComparison(match: false, direction: NumericDirection.up, isClose: false),
+        jerseyComparison: NumericComparison(
+            match: false, direction: NumericDirection.up, isClose: false),
         heightComparison: exactNumeric,
         ageComparison: exactNumeric,
         isCorrect: false,
@@ -153,13 +161,14 @@ void main() {
 
     test('Daily challenge loads correctly', () async {
       final today = DateTime.now().toIso8601String().split('T')[0];
-      
-      when(() => mockService.getDailyPlayerId(difficulty: any(named: 'difficulty')))
+
+      when(() => mockService.getDailyPlayerId(
+              difficulty: any(named: 'difficulty')))
           .thenAnswer((_) async => DailyPlayerResult(
-            playerId: 'daily_1',
-            date: today,
-            teamsInvolved: ['ARI'],
-          ));
+                playerId: 'daily_1',
+                date: today,
+                teamsInvolved: ['ARI'],
+              ));
 
       await controller.startDailyChallenge();
 
@@ -170,7 +179,7 @@ void main() {
 
     test('useHint calls service and updates state', () async {
       await controller.startNewGame();
-      
+
       // Need a player with college to use hint
       final playerWithCollege = Player(
         playerId: dummyPlayer.playerId,
@@ -185,7 +194,7 @@ void main() {
         age: dummyPlayer.age,
         yearsExperience: dummyPlayer.yearsExperience,
       );
-      
+
       when(() => mockService.getPlayerDetails(any()))
           .thenAnswer((_) async => playerWithCollege);
 
@@ -197,7 +206,7 @@ void main() {
 
     test('Statistics are persisted', () async {
       await controller.initialize();
-      
+
       // Win a game
       when(() => mockService.compareGuess(
             guessedPlayerId: any(named: 'guessedPlayerId'),
@@ -205,7 +214,7 @@ void main() {
           )).thenAnswer((_) async => correctGuessResult);
 
       await controller.submitGuess(dummyPlayer);
-      
+
       // Verify prefs updated
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getInt('player_wordle_games_won'), 1);

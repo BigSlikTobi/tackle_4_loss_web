@@ -22,7 +22,8 @@ class TeamDepthChartScreen extends StatefulWidget {
   State<TeamDepthChartScreen> createState() => _TeamDepthChartScreenState();
 }
 
-class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with SingleTickerProviderStateMixin {
+class _TeamDepthChartScreenState extends State<TeamDepthChartScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _tabs = ['OFFENSE', 'DEFENSE', 'SPECIAL'];
 
@@ -30,11 +31,11 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
-    
+
     // Load depth chart data when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.controller.loadDepthChart(widget.team.id);
-      
+
       // Preload images for all tabs after data loads
       _preloadAllImages();
     });
@@ -46,7 +47,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
     _preloadPositionGroupImages(widget.controller.specialTeamsDepthChart);
   }
 
-  void _preloadPositionGroupImages(Map<String, List<DepthChartPlayer>> positionGroups) {
+  void _preloadPositionGroupImages(
+      Map<String, List<DepthChartPlayer>> positionGroups) {
     if (!mounted) return;
     for (final players in positionGroups.values) {
       for (final player in players) {
@@ -97,7 +99,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                 ),
               ),
             ),
-            
+
             SafeArea(
               child: Column(
                 children: [
@@ -106,7 +108,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
 
                   // 2. Tabs
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
                     child: _buildSegmentedControl(colors),
                   ),
 
@@ -115,24 +118,28 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                     child: Consumer<TeamCenterController>(
                       builder: (context, controller, child) {
                         if (controller.isDepthChartLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
-                        
+
                         if (controller.depthChartError != null) {
-                           return Center(
-                             child: Text(
-                               'Failed to load depth chart',
-                                style: TextStyle(color: colors.textMuted),
-                             ),
-                           );
+                          return Center(
+                            child: Text(
+                              'Failed to load depth chart',
+                              style: TextStyle(color: colors.textMuted),
+                            ),
+                          );
                         }
 
                         return TabBarView(
                           controller: _tabController,
                           children: [
-                            _buildDepthChartList(controller.offenseDepthChart, colors),
-                            _buildDepthChartList(controller.defenseDepthChart, colors),
-                            _buildDepthChartList(controller.specialTeamsDepthChart, colors),
+                            _buildDepthChartList(
+                                controller.offenseDepthChart, colors),
+                            _buildDepthChartList(
+                                controller.defenseDepthChart, colors),
+                            _buildDepthChartList(
+                                controller.specialTeamsDepthChart, colors),
                           ],
                         );
                       },
@@ -165,13 +172,15 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: colors.surface.withValues(alpha: 0.2),
-                    border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+                    border:
+                        Border.all(color: colors.border.withValues(alpha: 0.5)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(5),
                     child: Image.asset(
                       widget.team.logoUrl,
-                      errorBuilder: (_, __, ___) => Icon(Icons.shield, color: colors.textPrimary, size: 16),
+                      errorBuilder: (_, __, ___) => Icon(Icons.shield,
+                          color: colors.textPrimary, size: 16),
                     ),
                   ),
                 ),
@@ -189,7 +198,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                 ),
               ],
             ),
-            
+
             // Close Button
             Positioned(
               right: 0,
@@ -239,7 +248,9 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
     );
   }
 
-  Widget _buildDepthChartList(Map<String, List<DepthChartPlayer>> positionGroups, T4LThemeColors colors) {
+  Widget _buildDepthChartList(
+      Map<String, List<DepthChartPlayer>> positionGroups,
+      T4LThemeColors colors) {
     if (positionGroups.isEmpty) {
       return Center(
         child: Text(
@@ -256,15 +267,16 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
         final entry = positionGroups.entries.elementAt(index);
         final groupName = entry.key;
         final players = entry.value;
-        
+
         return _buildPositionGroup(groupName, players, colors);
       },
     );
   }
 
-  Widget _buildPositionGroup(String groupName, List<DepthChartPlayer> players, T4LThemeColors colors) {
+  Widget _buildPositionGroup(
+      String groupName, List<DepthChartPlayer> players, T4LThemeColors colors) {
     final activeCount = players.length;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -292,11 +304,13 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1B4D3E).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.5)),
+                    border: Border.all(
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.5)),
                   ),
                   child: Text(
                     '$activeCount ACTIVE',
@@ -311,7 +325,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
               ],
             ),
           ),
-          
+
           // Player List
           ...players.map((player) => _buildPlayerRow(player, colors)),
         ],
@@ -321,7 +335,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
 
   Widget _buildPlayerRow(DepthChartPlayer player, T4LThemeColors colors) {
     final isStarter = player.isStarter;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -347,7 +361,9 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: isStarter ? widget.team.primaryColor : colors.border.withValues(alpha: 0.4),
+                    color: isStarter
+                        ? widget.team.primaryColor
+                        : colors.border.withValues(alpha: 0.4),
                     width: isStarter ? 2 : 1,
                   ),
                   image: DecorationImage(
@@ -362,13 +378,15 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                 decoration: BoxDecoration(
                   color: colors.surface.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: colors.border.withValues(alpha: 0.4)),
+                  border:
+                      Border.all(color: colors.border.withValues(alpha: 0.4)),
                 ),
                 child: Center(
                   child: SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: widget.team.primaryColor),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: widget.team.primaryColor),
                   ),
                 ),
               ),
@@ -378,14 +396,16 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                 decoration: BoxDecoration(
                   color: colors.surface.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: colors.border.withValues(alpha: 0.4)),
+                  border:
+                      Border.all(color: colors.border.withValues(alpha: 0.4)),
                 ),
-                child: Icon(Icons.person, color: colors.textSecondary, size: 20),
+                child:
+                    Icon(Icons.person, color: colors.textSecondary, size: 20),
               ),
             ),
-            
+
             const SizedBox(width: 12),
-            
+
             // Player Name & Number
             Expanded(
               child: Column(
@@ -407,7 +427,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                       ),
                       if (player.isHot) ...[
                         const SizedBox(width: 6),
-                        const Icon(Icons.bolt, color: Color(0xFF22C55E), size: 16),
+                        const Icon(Icons.bolt,
+                            color: Color(0xFF22C55E), size: 16),
                       ],
                     ],
                   ),
@@ -415,7 +436,9 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                   Text(
                     '#${player.number}',
                     style: TextStyle(
-                      color: isStarter ? widget.team.primaryColor : colors.textMuted,
+                      color: isStarter
+                          ? widget.team.primaryColor
+                          : colors.textMuted,
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
                       letterSpacing: 0.5,
@@ -424,7 +447,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                 ],
               ),
             ),
-            
+
             // Quest Badge (if applicable)
             if (player.hasQuest)
               Container(
@@ -433,15 +456,16 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                   color: const Color(0xFF1B4D3E).withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.workspace_premium, color: const Color(0xFF22C55E), size: 12),
-                    const SizedBox(width: 4),
+                    Icon(Icons.workspace_premium,
+                        color: Color(0xFF22C55E), size: 12),
+                    SizedBox(width: 4),
                     Text(
                       'QUEST.',
                       style: TextStyle(
-                        color: const Color(0xFF22C55E),
+                        color: Color(0xFF22C55E),
                         fontWeight: FontWeight.bold,
                         fontSize: 10,
                       ),
@@ -449,7 +473,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> with Single
                   ],
                 ),
               ),
-            
+
             // Navigation Chevron
             Icon(
               Icons.chevron_right,

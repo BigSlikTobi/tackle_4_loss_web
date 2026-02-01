@@ -5,13 +5,14 @@ import '../micro_app.dart';
 
 class InstalledAppsService with ChangeNotifier {
   // Singleton
-  static final InstalledAppsService _instance = InstalledAppsService._internal();
+  static final InstalledAppsService _instance =
+      InstalledAppsService._internal();
   factory InstalledAppsService() => _instance;
   InstalledAppsService._internal();
 
-  static const String _storageKey = 'installed_app_ids_strip_v1'; 
+  static const String _storageKey = 'installed_app_ids_strip_v1';
   static const String _manifestKey = 'home_page_manifest_hash_v1';
-  
+
   // Ordered list of installed app IDs
   final List<String> _installedItems = [];
 
@@ -21,7 +22,7 @@ class InstalledAppsService with ChangeNotifier {
     final apps = registry.apps.where((app) => app.showOnHomePage).toList();
     // Sort to ensure deterministic hash regardless of registration order
     apps.sort((a, b) => a.id.compareTo(b.id));
-    
+
     return apps.map((app) => app.id).join('|');
   }
 
@@ -56,7 +57,7 @@ class InstalledAppsService with ChangeNotifier {
     if (index < 0 || index >= _installedItems.length) return '';
     return _installedItems[index];
   }
-  
+
   /// Returns the full list of app IDs
   List<String> get rawItems => List.unmodifiable(_installedItems);
 
@@ -64,11 +65,11 @@ class InstalledAppsService with ChangeNotifier {
   List<MicroApp> get installedApps {
     final registry = AppRegistry();
     return _installedItems
-      .map((id) => registry.getApp(id))
-      .whereType<MicroApp>()
-      .toList();
+        .map((id) => registry.getApp(id))
+        .whereType<MicroApp>()
+        .toList();
   }
-  
+
   bool isInstalled(String appId) {
     return _installedItems.contains(appId);
   }
@@ -78,11 +79,13 @@ class InstalledAppsService with ChangeNotifier {
   bool isEmpty(int index) => index >= _installedItems.length;
   bool isWidget(int index) => false;
   bool isInstalledAsWidget(String appId) => false;
-  bool canPlaceWidgetAt(int index, int width, int height, {int ignoreIndex = -1, bool checkEasyPlacement = false}) => false;
+  bool canPlaceWidgetAt(int index, int width, int height,
+          {int ignoreIndex = -1, bool checkEasyPlacement = false}) =>
+      false;
 
   void install(String appId, {bool asWidget = false}) {
     if (isInstalled(appId)) return;
-    
+
     _installedItems.add(appId);
     _persist();
     notifyListeners();
@@ -90,13 +93,13 @@ class InstalledAppsService with ChangeNotifier {
 
   void uninstall(String appId) {
     if (appId == 'app_hub') return;
-    
+
     if (_installedItems.remove(appId)) {
       _persist();
       notifyListeners();
     }
   }
-  
+
   /// Reorder apps in the strip
   void moveApp(int fromIndex, int toIndex) {
     if (fromIndex < 0 || fromIndex >= _installedItems.length) return;
@@ -105,7 +108,7 @@ class InstalledAppsService with ChangeNotifier {
 
     final item = _installedItems.removeAt(fromIndex);
     _installedItems.insert(toIndex, item);
-    
+
     _persist();
     notifyListeners();
   }
@@ -113,10 +116,11 @@ class InstalledAppsService with ChangeNotifier {
   /// Resets to apps that have showOnHomePage = true
   void resetDefaults() {
     _installedItems.clear();
-    
+
     final registry = AppRegistry();
-    final homePageApps = registry.apps.where((app) => app.showOnHomePage).toList();
-    
+    final homePageApps =
+        registry.apps.where((app) => app.showOnHomePage).toList();
+
     // Default logical order
     final preferredOrder = [
       'breaking_news',

@@ -14,13 +14,13 @@ import 't4l_header.dart';
 import 'mini_player.dart';
 
 /// A standardized scaffold that provides consistent layout for all screens.
-/// 
+///
 /// Features:
 /// - Floating header with logo, title, and actions
 /// - Optional close button (integrated into header, no overlap)
 /// - Optional back button for navigation
 /// - Persistent bottom nav bar with mini player
-/// 
+///
 /// Use [T4LHeader.kHeightWithSafeArea] for consistent top padding in body content.
 class T4LScaffold extends StatelessWidget {
   final Widget body;
@@ -31,21 +31,21 @@ class T4LScaffold extends StatelessWidget {
   final String? title;
   final Widget? titleWidget;
   final List<Widget>? actions;
-  
+
   /// Whether to show a back button in the header.
   final bool showBackButton;
-  
+
   /// Callback when back button is pressed. Defaults to Navigator.pop.
   final VoidCallback? onBack;
-  
+
   /// Whether to show the T4L logo in the header.
   final bool showLogo;
 
   /// Whether the body should extend behind the header.
-  /// 
+  ///
   /// If [true], uses a [Stack] layout where the body starts at the top of the screen
   /// and the header floats above it. Use this for immersive backgrounds or sliver layouts.
-  /// 
+  ///
   /// If [false] (default), uses a [Column] layout where the header is placed above
   /// the body. This prevents overlap without manual padding.
   final bool extendBodyBehindHeader;
@@ -85,7 +85,8 @@ class T4LScaffold extends StatelessWidget {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent, // Background handled by container below
+      backgroundColor:
+          Colors.transparent, // Background handled by container below
       resizeToAvoidBottomInset: false,
       body: Container(
         decoration: BoxDecoration(
@@ -94,7 +95,7 @@ class T4LScaffold extends StatelessWidget {
         child: SafeArea(
           // Only apply safe area top padding in standard layout (Column)
           // In immersive mode, content goes behind status bar
-          top: !extendBodyBehindHeader, 
+          top: !extendBodyBehindHeader,
           bottom: false,
           child: Stack(
             children: [
@@ -120,16 +121,20 @@ class T4LScaffold extends StatelessWidget {
                       if (showNavBar && bottomNavBarOverride == null)
                         T4LFloatingNavBar(
                           homeTooltip: AppLocalizations.of(context)!.navHome,
-                          gameCenterTooltip: AppLocalizations.of(context)!.navGameCenter,
-                          historyTooltip: AppLocalizations.of(context)!.navHistory,
-                          settingsTooltip: AppLocalizations.of(context)!.navSettings,
+                          gameCenterTooltip:
+                              AppLocalizations.of(context)!.navGameCenter,
+                          historyTooltip:
+                              AppLocalizations.of(context)!.navHistory,
+                          settingsTooltip:
+                              AppLocalizations.of(context)!.navSettings,
                           favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
                           showGameCenterBadge: false,
                           onHome: () => NavigationService().goHome(context),
                           onGameCenter: () {
                             NavigationService().openGameCenter(context);
                           },
-                          onHistory: () => NavigationService().reopenLastApp(context),
+                          onHistory: () =>
+                              NavigationService().reopenLastApp(context),
                           onSettings: () {
                             NavigationService().openSettings(
                               context,
@@ -145,7 +150,8 @@ class T4LScaffold extends StatelessWidget {
                             } else {
                               NavigationService().openTeamCenter(
                                 context,
-                                () => TeamCenterOverlay.show(context, settings.selectedTeam!),
+                                () => TeamCenterOverlay.show(
+                                    context, settings.selectedTeam!),
                               );
                             }
                           },
@@ -161,7 +167,7 @@ class T4LScaffold extends StatelessWidget {
       ),
     );
   }
-  
+
   /// Builds the standard Column layout (Header + Body).
   Widget _buildStandardLayout(BuildContext context, Widget header) {
     return Column(
@@ -183,7 +189,8 @@ class T4LScaffold extends StatelessWidget {
       children: [
         // Body (Full screen)
         Positioned.fill(
-          child: _buildBodyContent(context, topPadding: 0), // Body handles its own padding in immersive
+          child: _buildBodyContent(context,
+              topPadding: 0), // Body handles its own padding in immersive
         ),
 
         // Floating Header
@@ -191,7 +198,8 @@ class T4LScaffold extends StatelessWidget {
           top: 0,
           left: 0,
           right: 0,
-          child: SafeArea( // Ensure header respects safe area in immersive mode
+          child: SafeArea(
+            // Ensure header respects safe area in immersive mode
             bottom: false,
             child: header,
           ),
@@ -207,14 +215,13 @@ class T4LScaffold extends StatelessWidget {
       builder: (context, snapshot) {
         final isPlaying = snapshot.data != null;
         final navBarHeight =
-            (showNavBar || bottomNavBarOverride != null)
-            ? 80.0
-            : 0.0;
+            (showNavBar || bottomNavBarOverride != null) ? 80.0 : 0.0;
         final playerHeight = isPlaying ? 80.0 : 0.0;
 
         return Padding(
           padding: EdgeInsets.only(
-            top: topPadding, // Should be 0 for standard (column handles it) and immersive (body handles it)
+            top:
+                topPadding, // Should be 0 for standard (column handles it) and immersive (body handles it)
             bottom: navBarHeight + playerHeight,
           ),
           child: body,
@@ -224,18 +231,19 @@ class T4LScaffold extends StatelessWidget {
   }
 
   /// Builds the combined actions list, appending close button if needed.
-  List<Widget>? _buildCombinedActions(BuildContext context, SettingsService settings) {
+  List<Widget>? _buildCombinedActions(
+      BuildContext context, SettingsService settings) {
     if (!showCloseButton && (actions == null || actions!.isEmpty)) {
       return null;
     }
-    
+
     final List<Widget> combined = [];
-    
+
     // Add user-provided actions
     if (actions != null) {
       combined.addAll(actions!);
     }
-    
+
     // Add close button at the end (integrated, no overlap)
     if (showCloseButton) {
       if (combined.isNotEmpty) {
@@ -243,10 +251,10 @@ class T4LScaffold extends StatelessWidget {
       }
       combined.add(_buildCloseButton(context, settings));
     }
-    
+
     return combined.isEmpty ? null : combined;
   }
-  
+
   Widget _buildCloseButton(BuildContext context, SettingsService settings) {
     return IconButton(
       icon: Container(
@@ -257,16 +265,12 @@ class T4LScaffold extends StatelessWidget {
               : Colors.white.withValues(alpha: 0.5),
           shape: BoxShape.circle,
           border: Border.all(
-            color: settings.isDarkMode
-                ? Colors.white10
-                : Colors.black12,
+            color: settings.isDarkMode ? Colors.white10 : Colors.black12,
           ),
         ),
         child: Icon(
           Icons.close,
-          color: settings.isDarkMode
-              ? Colors.white70
-              : AppColors.textPrimary,
+          color: settings.isDarkMode ? Colors.white70 : AppColors.textPrimary,
           size: 18,
         ),
       ),
@@ -276,4 +280,3 @@ class T4LScaffold extends StatelessWidget {
     );
   }
 }
-

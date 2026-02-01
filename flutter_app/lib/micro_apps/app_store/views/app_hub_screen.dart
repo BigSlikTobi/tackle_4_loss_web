@@ -8,7 +8,6 @@ import '../widgets/app_hub_quick_view.dart';
 import '../widgets/app_hub_category_section.dart';
 import '../../../../l10n/app_localizations.dart';
 
-
 class AppHubScreen extends StatefulWidget {
   const AppHubScreen({super.key});
 
@@ -61,8 +60,9 @@ class _AppHubScreenState extends State<AppHubScreen> {
           // 2. Category Sections
           ...categoryOrder.map((category) {
             final apps = appsByCategory[category] ?? [];
-            if (apps.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-            
+            if (apps.isEmpty)
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+
             return SliverToBoxAdapter(
               child: AppHubCategorySection(
                 category: category,

@@ -5,8 +5,8 @@ class InjuryPlayer {
   final String position;
   final String number;
   final String imageUrl;
-  final String status;        // OUT, DOUBTFUL, QUESTIONABLE
-  final String injuryType;    // Knee, Achilles, Hamstring, etc.
+  final String status; // OUT, DOUBTFUL, QUESTIONABLE
+  final String injuryType; // Knee, Achilles, Hamstring, etc.
   final String participation; // DNP (Did Not Practice), LP (Limited), FP (Full)
 
   const InjuryPlayer({

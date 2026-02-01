@@ -23,7 +23,9 @@ class RadioStation {
       title: json['title'] as String,
       description: json['description'] as String,
       imageUrl: json['imageUrl'] as String,
-      slideshowImages: (json['slideshowImages'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      slideshowImages: (json['slideshowImages'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       categoryId: json['categoryId'] as String,
       streamUrl: json['streamUrl'] as String?,
     );

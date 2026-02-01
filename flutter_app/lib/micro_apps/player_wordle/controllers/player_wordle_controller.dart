@@ -130,7 +130,8 @@ class PlayerWordleController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final playerId = await _service.getRandomPlayerId(difficulty: _selectedDifficulty);
+      final playerId =
+          await _service.getRandomPlayerId(difficulty: _selectedDifficulty);
       _gameState = GameState.newGame(
         mysteryPlayerId: playerId,
         difficulty: _selectedDifficulty,
@@ -160,18 +161,19 @@ class PlayerWordleController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await _service.getDailyPlayerId(difficulty: _selectedDifficulty);
-      
+      final result =
+          await _service.getDailyPlayerId(difficulty: _selectedDifficulty);
+
       // Check if already completed today
       final prefs = await SharedPreferences.getInstance();
       final completedDate = prefs.getString(_keyDailyCompletedDate);
-      
+
       if (completedDate == result.date) {
         _dailyChallengeCompleted = true;
         // Load result and show "Already Played" state
         final resultStatus = prefs.getString(_keyDailyResult) ?? 'lost';
         _mysteryPlayer = await _service.getPlayerDetails(result.playerId);
-        
+
         _gameState = GameState(
           mysteryPlayerId: result.playerId,
           status: resultStatus == 'won' ? GameStatus.won : GameStatus.lost,
@@ -184,7 +186,7 @@ class PlayerWordleController extends ChangeNotifier {
           difficulty: _selectedDifficulty,
         );
       }
-      
+
       _dailyChallengeDate = result.date;
       _dailyTeamsInvolved = result.teamsInvolved;
       _dailyStreak = prefs.getInt(_keyDailyStreak) ?? 0;
@@ -202,17 +204,18 @@ class PlayerWordleController extends ChangeNotifier {
   Future<void> useTeamHint() async {
     if (!_canUseTeamHint || _revealedTeamHint != null) return;
     if (_totalPoints < _teamHintCost) return;
-    
+
     try {
       // Fetch mystery player to get team
-      final player = await _service.getPlayerDetails(_gameState!.mysteryPlayerId);
+      final player =
+          await _service.getPlayerDetails(_gameState!.mysteryPlayerId);
       _revealedTeamHint = player.teamName ?? player.team;
       _totalPoints -= _teamHintCost;
-      
+
       // Save updated points
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_keyTotalPoints, _totalPoints);
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Failed to use team hint: $e');
@@ -225,14 +228,16 @@ class PlayerWordleController extends ChangeNotifier {
       _canUseTeamHint = false;
       return;
     }
-    
+
     // Check if any guess has correct team
-    final hasCorrectTeam = _gameState!.guesses.any((g) => g.teamMatch == MatchStatus.match);
+    final hasCorrectTeam =
+        _gameState!.guesses.any((g) => g.teamMatch == MatchStatus.match);
     _canUseTeamHint = !hasCorrectTeam && _revealedTeamHint == null;
   }
 
   // SharedPreferences keys for daily challenge
-  static const String _keyDailyCompletedDate = 'player_wordle_daily_completed_date';
+  static const String _keyDailyCompletedDate =
+      'player_wordle_daily_completed_date';
   static const String _keyDailyResult = 'player_wordle_daily_result';
   static const String _keyDailyStreak = 'player_wordle_daily_streak';
 
@@ -240,7 +245,8 @@ class PlayerWordleController extends ChangeNotifier {
   /// Allows browsing with filters even without text input.
   Future<void> searchPlayers(String query) async {
     // Allow search with empty query if filters are active (browse mode)
-    final hasFilters = _selectedTeamFilter != null || _selectedPositionFilter != null;
+    final hasFilters =
+        _selectedTeamFilter != null || _selectedPositionFilter != null;
     if (query.isEmpty && !hasFilters) {
       _searchResults = [];
       notifyListeners();
@@ -254,7 +260,7 @@ class PlayerWordleController extends ChangeNotifier {
     try {
       _searchOffset = 0; // Reset offset
       _hasMoreResults = true;
-      
+
       final results = await _service.searchPlayers(
         query,
         limit: _pageSize,
@@ -265,14 +271,13 @@ class PlayerWordleController extends ChangeNotifier {
       );
 
       // Filter out already guessed players
-      final guessedIds = _gameState?.guesses
-          .map((g) => g.guessedPlayer.playerId)
-          .toSet() ?? {};
-      
-      _searchResults = results
-          .where((p) => !guessedIds.contains(p.playerId))
-          .toList();
-          
+      final guessedIds =
+          _gameState?.guesses.map((g) => g.guessedPlayer.playerId).toSet() ??
+              {};
+
+      _searchResults =
+          results.where((p) => !guessedIds.contains(p.playerId)).toList();
+
       _hasMoreResults = results.length >= _pageSize;
       _isSearching = false;
       notifyListeners();
@@ -289,7 +294,7 @@ class PlayerWordleController extends ChangeNotifier {
 
     try {
       _searchOffset += _pageSize;
-      
+
       final results = await _service.searchPlayers(
         _lastSearchQuery,
         limit: _pageSize,
@@ -306,14 +311,16 @@ class PlayerWordleController extends ChangeNotifier {
       }
 
       // Filter out already guessed players (and existing results just in case)
-      final guessedIds = _gameState?.guesses
-          .map((g) => g.guessedPlayer.playerId)
-          .toSet() ?? {};
-      
+      final guessedIds =
+          _gameState?.guesses.map((g) => g.guessedPlayer.playerId).toSet() ??
+              {};
+
       final existingIds = _searchResults.map((p) => p.playerId).toSet();
-      
+
       final newResults = results
-          .where((p) => !guessedIds.contains(p.playerId) && !existingIds.contains(p.playerId))
+          .where((p) =>
+              !guessedIds.contains(p.playerId) &&
+              !existingIds.contains(p.playerId))
           .toList();
 
       _searchResults.addAll(newResults);
@@ -323,7 +330,6 @@ class PlayerWordleController extends ChangeNotifier {
       debugPrint('Failed to load more results: $e');
     }
   }
-
 
   String _getDifficultyString() {
     return switch (_gameState?.difficulty ?? Difficulty.pro) {
@@ -458,28 +464,30 @@ class PlayerWordleController extends ChangeNotifier {
       _mysteryPlayer = await _service.getPlayerDetails(
         _gameState!.mysteryPlayerId,
       );
-      
+
       final won = _gameState!.status == GameStatus.won;
       await _updateStatistics(won);
-      
+
       // Handle daily challenge completion
       if (_isDailyChallenge && _dailyChallengeDate != null) {
         final prefs = await SharedPreferences.getInstance();
         final previousDate = prefs.getString(_keyDailyCompletedDate);
-        
+
         // Mark as completed
         await prefs.setString(_keyDailyCompletedDate, _dailyChallengeDate!);
         await prefs.setString(_keyDailyResult, won ? 'won' : 'lost');
         _dailyChallengeCompleted = true;
-        
+
         // Update streak if won
         if (won) {
           // Check if this continues a streak (previous completion was yesterday)
           final today = DateTime.now();
-          final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+          final todayStr =
+              '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
           final yesterday = today.subtract(const Duration(days: 1));
-          final yesterdayStr = '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
-          
+          final yesterdayStr =
+              '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+
           if (previousDate == yesterdayStr) {
             _dailyStreak++;
           } else if (previousDate != todayStr) {
@@ -493,7 +501,7 @@ class PlayerWordleController extends ChangeNotifier {
           await prefs.setInt(_keyDailyStreak, 0);
         }
       }
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Failed to handle game end: $e');
@@ -501,14 +509,14 @@ class PlayerWordleController extends ChangeNotifier {
   }
 
   // ===== Statistics Management =====
-  
+
   static const _keyGamesPlayed = 'player_wordle_games_played';
   static const _keyGamesWon = 'player_wordle_games_won';
   static const _keyCurrentStreak = 'player_wordle_current_streak';
   static const _keyMaxStreak = 'player_wordle_max_streak';
   static const _keyTotalPoints = 'player_wordle_total_points';
   static const _keyHasSeenOnboarding = 'player_wordle_has_seen_onboarding';
-  
+
   int _totalPoints = 0;
   int get totalPoints => _totalPoints;
 
@@ -524,7 +532,7 @@ class PlayerWordleController extends ChangeNotifier {
       _maxStreak = prefs.getInt(_keyMaxStreak) ?? 0;
       _totalPoints = prefs.getInt(_keyTotalPoints) ?? 0;
       _hasSeenOnboarding = prefs.getBool(_keyHasSeenOnboarding) ?? false;
-      
+
       // Set default difficulty based on user level
       _selectedDifficulty = getHighestUnlockedDifficulty();
     } catch (e) {
@@ -556,11 +564,11 @@ class PlayerWordleController extends ChangeNotifier {
         if (_currentStreak > _maxStreak) {
           _maxStreak = _currentStreak;
         }
-        
+
         // Calculate points
         final points = _calculateScore();
         _totalPoints += points;
-        
+
         await prefs.setInt(_keyGamesWon, _gamesWon);
         await prefs.setInt(_keyCurrentStreak, _currentStreak);
         await prefs.setInt(_keyMaxStreak, _maxStreak);
@@ -577,7 +585,7 @@ class PlayerWordleController extends ChangeNotifier {
   /// Calculates score based on difficulty and remaining guesses.
   int _calculateScore() {
     if (_gameState == null) return 0;
-    
+
     final basePoints = switch (_gameState!.difficulty) {
       Difficulty.fan => 100,
       Difficulty.rookie => 250,
@@ -586,31 +594,31 @@ class PlayerWordleController extends ChangeNotifier {
     };
 
     // More remaining guesses = higher multiplier
-    // 8 guesses max. 
+    // 8 guesses max.
     // Win on 1st guess (7 remaining) -> Max points?
     // Formula: Base * (Remaining + 1) / MaxGuesses (approx)
     // Actually, simple is better. Let's do: Base + (Remaining * Bonus)
     // Plan: Score = BasePoints * (RemainingGuesses + 1) / MaxGuesses
     // Fan (100) * (7+1)/8 = 100.
     // Fan (100) * (0+1)/8 = 12.
-    
+
     // Let's ensure it's at least integer math.
     const maxGuesses = 8;
     final remaining = _gameState!.remainingGuesses;
-    // Note: remainingGuesses in GameState is decremented *before* we check win usually? 
-    // Let's check GameState logic. If we just won, the last guess was added. 
+    // Note: remainingGuesses in GameState is decremented *before* we check win usually?
+    // Let's check GameState logic. If we just won, the last guess was added.
     // remainingGuesses is calculated as max - guesses.length.
     // So if I win on 1st guess, guesses.length is 1, remaining is 7.
     // Formula: 100 * (7 + 1) / 8 = 100. Correct.
-    
+
     final baseScore = (basePoints * (remaining + 1) / maxGuesses).round();
-    
+
     // Deduct points if hint was used
     final hintPenalty = _gameState!.hintUsed ? 10 : 0;
-    
+
     return (baseScore - hintPenalty).clamp(0, baseScore);
   }
-  
+
   /// Checks if a difficulty level is unlocked.
   bool isDifficultyUnlocked(Difficulty difficulty) {
     if (difficulty == Difficulty.fan) return true;
@@ -619,7 +627,7 @@ class PlayerWordleController extends ChangeNotifier {
     if (difficulty == Difficulty.allMadden) return _totalPoints >= 5000;
     return false;
   }
-  
+
   /// Gets the highest difficulty level unlocked by the current points.
   Difficulty getHighestUnlockedDifficulty() {
     if (_totalPoints >= 5000) return Difficulty.allMadden;

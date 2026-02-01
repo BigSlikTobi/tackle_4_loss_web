@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 /// Service for calling the fuzzy_search cloud function.
 /// Used to look up players, teams, and games by name.
 class FuzzySearchService {
-  static const String _endpoint = 
+  static const String _endpoint =
       'https://fuzzy-search-hjm4dt4a5q-uc.a.run.app';
 
   /// Search for players matching a query.
@@ -69,22 +69,21 @@ class FuzzySearchService {
         'limit': limit,
         if (entityType == 'players' && filters != null)
           'player_filters': filters,
-        if (entityType == 'games' && filters != null)
-          'game_filters': filters,
+        if (entityType == 'games' && filters != null) 'game_filters': filters,
       };
 
-      final response = await http.post(
-        Uri.parse(_endpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
+      final response = await http
+          .post(
+            Uri.parse(_endpoint),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         final results = json['results'] as List? ?? [];
-        return results
-            .map((r) => FuzzySearchResult.fromJson(r))
-            .toList();
+        return results.map((r) => FuzzySearchResult.fromJson(r)).toList();
       } else {
         debugPrint('Fuzzy search error: ${response.statusCode}');
         return [];

@@ -20,29 +20,34 @@ class DeepDiveApp extends MicroApp {
 
   // showOnHomePage defaults to false (App Hub only)
 
-@override
+  @override
   bool get showOnHomePage => true;
 
   @override
   IconData get icon => Icons.article_rounded;
 
   @override
-  String get iconAssetPath => 'lib/micro_apps/deep_dive/store_assets/deep_dive_icon.png';
+  String get iconAssetPath =>
+      'lib/micro_apps/deep_dive/store_assets/deep_dive_icon.png';
 
   @override
-  String? get iconLightAssetPath => 'lib/micro_apps/deep_dive/store_assets/deep_dive_lite.svg';
+  String? get iconLightAssetPath =>
+      'lib/micro_apps/deep_dive/store_assets/deep_dive_lite.svg';
 
   @override
-  String? get iconDarkAssetPath => 'lib/micro_apps/deep_dive/store_assets/deep_dive_dark.svg';
+  String? get iconDarkAssetPath =>
+      'lib/micro_apps/deep_dive/store_assets/deep_dive_dark.svg';
 
   @override
   Color get themeColor => const Color(0xFF0f3d2e); // Brand Green
 
   @override
-  String get storeImageAsset => 'lib/micro_apps/deep_dive/store_assets/deep_dives.png';
+  String get storeImageAsset =>
+      'lib/micro_apps/deep_dive/store_assets/deep_dives.png';
 
   @override
-  String get descriptionAsset => 'lib/micro_apps/deep_dive/store_assets/description.md';
+  String get descriptionAsset =>
+      'lib/micro_apps/deep_dive/store_assets/description.md';
 
   @override
   WidgetBuilder get page => (context) => const DeepDiveListScreen();
@@ -56,4 +61,3 @@ class DeepDiveApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const DeepDiveHomeWidget();
 }
-

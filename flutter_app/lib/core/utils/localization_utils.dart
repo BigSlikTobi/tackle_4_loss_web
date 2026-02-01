@@ -6,7 +6,8 @@ class LocalizationUtils {
   /// ...
   /// _German_
   /// ...
-  static String extractLocalizedMarkdownDescription(String raw, String langCode) {
+  static String extractLocalizedMarkdownDescription(
+      String raw, String langCode) {
     // defined markers
     const String markerEn = '_English_';
     const String markerDe = '_German_';
@@ -21,7 +22,7 @@ class LocalizationUtils {
     String content = '';
 
     if (langCode == 'de' && idxDe != -1) {
-      // German requested and found. 
+      // German requested and found.
       // It assumes German is the last section or followed by another marker (not yet implemented)
       content = raw.substring(idxDe + markerDe.length).trim();
     } else if (idxEn != -1) {
@@ -33,7 +34,7 @@ class LocalizationUtils {
       // Fallback if structure is weird: return whole
       content = raw;
     }
-    
+
     return content;
   }
 }

@@ -86,7 +86,8 @@ class GuessPanel extends StatelessWidget {
             color: colors.surface.withValues(alpha: 0.9),
             border: Border(
               top: BorderSide(
-                color: (isDark ? Colors.white : colors.border).withValues(alpha: 0.2),
+                color: (isDark ? Colors.white : colors.border)
+                    .withValues(alpha: 0.2),
                 width: 1,
               ),
             ),
@@ -103,7 +104,8 @@ class GuessPanel extends StatelessWidget {
             children: [
               // Header row
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -193,12 +195,13 @@ class GuessPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppBorders.radiusFull),
-        border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+        border:
+            Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.emoji_events, size: 14, color: const Color(0xFFF59E0B)),
+          const Icon(Icons.emoji_events, size: 14, color: Color(0xFFF59E0B)),
           const SizedBox(width: 6),
           Text(
             '$totalPoints PTS',

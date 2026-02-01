@@ -13,8 +13,9 @@ class MockAudioPlayerService extends AudioPlayerService {
   MockAudioPlayerService() : super.testing();
 
   @override
-  Stream<PlaybackState> get playbackStateStream => Stream.value(PlaybackState());
-  
+  Stream<PlaybackState> get playbackStateStream =>
+      Stream.value(PlaybackState());
+
   @override
   Stream<MediaItem?> get mediaItemStream => Stream.value(null);
 }
@@ -39,7 +40,8 @@ void main() {
     );
   }
 
-  testWidgets('T4LScaffold renders content and gradient', (WidgetTester tester) async {
+  testWidgets('T4LScaffold renders content and gradient',
+      (WidgetTester tester) async {
     await tester.pumpWidget(createTestWidget(
       const T4LScaffold(
         body: Center(child: Text('Hello World')),
@@ -61,7 +63,8 @@ void main() {
     expect(find.byTooltip('Home'), findsOneWidget);
   });
 
-  testWidgets('T4LScaffold hides navbar when showNavBar is false', (WidgetTester tester) async {
+  testWidgets('T4LScaffold hides navbar when showNavBar is false',
+      (WidgetTester tester) async {
     await tester.pumpWidget(createTestWidget(
       const T4LScaffold(
         body: Center(child: Text('Empty')),

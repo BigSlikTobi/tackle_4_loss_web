@@ -31,7 +31,8 @@ class DeepDiveController extends ChangeNotifier {
     }
   }
 
-  Future<void> loadAllArticles(String languageCode, {bool forceRefresh = false}) async {
+  Future<void> loadAllArticles(String languageCode,
+      {bool forceRefresh = false}) async {
     if (_articles.isNotEmpty && !forceRefresh) return;
 
     _isLoading = true;

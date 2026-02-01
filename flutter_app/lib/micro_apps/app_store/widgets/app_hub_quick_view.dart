@@ -86,7 +86,8 @@ class _QuickViewItem extends StatelessWidget {
           children: [
             Builder(
               builder: (context) {
-                final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                final isDarkMode =
+                    Theme.of(context).brightness == Brightness.dark;
                 final backgroundColor = isDarkMode
                     ? AppColors.neutralBase
                     : AppColors.backgroundDark;
@@ -105,7 +106,11 @@ class _QuickViewItem extends StatelessWidget {
                         app.iconAssetPath,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(app.icon, color: isDarkMode ? AppColors.backgroundDark : AppColors.neutralBase, size: 20);
+                          return Icon(app.icon,
+                              color: isDarkMode
+                                  ? AppColors.backgroundDark
+                                  : AppColors.neutralBase,
+                              size: 20);
                         },
                       ),
                     ),

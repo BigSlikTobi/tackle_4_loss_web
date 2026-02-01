@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -11,7 +10,8 @@ class HowToPlayCard extends StatefulWidget {
   State<HowToPlayCard> createState() => _HowToPlayCardState();
 }
 
-class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProviderStateMixin {
+class _HowToPlayCardState extends State<HowToPlayCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final List<Animation<double>> _fadeAnimations = [];
   final List<Animation<Offset>> _slideAnimations = [];
@@ -28,7 +28,7 @@ class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProvider
     for (int i = 0; i < 3; i++) {
       final start = 0.2 + (i * 0.15);
       final end = start + 0.4;
-      
+
       _fadeAnimations.add(
         Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
@@ -47,7 +47,7 @@ class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProvider
         ),
       );
     }
-    
+
     _controller.forward();
   }
 
@@ -61,7 +61,7 @@ class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProvider
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-    
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space3),
       decoration: BoxDecoration(
@@ -82,7 +82,7 @@ class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProvider
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.space3),
-          
+
           // Step 1
           _buildAnimatedStep(
             context,
@@ -92,7 +92,7 @@ class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProvider
             text: l10n.playerWordleInstructionSecondary,
           ),
           const SizedBox(height: AppSpacing.space2),
-          
+
           // Step 2
           _buildAnimatedStep(
             context,
@@ -102,7 +102,7 @@ class _HowToPlayCardState extends State<HowToPlayCard> with SingleTickerProvider
             text: l10n.playerWordleInstructionStep2,
           ),
           const SizedBox(height: AppSpacing.space2),
-          
+
           // Step 3
           _buildAnimatedStep(
             context,

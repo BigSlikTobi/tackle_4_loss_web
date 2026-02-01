@@ -88,9 +88,8 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
       // Dark Mode (App is Dark): Widget is Light (White)
       backgroundColor = Colors.white;
       // Text is dark (Team or Black)
-      foregroundColor = selectedTeam != null
-          ? selectedTeam.primaryColor
-          : Colors.black;
+      foregroundColor =
+          selectedTeam != null ? selectedTeam.primaryColor : Colors.black;
       // Play button background: Dark (Team Color)
       iconBackgroundColor = selectedTeam != null
           ? selectedTeam.primaryColor

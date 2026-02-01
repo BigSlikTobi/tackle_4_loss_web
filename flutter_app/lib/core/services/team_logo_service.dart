@@ -39,7 +39,8 @@ class TeamLogoService {
     'min': 'guerrilla_vikings.png',
     // NFC South
     'atl': 'guerrilla_falcons.png',
-    'car': 'guerrilla_panters.png', // Note: file is named 'panters' not 'panthers'
+    'car':
+        'guerrilla_panters.png', // Note: file is named 'panters' not 'panthers'
     'no': 'guerrilla_saints.png',
     'tb': 'guerrilla_buccaneers.png',
     // NFC West
@@ -63,22 +64,22 @@ class TeamLogoService {
     }
     // Fallback or default if absolutely necessary, but avoiding old path.
     // For now, returning the NFL shield or similar could be an option,
-    // but sticking to a safe default if unknown. 
+    // but sticking to a safe default if unknown.
     // Given the task is to remove the old folder, we cannot return that.
     // Let's assume we want to return a placeholder or handle gracefully.
-    // Re-using a known logo or generic icon might be better, but let's just 
+    // Re-using a known logo or generic icon might be better, but let's just
     // return a known safe one to avoid crashing, or maybe the 'nfl' logo if it existed in creative.
     // For now, let's map unknown to NFL shield if available, or just keeping the return type string.
     // Actually, looking at the code, these are always valid team IDs from the app.
     // If an ID is missing, it's a bug.
-    
+
     // We'll return the NFL shield from creative logos if it exists, or just empty.
     // Checking file list earlier... I didn't see an NFL shield in the grep search for creative logos.
     // I will return a placeholder or just one of the logos as default to valid asset loading error
-    // but clearly indicating something is wrong. 
-    // Actually, let's just log and return the first one or similar. 
+    // but clearly indicating something is wrong.
+    // Actually, let's just log and return the first one or similar.
     // Or better, let's return a const string that points to a generic.
-    
+
     // Let's stick effectively to not falling back to the deleted folder.
     return 'assets/creative_logos/guerrilla_nfl.png'; // Assuming a generic one exists or will fail gracefully
   }

@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
-import '../../../../design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../models/guess_result.dart';
@@ -49,13 +48,13 @@ class _GuessCardState extends State<GuessCard> {
   Future<void> _animateReveal() async {
     // Initial delay before starting
     await Future.delayed(const Duration(milliseconds: 150));
-    
+
     for (int i = 1; i <= _totalAttributes; i++) {
       if (!mounted) return;
-      
+
       // Delay between reveals (250ms for snappy but readable pace)
       await Future.delayed(const Duration(milliseconds: 250));
-      
+
       if (mounted) {
         setState(() {
           _revealedCount = i;
@@ -69,7 +68,7 @@ class _GuessCardState extends State<GuessCard> {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final player = widget.guess.guessedPlayer;
     final isCorrect = widget.guess.isCorrect;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _isExpanded = !_isExpanded),
       child: AnimatedContainer(
@@ -84,8 +83,8 @@ class _GuessCardState extends State<GuessCard> {
               : colors.surface,
           borderRadius: BorderRadius.circular(AppBorders.radiusXl),
           border: Border.all(
-            color: isCorrect 
-                ? FeedbackColors.match 
+            color: isCorrect
+                ? FeedbackColors.match
                 : (widget.isLatest ? colors.brand : colors.border),
             width: isCorrect || widget.isLatest ? 2 : 1,
           ),
@@ -96,14 +95,14 @@ class _GuessCardState extends State<GuessCard> {
           children: [
             // Player header
             _buildPlayerHeader(player, colors),
-            
+
             AnimatedCrossFade(
               firstChild: Padding(
                 padding: const EdgeInsets.only(
                   left: 40, // Align with text (Badge 24 + Gap 8 + Padding 8)
                   right: AppSpacing.space2,
                   bottom: AppSpacing.space2,
-                ), 
+                ),
                 child: _buildCompactDots(),
               ),
               secondChild: Column(
@@ -116,7 +115,9 @@ class _GuessCardState extends State<GuessCard> {
                   ),
                 ],
               ),
-              crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              crossFadeState: _isExpanded
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
               duration: AppAnimation.durationNormal,
             ),
           ],
@@ -128,7 +129,9 @@ class _GuessCardState extends State<GuessCard> {
   Widget _buildCompactDots() {
     return Row(
       children: [
-        _buildDot(widget.guess.conferenceMatch == MatchStatus.match ? FeedbackColors.match : FeedbackColors.miss),
+        _buildDot(widget.guess.conferenceMatch == MatchStatus.match
+            ? FeedbackColors.match
+            : FeedbackColors.miss),
         const SizedBox(width: 8),
         _buildDot(switch (widget.guess.divisionMatch) {
           MatchStatus.match => FeedbackColors.match,
@@ -142,7 +145,9 @@ class _GuessCardState extends State<GuessCard> {
           MatchStatus.miss => FeedbackColors.miss,
         }),
         const SizedBox(width: 8),
-        _buildDot(widget.guess.positionMatch == MatchStatus.match ? FeedbackColors.match : FeedbackColors.miss),
+        _buildDot(widget.guess.positionMatch == MatchStatus.match
+            ? FeedbackColors.match
+            : FeedbackColors.miss),
         const SizedBox(width: 8),
         _buildDot(_getNumericColor(widget.guess.jerseyComparison)),
         const SizedBox(width: 8),
@@ -196,7 +201,7 @@ class _GuessCardState extends State<GuessCard> {
             ),
           ),
           const SizedBox(width: AppSpacing.space2),
-          
+
           // Player name and team (Left aligned)
           Expanded(
             child: Column(
@@ -224,9 +229,9 @@ class _GuessCardState extends State<GuessCard> {
               ],
             ),
           ),
-          
+
           const SizedBox(width: AppSpacing.space2),
-          
+
           // Player photo (Right aligned, larger)
           Hero(
             tag: 'player_headshot_${player.playerId}_${widget.guessNumber}',
@@ -244,7 +249,8 @@ class _GuessCardState extends State<GuessCard> {
                     ? Image.network(
                         player.headshot!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(Icons.person, size: 32, color: colors.textSecondary),
+                        errorBuilder: (_, __, ___) => Icon(Icons.person,
+                            size: 32, color: colors.textSecondary),
                       )
                     : Icon(Icons.person, size: 32, color: colors.textSecondary),
               ),
@@ -261,58 +267,68 @@ class _GuessCardState extends State<GuessCard> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _buildVerticalAttribute(
-          0, 'CONF', widget.guess.guessedPlayer.conference ?? '?', 
-          widget.guess.conferenceMatch == MatchStatus.match,
-          widget.guess.conferenceMatch == MatchStatus.miss,
-          widget.guess.conferenceMatch == MatchStatus.match ? FeedbackColors.match : FeedbackColors.miss
-        ),
+            0,
+            'CONF',
+            widget.guess.guessedPlayer.conference ?? '?',
+            widget.guess.conferenceMatch == MatchStatus.match,
+            widget.guess.conferenceMatch == MatchStatus.miss,
+            widget.guess.conferenceMatch == MatchStatus.match
+                ? FeedbackColors.match
+                : FeedbackColors.miss),
         _buildVerticalAttribute(
-          1, 'DIV', _shortDivision(widget.guess.guessedPlayer.division),
-          widget.guess.divisionMatch == MatchStatus.match,
-          widget.guess.divisionMatch == MatchStatus.miss,
-          switch (widget.guess.divisionMatch) {
-            MatchStatus.match => FeedbackColors.match,
-            MatchStatus.partial => FeedbackColors.partial,
-            MatchStatus.miss => FeedbackColors.miss,
-          }
-        ),
+            1,
+            'DIV',
+            _shortDivision(widget.guess.guessedPlayer.division),
+            widget.guess.divisionMatch == MatchStatus.match,
+            widget.guess.divisionMatch == MatchStatus.miss,
+            switch (widget.guess.divisionMatch) {
+              MatchStatus.match => FeedbackColors.match,
+              MatchStatus.partial => FeedbackColors.partial,
+              MatchStatus.miss => FeedbackColors.miss,
+            }),
         _buildVerticalAttribute(
-          2, 'TEAM', widget.guess.guessedPlayer.team ?? '?',
-          widget.guess.teamMatch == MatchStatus.match,
-          widget.guess.teamMatch == MatchStatus.miss,
-          switch (widget.guess.teamMatch) {
-            MatchStatus.match => FeedbackColors.match,
-            MatchStatus.partial => FeedbackColors.partial,
-            MatchStatus.miss => FeedbackColors.miss,
-          }
-        ),
+            2,
+            'TEAM',
+            widget.guess.guessedPlayer.team ?? '?',
+            widget.guess.teamMatch == MatchStatus.match,
+            widget.guess.teamMatch == MatchStatus.miss,
+            switch (widget.guess.teamMatch) {
+              MatchStatus.match => FeedbackColors.match,
+              MatchStatus.partial => FeedbackColors.partial,
+              MatchStatus.miss => FeedbackColors.miss,
+            }),
         _buildVerticalAttribute(
-          3, 'POS', widget.guess.guessedPlayer.position ?? '?',
-          widget.guess.positionMatch == MatchStatus.match,
-          widget.guess.positionMatch == MatchStatus.miss,
-          switch (widget.guess.positionMatch) {
-            MatchStatus.match => FeedbackColors.match,
-            MatchStatus.partial => FeedbackColors.partial,
-            MatchStatus.miss => FeedbackColors.miss,
-          }
-        ),
+            3,
+            'POS',
+            widget.guess.guessedPlayer.position ?? '?',
+            widget.guess.positionMatch == MatchStatus.match,
+            widget.guess.positionMatch == MatchStatus.miss,
+            switch (widget.guess.positionMatch) {
+              MatchStatus.match => FeedbackColors.match,
+              MatchStatus.partial => FeedbackColors.partial,
+              MatchStatus.miss => FeedbackColors.miss,
+            }),
         _buildVerticalNumericAttribute(
-          4, '#', widget.guess.guessedPlayer.jerseyNumber?.toString() ?? '?',
-          widget.guess.jerseyComparison
-        ),
+            4,
+            '#',
+            widget.guess.guessedPlayer.jerseyNumber?.toString() ?? '?',
+            widget.guess.jerseyComparison),
         _buildVerticalNumericAttribute(
-          5, 'AGE', widget.guess.guessedPlayer.age?.toString() ?? '?',
-          widget.guess.ageComparison
-        ),
+            5,
+            'AGE',
+            widget.guess.guessedPlayer.age?.toString() ?? '?',
+            widget.guess.ageComparison),
         _buildVerticalNumericAttribute(
-          6, 'HT', widget.guess.guessedPlayer.displayHeight,
-          widget.guess.heightComparison
-        ),
+            6,
+            'HT',
+            widget.guess.guessedPlayer.displayHeight,
+            widget.guess.heightComparison),
       ],
     );
   }
 
-  Widget _buildVerticalAttribute(int index, String label, String value, bool isMatch, bool isMiss, Color color) {
+  Widget _buildVerticalAttribute(int index, String label, String value,
+      bool isMatch, bool isMiss, Color color) {
     return Expanded(
       child: _RevealingChip(
         isRevealed: index < _revealedCount,
@@ -324,14 +340,16 @@ class _GuessCardState extends State<GuessCard> {
     );
   }
 
-  Widget _buildVerticalNumericAttribute(int index, String label, String value, NumericComparison comparison) {
-    final color = comparison.match 
-        ? FeedbackColors.match 
+  Widget _buildVerticalNumericAttribute(
+      int index, String label, String value, NumericComparison comparison) {
+    final color = comparison.match
+        ? FeedbackColors.match
         : (comparison.isClose ? FeedbackColors.partial : FeedbackColors.miss);
 
     String displayValue = value;
     if (!comparison.match && comparison.direction != NumericDirection.exact) {
-      displayValue = '$value${comparison.direction == NumericDirection.up ? "↑" : "↓"}';
+      displayValue =
+          '$value${comparison.direction == NumericDirection.up ? "↑" : "↓"}';
     }
 
     return Expanded(
@@ -367,7 +385,8 @@ class _GuessCardState extends State<GuessCard> {
           height: 32, // Fixed height for uniformity
           width: double.infinity,
           alignment: Alignment.center,
-          margin: const EdgeInsets.symmetric(horizontal: 2), // Spacing between boxes
+          margin: const EdgeInsets.symmetric(
+              horizontal: 2), // Spacing between boxes
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(AppBorders.radiusMd),
@@ -415,7 +434,8 @@ class _RevealingChip extends StatefulWidget {
   State<_RevealingChip> createState() => _RevealingChipState();
 }
 
-class _RevealingChipState extends State<_RevealingChip> with SingleTickerProviderStateMixin {
+class _RevealingChipState extends State<_RevealingChip>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _shakeAnimation;
   late Animation<double> _pulseAnimation;

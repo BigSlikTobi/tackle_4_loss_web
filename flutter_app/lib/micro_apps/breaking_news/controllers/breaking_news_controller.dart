@@ -7,7 +7,7 @@ class BreakingNewsController extends ChangeNotifier {
   final BreakingNewsService _newsService;
 
   BreakingNewsController({BreakingNewsService? service})
-    : _newsService = service ?? BreakingNewsService();
+      : _newsService = service ?? BreakingNewsService();
   final List<BreakingNewsArticle> _articles = []; // The Filtered Queue
   final List<BreakingNewsArticle> _allAvailableArticles =
       []; // Source for the queue (minus saved/refused/read)
@@ -45,13 +45,13 @@ class BreakingNewsController extends ChangeNotifier {
         for (var team in article.teams!) {
           // Changed to use Strong types
           final teamId = team.teamId;
-          // Note: team.teamId is the ID, not necessarily the name. 
+          // Note: team.teamId is the ID, not necessarily the name.
           // However, previous code seemingly expected 'team_name' key.
           // Based on usage in UI (logos/teams/$teamId.png), teamId seems to be the abbr/id.
           // If the previous code relied on 'team_name' for display name, but now we only have teamId,
           // we might need to rely on teamId as the key.
           // Assuming teamId is sufficient for filtering.
-          
+
           if (teamId.isNotEmpty) {
             final logo = team.logoUrl ?? '';
             teams[teamId] = logo;
@@ -159,7 +159,7 @@ class BreakingNewsController extends ChangeNotifier {
     final index = _articles.indexWhere((a) => a.id == id);
     if (index != -1) {
       targetArticle = _articles.removeAt(index);
-    } 
+    }
     // 2. Check all available (but filtered out?)
     else {
       final availIndex = _allAvailableArticles.indexWhere((a) => a.id == id);
@@ -172,9 +172,11 @@ class BreakingNewsController extends ChangeNotifier {
     if (targetArticle == null) {
       if (_removeFromList(_savedArticles, id, out: (a) => targetArticle = a)) {
         // found in saved
-      } else if (_removeFromList(_refusedArticles, id, out: (a) => targetArticle = a)) {
+      } else if (_removeFromList(_refusedArticles, id,
+          out: (a) => targetArticle = a)) {
         // found in refused
-      } else if (_removeFromList(_readHistoryArticles, id, out: (a) => targetArticle = a)) {
+      } else if (_removeFromList(_readHistoryArticles, id,
+          out: (a) => targetArticle = a)) {
         // found in history
       }
     }
@@ -186,7 +188,8 @@ class BreakingNewsController extends ChangeNotifier {
     }
   }
 
-  bool _removeFromList(List<BreakingNewsArticle> list, String id, {required Function(BreakingNewsArticle) out}) {
+  bool _removeFromList(List<BreakingNewsArticle> list, String id,
+      {required Function(BreakingNewsArticle) out}) {
     final index = list.indexWhere((a) => a.id == id);
     if (index != -1) {
       out(list.removeAt(index));

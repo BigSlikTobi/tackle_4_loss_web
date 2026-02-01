@@ -13,13 +13,13 @@ import '../../services/share_result_service.dart';
 class PlayerRevealCard extends StatelessWidget {
   /// The revealed mystery player
   final Player player;
-  
+
   /// Game status (won or lost)
   final GameStatus gameStatus;
-  
+
   /// Number of guesses it took to win (if won)
   final int? guessCount;
-  
+
   /// Callback to start a new game
   final VoidCallback onPlayAgain;
 
@@ -38,7 +38,7 @@ class PlayerRevealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isWin = gameStatus == GameStatus.won;
-    
+
     return Container(
       margin: const EdgeInsets.all(AppSpacing.space2),
       decoration: BoxDecoration(
@@ -71,7 +71,7 @@ class PlayerRevealCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space2),
       decoration: BoxDecoration(
-        color: isWin 
+        color: isWin
             ? const Color(0xFF22C55E).withValues(alpha: 0.1)
             : const Color(0xFFEF4444).withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
@@ -89,7 +89,7 @@ class PlayerRevealCard extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.space1),
           Text(
-            isWin 
+            isWin
                 ? '${l10n.playerWordleYouGotIt}${guessCount != null ? " (${l10n.playerWordleGuessesFormat(guessCount!)})" : ""}'
                 : l10n.playerWordleGameOver,
             style: AppTextStyles.h2.copyWith(
@@ -122,7 +122,8 @@ class PlayerRevealCard extends StatelessWidget {
               onForegroundImageError: (_, __) {},
               backgroundColor: AppColors.neutralBorder,
               child: player.headshot == null
-                  ? const Icon(Icons.person, size: 60, color: AppColors.textSecondary)
+                  ? const Icon(Icons.person,
+                      size: 60, color: AppColors.textSecondary)
                   : null,
             ),
           ),
@@ -172,14 +173,26 @@ class PlayerRevealCard extends StatelessWidget {
   Widget _buildStatsGrid(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final stats = <MapEntry<String, String>>[
-      if (player.age != null) MapEntry(l10n.playerWordleStatAge, '${player.age} ${l10n.playerWordleStatYearsUnit}'),
-      if (player.height != null) MapEntry(l10n.playerWordleStatHeight, player.displayHeight),
-      if (player.weight != null) MapEntry(l10n.playerWordleStatWeight, '${player.weight} ${l10n.playerWordleStatLbsUnit}'),
-      if (player.college != null) MapEntry(l10n.playerWordleStatCollege, player.college!),
-      if (player.yearsExperience != null) 
-        MapEntry(l10n.playerWordleStatExperience, '${player.yearsExperience} ${l10n.playerWordleStatYearsUnit}'),
-      if (player.draftYear != null && player.draftRound != null && player.draftPick != null)
-        MapEntry(l10n.playerWordleStatDraft, l10n.playerWordleStatDraftFormat(player.draftYear!, player.draftRound!, player.draftPick!)),
+      if (player.age != null)
+        MapEntry(l10n.playerWordleStatAge,
+            '${player.age} ${l10n.playerWordleStatYearsUnit}'),
+      if (player.height != null)
+        MapEntry(l10n.playerWordleStatHeight, player.displayHeight),
+      if (player.weight != null)
+        MapEntry(l10n.playerWordleStatWeight,
+            '${player.weight} ${l10n.playerWordleStatLbsUnit}'),
+      if (player.college != null)
+        MapEntry(l10n.playerWordleStatCollege, player.college!),
+      if (player.yearsExperience != null)
+        MapEntry(l10n.playerWordleStatExperience,
+            '${player.yearsExperience} ${l10n.playerWordleStatYearsUnit}'),
+      if (player.draftYear != null &&
+          player.draftRound != null &&
+          player.draftPick != null)
+        MapEntry(
+            l10n.playerWordleStatDraft,
+            l10n.playerWordleStatDraftFormat(
+                player.draftYear!, player.draftRound!, player.draftPick!)),
     ];
 
     if (stats.isEmpty) return const SizedBox();
@@ -190,7 +203,8 @@ class PlayerRevealCard extends StatelessWidget {
         spacing: AppSpacing.space2,
         runSpacing: AppSpacing.space1,
         alignment: WrapAlignment.center,
-        children: stats.map((stat) => _buildStatChip(stat.key, stat.value)).toList(),
+        children:
+            stats.map((stat) => _buildStatChip(stat.key, stat.value)).toList(),
       ),
     );
   }
@@ -210,7 +224,7 @@ class PlayerRevealCard extends StatelessWidget {
         children: [
           Text(
             '$label: ',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: AppTypography.fontSizeSm,
               color: AppColors.textSecondary,
             ),
@@ -247,7 +261,8 @@ class PlayerRevealCard extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.brandBase,
                   side: const BorderSide(color: AppColors.brandBase),
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.space2),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: AppSpacing.space2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppBorders.radiusXl),
                   ),
@@ -262,14 +277,15 @@ class PlayerRevealCard extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandBase,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.space2),
+                padding:
+                    const EdgeInsets.symmetric(vertical: AppSpacing.space2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppBorders.radiusXl),
                 ),
               ),
               child: Text(
                 l10n.playerWordlePlayAgain,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: AppTypography.fontSizeMd,
                   fontWeight: AppTypography.fontWeightBold,
                 ),

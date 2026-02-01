@@ -26,16 +26,19 @@ class StandingsApp extends MicroApp {
   IconData get icon => Icons.sports_football_rounded;
 
   @override
-  String get iconAssetPath => 'lib/micro_apps/standings/store_assets/standings_icon.png';
+  String get iconAssetPath =>
+      'lib/micro_apps/standings/store_assets/standings_icon.png';
 
   @override
   Color get themeColor => const Color(0xFF1E88E5); // Blue
 
   @override
-  String get storeImageAsset => 'lib/micro_apps/standings/store_assets/standings_store.png';
+  String get storeImageAsset =>
+      'lib/micro_apps/standings/store_assets/standings_store.png';
 
   @override
-  String get descriptionAsset => 'lib/micro_apps/standings/store_assets/description.md';
+  String get descriptionAsset =>
+      'lib/micro_apps/standings/store_assets/description.md';
 
   @override
   WidgetBuilder get page => (context) => const StandingsScreen();
@@ -49,4 +52,3 @@ class StandingsApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const StandingsWidget();
 }
-

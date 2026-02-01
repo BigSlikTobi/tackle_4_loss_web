@@ -89,8 +89,7 @@ class VideoFeedItemCard extends StatelessWidget {
 
           // Subtle Separator
           Divider(
-            color:
-                t4lColors?.border.withValues(alpha: 0.15) ??
+            color: t4lColors?.border.withValues(alpha: 0.15) ??
                 Colors.white.withValues(alpha: 0.1),
             thickness: 1,
             height: 32,

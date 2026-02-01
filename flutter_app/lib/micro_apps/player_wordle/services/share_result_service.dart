@@ -8,8 +8,10 @@ import '../models/guess_result.dart';
 class ShareResultService {
   /// Emoji for exact match
   static const String _matchEmoji = '🟩';
+
   /// Emoji for partial match
   static const String _partialEmoji = '🟨';
+
   /// Emoji for miss
   static const String _missEmoji = '⬜';
 
@@ -18,11 +20,11 @@ class ShareResultService {
   /// Attributes: Conference, Division, Team, Position, Jersey, Age, Height
   static String generateEmojiGrid(GameState gameState) {
     final buffer = StringBuffer();
-    
+
     for (final guess in gameState.guesses) {
       buffer.writeln(_guessToEmojiRow(guess));
     }
-    
+
     return buffer.toString().trim();
   }
 
@@ -68,10 +70,10 @@ class ShareResultService {
     final guessCount = gameState.guesses.length;
     final maxGuesses = gameState.maxGuesses;
     final won = gameState.status == GameStatus.won;
-    
+
     final result = won ? '$guessCount/$maxGuesses' : 'X/$maxGuesses';
     final difficultyName = _getDifficultyName(gameState.difficulty);
-    
+
     final buffer = StringBuffer();
     buffer.writeln('Guess the Player 🏈 $result');
     buffer.writeln('Difficulty: $difficultyName');
@@ -82,7 +84,7 @@ class ShareResultService {
     buffer.writeln(generateEmojiGrid(gameState));
     buffer.writeln();
     buffer.writeln('Play at: tackle4loss.com');
-    
+
     return buffer.toString();
   }
 
@@ -101,7 +103,8 @@ class ShareResultService {
   }
 
   /// Share the game result using native share sheet.
-  static Future<void> shareResult(GameState gameState, {String? playerName}) async {
+  static Future<void> shareResult(GameState gameState,
+      {String? playerName}) async {
     final text = generateShareText(gameState, playerName: playerName);
     await Share.share(text, subject: 'Guess the Player Result');
   }

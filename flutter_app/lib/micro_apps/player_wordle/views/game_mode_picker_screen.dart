@@ -22,7 +22,7 @@ class GameModePickerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-    
+
     return T4LScaffold(
       title: 'Guess the Player',
       body: SafeArea(
@@ -41,9 +41,9 @@ class GameModePickerScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: AppSpacing.space6),
-              
+
               // Game Modes Row
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,14 +71,14 @@ class GameModePickerScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: AppSpacing.space6),
-              
+
               // How to Play explanation
               const HowToPlayCard(),
-              
+
               const SizedBox(height: AppSpacing.space4),
-              
+
               // Your Stats Preview
               _StatsPreview(colors: colors),
             ],
@@ -201,7 +201,8 @@ class _StatsPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space4, vertical: AppSpacing.space3),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.space4, vertical: AppSpacing.space3),
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(AppBorders.radiusXl),

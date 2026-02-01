@@ -9,13 +9,13 @@ import '../../../../core/theme/t4l_theme.dart';
 class DailyChallengeCard extends StatelessWidget {
   /// Whether the daily challenge has been completed today
   final bool isCompleted;
-  
+
   /// Current daily streak
   final int streak;
-  
+
   /// Callback when user taps to start daily challenge
   final VoidCallback? onStart;
-  
+
   /// Teams involved in today's challenge (for preview)
   final List<String> teamsInvolved;
 
@@ -30,12 +30,15 @@ class DailyChallengeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-    
+
     // Use app brand colors instead of hardcoded purple
     final gradientColors = isCompleted
-        ? [const Color(0xFF22C55E), const Color(0xFF16A34A)] // Green for completed
+        ? [
+            const Color(0xFF22C55E),
+            const Color(0xFF16A34A)
+          ] // Green for completed
         : [colors.brand, colors.brand.withValues(alpha: 0.8)]; // Brand color
-    
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.space3),
       decoration: BoxDecoration(
@@ -70,7 +73,8 @@ class DailyChallengeCard extends StatelessWidget {
               const Spacer(),
               if (streak > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: colors.contrastText.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppBorders.radiusFull),
@@ -93,9 +97,9 @@ class DailyChallengeCard extends StatelessWidget {
                 ),
             ],
           ),
-          
+
           const SizedBox(height: AppSpacing.space2),
-          
+
           // Description
           Text(
             isCompleted
@@ -106,9 +110,9 @@ class DailyChallengeCard extends StatelessWidget {
               fontSize: 12,
             ),
           ),
-          
+
           const SizedBox(height: AppSpacing.space3),
-          
+
           // Action Button
           if (!isCompleted)
             SizedBox(
@@ -118,7 +122,8 @@ class DailyChallengeCard extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: colors.contrastText,
                   foregroundColor: colors.brand,
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.space2),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: AppSpacing.space2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppBorders.radiusMd),
                   ),
@@ -150,4 +155,3 @@ class DailyChallengeCard extends StatelessWidget {
     );
   }
 }
-

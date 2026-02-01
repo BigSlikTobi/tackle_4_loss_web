@@ -11,22 +11,22 @@ import '../../models/player_model.dart';
 class PlayerSearchBar extends StatefulWidget {
   /// Search results to display
   final List<Player> searchResults;
-  
+
   /// Whether search is in progress
   final bool isSearching;
-  
+
   /// Whether form submission is in progress
   final bool isSubmitting;
-  
+
   /// Whether the game is still active
   final bool enabled;
-  
+
   /// Callback when search text changes
   final ValueChanged<String> onSearchChanged;
-  
+
   /// Callback when a player is selected
   final ValueChanged<Player> onPlayerSelected;
-  
+
   /// Callback to clear search
   final VoidCallback onClear;
 
@@ -79,7 +79,8 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       widget.onLoadMore?.call();
     }
   }
@@ -96,12 +97,12 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
 
   void _onFocusChange() {
     if (!mounted) return;
-    // Optional: You might want to hide it if focus is lost? 
+    // Optional: You might want to hide it if focus is lost?
     // But for the "Browse" requirement, keeping it open is better until explicit clear.
-    // However, if we click away to something else? 
+    // However, if we click away to something else?
     // Let's stick to: If results exist, show them.
     setState(() {
-       _showDropdown = widget.searchResults.isNotEmpty;
+      _showDropdown = widget.searchResults.isNotEmpty;
     });
   }
 
@@ -124,7 +125,7 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
   Widget build(BuildContext context) {
     // Theme extraction
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -146,7 +147,8 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
       child: TextField(
         controller: _controller,
         focusNode: _focusNode,
-        enableInteractiveSelection: false, // Prevent gesture crash on long press
+        enableInteractiveSelection:
+            false, // Prevent gesture crash on long press
         enabled: widget.enabled && !widget.isSubmitting,
         onChanged: _onTextChanged,
         textInputAction: TextInputAction.search,
@@ -155,8 +157,8 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
           color: colors.textPrimary,
         ),
         decoration: InputDecoration(
-          hintText: widget.enabled 
-              ? l10n.playerWordleSearchHint 
+          hintText: widget.enabled
+              ? l10n.playerWordleSearchHint
               : l10n.playerWordleGameOverSearchHint,
           hintStyle: TextStyle(
             color: colors.textSecondary,
@@ -226,8 +228,8 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
                 padding: EdgeInsets.all(16.0),
                 child: Center(
                   child: SizedBox(
-                    width: 24, 
-                    height: 24, 
+                    width: 24,
+                    height: 24,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 ),
@@ -249,9 +251,8 @@ class _PlayerSearchBarState extends State<PlayerSearchBar> {
       ),
       leading: CircleAvatar(
         radius: 20,
-        foregroundImage: player.headshot != null
-            ? NetworkImage(player.headshot!)
-            : null,
+        foregroundImage:
+            player.headshot != null ? NetworkImage(player.headshot!) : null,
         onForegroundImageError: (_, __) {}, // Silently handle network errors
         backgroundColor: colors.border,
         child: Icon(Icons.person, color: colors.textSecondary),

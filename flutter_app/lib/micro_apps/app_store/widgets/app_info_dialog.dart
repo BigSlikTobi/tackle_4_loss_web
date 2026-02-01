@@ -35,27 +35,33 @@ class AppInfoDialog extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: FutureBuilder<String>(
-                future: app.descriptionAsset.isEmpty 
-                  ? Future.value("No description available.")
-                  : rootBundle.loadString(app.descriptionAsset).catchError((_) => "Failed to load description."),
+                future: app.descriptionAsset.isEmpty
+                    ? Future.value("No description available.")
+                    : rootBundle
+                        .loadString(app.descriptionAsset)
+                        .catchError((_) => "Failed to load description."),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  
+
                   // Localization Logic (Delegated to Utility)
                   final rawContent = snapshot.data ?? 'No description.';
                   final locale = Localizations.localeOf(context).languageCode;
-                  final localizedContent = LocalizationUtils.extractLocalizedMarkdownDescription(rawContent, locale);
+                  final localizedContent =
+                      LocalizationUtils.extractLocalizedMarkdownDescription(
+                          rawContent, locale);
 
                   return Markdown(
                     data: localizedContent,
                     styleSheet: MarkdownStyleSheet(
-                      p: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                      p: AppTextStyles.body
+                          .copyWith(color: AppColors.textSecondary),
                       h1: AppTextStyles.h1,
                       h2: AppTextStyles.h2,
                       h3: AppTextStyles.h3,
-                      strong: AppTextStyles.body.copyWith(fontWeight: FontWeight.bold),
+                      strong: AppTextStyles.body
+                          .copyWith(fontWeight: FontWeight.bold),
                     ),
                   );
                 },

@@ -48,8 +48,8 @@ class _ShimmerBoxState extends State<ShimmerBox>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = widget.baseColor ??
-        (isDark ? Colors.grey[800]! : Colors.grey[300]!);
+    final baseColor =
+        widget.baseColor ?? (isDark ? Colors.grey[800]! : Colors.grey[300]!);
     final highlightColor = widget.highlightColor ??
         (isDark ? Colors.grey[700]! : Colors.grey[100]!);
 
@@ -133,16 +133,16 @@ class NewsFeedItemSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header row with accent bar
-          Row(
+          const Row(
             children: [
               ShimmerBox(width: 3, height: 40, borderRadius: 2),
-              const SizedBox(width: 10),
+              SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ShimmerText(width: 120),
-                    const SizedBox(height: 6),
+                    SizedBox(height: 6),
                     ShimmerText(width: 80, height: 10),
                   ],
                 ),
@@ -150,39 +150,39 @@ class NewsFeedItemSkeleton extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          
+
           // Team logos row
-          Row(
+          const Row(
             children: [
               ShimmerCircle(size: 28),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               ShimmerCircle(size: 28),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               ShimmerCircle(size: 32),
-              const SizedBox(width: 6),
+              SizedBox(width: 6),
               ShimmerCircle(size: 32),
             ],
           ),
           const SizedBox(height: 14),
-          
+
           // Image placeholder
-          ShimmerBox(
+          const ShimmerBox(
             width: double.infinity,
             height: 200,
             borderRadius: 12,
           ),
           const SizedBox(height: 14),
-          
+
           // Body text lines
           const ShimmerText(width: double.infinity),
           const SizedBox(height: 8),
           ShimmerText(width: MediaQuery.of(context).size.width * 0.7),
           const SizedBox(height: 8),
           ShimmerText(width: MediaQuery.of(context).size.width * 0.5),
-          
+
           const SizedBox(height: 24),
           // Separator
-          ShimmerBox(width: double.infinity, height: 1, borderRadius: 0),
+          const ShimmerBox(width: double.infinity, height: 1, borderRadius: 0),
         ],
       ),
     );
@@ -199,7 +199,7 @@ class OSShellSkeleton extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 80),
-          
+
           // App grid skeleton (3 rows x 4 cols)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -214,37 +214,37 @@ class OSShellSkeleton extends StatelessWidget {
               ),
               itemCount: 8,
               itemBuilder: (context, index) {
-                return Column(
+                return const Column(
                   children: [
                     Expanded(
                       child: ShimmerBox(borderRadius: 16),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     ShimmerText(width: 50, height: 10),
                   ],
                 );
               },
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Feed header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [
                 Expanded(child: ShimmerBox(height: 2, borderRadius: 1)),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 ShimmerText(width: 60),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(child: ShimmerBox(height: 2, borderRadius: 1)),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Feed items
           Expanded(
             child: ListView.builder(
@@ -283,7 +283,7 @@ class ListSkeleton extends StatelessWidget {
 /// Card skeleton for list items
 class CardSkeleton extends StatelessWidget {
   final double height;
-  
+
   const CardSkeleton({super.key, this.height = 120});
 
   @override
@@ -312,10 +312,13 @@ class StandingsSkeleton extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(3, (i) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: ShimmerBox(width: 80, height: 36, borderRadius: 18),
-            )),
+            children: List.generate(
+                3,
+                (i) => const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child:
+                          ShimmerBox(width: 80, height: 36, borderRadius: 18),
+                    )),
           ),
         ),
         // Table rows
@@ -323,14 +326,14 @@ class StandingsSkeleton extends StatelessWidget {
           child: ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             itemCount: 10,
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            itemBuilder: (context, index) => const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
                   ShimmerText(width: 24),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   ShimmerCircle(size: 32),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(child: ShimmerText(width: 100)),
                   ShimmerText(width: 40),
                 ],

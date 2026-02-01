@@ -15,21 +15,31 @@ class MockStandingsApp extends MicroApp {
   AppCategory get category => AppCategory.gameData;
   @override
   WidgetBuilder get page => (context) => Scaffold(
-    appBar: AppBar(title: const Text('Game Center')),
-    body: const Text('Game Center Screen'),
-  );
-  
+        appBar: AppBar(title: const Text('Game Center')),
+        body: const Text('Game Center Screen'),
+      );
+
   // Implement other required overrides with dummies
-  @override String get description => '';
-  @override bool get showOnHomePage => true;
-  @override IconData get icon => Icons.sports;
-  @override String get iconAssetPath => '';
-  @override Color get themeColor => Colors.blue;
-  @override String get storeImageAsset => '';
-  @override String get descriptionAsset => '';
-  @override bool get hasWidget => false;
-  @override Size get widgetSize => Size.zero;
-  @override WidgetBuilder get widgetBuilder => (context) => Container();
+  @override
+  String get description => '';
+  @override
+  bool get showOnHomePage => true;
+  @override
+  IconData get icon => Icons.sports;
+  @override
+  String get iconAssetPath => '';
+  @override
+  Color get themeColor => Colors.blue;
+  @override
+  String get storeImageAsset => '';
+  @override
+  String get descriptionAsset => '';
+  @override
+  bool get hasWidget => false;
+  @override
+  Size get widgetSize => Size.zero;
+  @override
+  WidgetBuilder get widgetBuilder => (context) => Container();
 }
 
 void main() {
@@ -43,11 +53,12 @@ void main() {
     NavigationService().reset();
   });
 
-  testWidgets('NavigationService openGameCenter prevents multiple opens', (WidgetTester tester) async {
+  testWidgets('NavigationService openGameCenter prevents multiple opens',
+      (WidgetTester tester) async {
     // Setup
     AppRegistry().register(MockStandingsApp());
     final navService = NavigationService(); // Singleton
-    
+
     // Build a simple app with a button that calls openGameCenter
     await tester.pumpWidget(
       MaterialApp(
@@ -74,26 +85,27 @@ void main() {
 
     // Verify it opened (partially or fully)
     expect(find.text('Game Center Screen'), findsOneWidget);
-    
+
     // Tap again IMMEDIATELY (simulate rapid click or double click logic if possible)
     await tester.tap(find.text('Open Game Center'), warnIfMissed: false);
     await tester.pump();
-    
+
     // Close the Game Center
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    
+
     expect(find.text('Game Center Screen'), findsNothing);
-    
+
     // Open again
     await tester.tap(find.text('Open Game Center'));
     await tester.pumpAndSettle();
     expect(find.text('Game Center Screen'), findsOneWidget);
   });
-  
-  testWidgets('NavigationService openSettings prevents multiple dialogs', (WidgetTester tester) async {
+
+  testWidgets('NavigationService openSettings prevents multiple dialogs',
+      (WidgetTester tester) async {
     final navService = NavigationService();
-    
+
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
@@ -101,14 +113,14 @@ void main() {
             return Scaffold(
               body: ElevatedButton(
                 onPressed: () => navService.openSettings(
-                  context, 
+                  context,
                   (context) => Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text('Settings Dialog'),
                       TextButton(
-                         onPressed: () => Navigator.pop(context),
-                         child: const Text('Close Settings'),
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Close Settings'),
                       )
                     ],
                   ),
@@ -123,20 +135,20 @@ void main() {
 
     // Tap once
     await tester.tap(find.text('Open Settings'));
-    await tester.pump(); 
+    await tester.pump();
     expect(find.text('Settings Dialog'), findsOneWidget);
-    
+
     // Tap again
     await tester.tap(find.text('Open Settings'), warnIfMissed: false);
     await tester.pump();
-    
+
     // Should still be one dialog
     expect(find.text('Settings Dialog'), findsOneWidget);
-    
+
     // Close dialog using button
     await tester.tap(find.text('Close Settings'));
     await tester.pumpAndSettle();
-    
+
     expect(find.text('Settings Dialog'), findsNothing);
   });
 }

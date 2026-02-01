@@ -4,7 +4,8 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 /// Service responsible for managing the local FunctionGemma model.
 /// Handles initialization, model downloading/checking, and inference.
 class FunctionGemmaService {
-  static final FunctionGemmaService _instance = FunctionGemmaService._internal();
+  static final FunctionGemmaService _instance =
+      FunctionGemmaService._internal();
   factory FunctionGemmaService() => _instance;
   FunctionGemmaService._internal();
 
@@ -13,10 +14,11 @@ class FunctionGemmaService {
   InferenceModel? _model;
   InferenceChat? _chatSession;
 
-  bool get isModelReady => _isInitialized && _isModelDownloaded && _model != null;
+  bool get isModelReady =>
+      _isInitialized && _isModelDownloaded && _model != null;
 
   /// Model download URL for FunctionGemma
-  static const String modelUrl = 
+  static const String modelUrl =
       'https://huggingface.co/sasha-denisov/function-gemma-270M-it/resolve/main/functiongemma-270M-it.task';
 
   /// Initialize the flutter_gemma plugin (call once at app start).
@@ -30,7 +32,8 @@ class FunctionGemmaService {
   Future<bool> isModelInstalled() async {
     try {
       // The method expects a String (model type name), not the enum
-      final result = await FlutterGemma.isModelInstalled(ModelType.functionGemma.name);
+      final result =
+          await FlutterGemma.isModelInstalled(ModelType.functionGemma.name);
       debugPrint('FlutterGemma.isModelInstalled returned: $result');
       return result;
     } catch (e) {
@@ -58,7 +61,7 @@ class FunctionGemmaService {
       debugPrint('Model already loaded');
       return;
     }
-    
+
     try {
       debugPrint('Attempting to get active model...');
       _model = await FlutterGemma.getActiveModel(
@@ -84,23 +87,22 @@ class FunctionGemmaService {
     try {
       await FlutterGemma.installModel(
         modelType: ModelType.functionGemma,
-      ).fromNetwork(
+      )
+          .fromNetwork(
         modelUrl,
-      ).withProgress((progress) {
+      )
+          .withProgress((progress) {
         // progress is an int representing percentage (0-100)
         onProgress(progress / 100);
       }).install();
 
       // Model downloaded, now try to load it
       await _tryLoadModel();
-      
     } catch (e) {
       debugPrint('Model download failed: $e');
       rethrow;
     }
   }
-
-
 
   /// Generate a response from the model using function calling.
   /// [tools] are the function definitions to provide to the model.
@@ -110,9 +112,10 @@ class FunctionGemmaService {
       debugPrint('Model not ready, refreshing state...');
       await refreshModelState();
     }
-    
+
     if (!isModelReady || _model == null) {
-      debugPrint('Model still not ready after refresh. isModelReady=$isModelReady, model=$_model');
+      debugPrint(
+          'Model still not ready after refresh. isModelReady=$isModelReady, model=$_model');
       return null;
     }
 
@@ -131,15 +134,14 @@ class FunctionGemmaService {
 
       // Generate response (returns sealed ModelResponse, pattern match to extract)
       final response = await _chatSession!.generateChatResponse();
-      
+
       // Handle different response types
       return switch (response) {
         TextResponse(token: final text) => text,
-        FunctionCallResponse(name: final name, args: final args) => 
-            'FUNCTION_CALL:$name:${args.toString()}',
+        FunctionCallResponse(name: final name, args: final args) =>
+          'FUNCTION_CALL:$name:${args.toString()}',
         ThinkingResponse(content: final content) => content,
       };
-      
     } catch (e) {
       debugPrint('Inference error: $e');
       return null;

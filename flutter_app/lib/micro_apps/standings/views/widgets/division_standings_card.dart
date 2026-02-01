@@ -54,8 +54,7 @@ class DivisionStandingsCard extends StatelessWidget {
             return TeamStandingRow(
               standing: team,
               rank: index + 1,
-              isUserTeam:
-                  userTeamId != null &&
+              isUserTeam: userTeamId != null &&
                   team.teamId.toUpperCase() == userTeamId!.toUpperCase(),
             );
           }),

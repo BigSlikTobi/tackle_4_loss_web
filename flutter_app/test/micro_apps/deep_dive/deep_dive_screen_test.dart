@@ -18,8 +18,9 @@ class MockAudioPlayerService extends AudioPlayerService {
   MockAudioPlayerService() : super.testing();
 
   @override
-  Stream<PlaybackState> get playbackStateStream => Stream.value(PlaybackState());
-  
+  Stream<PlaybackState> get playbackStateStream =>
+      Stream.value(PlaybackState());
+
   @override
   Stream<MediaItem?> get mediaItemStream => Stream.value(null);
 }
@@ -40,20 +41,21 @@ void main() {
     AudioPlayerService.setInstanceForTesting(MockAudioPlayerService());
   });
 
-  testWidgets('DeepDiveScreen renders ADK components and content', (WidgetTester tester) async {
+  testWidgets('DeepDiveScreen renders ADK components and content',
+      (WidgetTester tester) async {
     final mockArticle = DeepDiveArticle(
       id: 'test-1',
       title: 'Test Title',
       summary: 'Test Summary',
       content: 'Test Content',
       imageUrl: 'https://example.com/image.png',
-      videoUrl: null, 
+      videoUrl: null,
       audioUrl: null,
       publishedAt: DateTime.now(),
       author: 'Test Author',
       languageCode: 'en',
     );
-    
+
     final mockController = MockDeepDiveDetailController();
 
     // Wrap in mock network image because screen uses Image.network
@@ -61,21 +63,23 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-             ChangeNotifierProvider.value(value: SettingsService()),
+            ChangeNotifierProvider.value(value: SettingsService()),
           ],
           child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates, 
-            supportedLocales: AppLocalizations.supportedLocales, 
-            theme: T4LTheme.light(), // Added to provide T4LThemeColors extension
-            home: DeepDiveScreen(article: mockArticle, controller: mockController),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            theme:
+                T4LTheme.light(), // Added to provide T4LThemeColors extension
+            home: DeepDiveScreen(
+                article: mockArticle, controller: mockController),
           ),
         ),
       );
- // ... rest of test ...
+      // ... rest of test ...
 
       // 1. Initial Loading State (Might be skipped if data is present immediately from widget)
       // We expect the Hero to be visible because it's in the header, outside the body spinner
-      
+
       // Let's settle to allow any async inits to complete (even if they fail silently)
       // Let's settle to allow any async inits to complete (even if they fail silently)
       await tester.pump();

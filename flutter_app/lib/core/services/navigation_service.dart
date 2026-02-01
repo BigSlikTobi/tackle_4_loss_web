@@ -39,9 +39,11 @@ class NavigationService {
     final gameCenter = AppRegistry().getApp('standings');
     if (gameCenter != null) {
       _isAppHubOpen = true;
-      Navigator.of(context).push(
+      Navigator.of(context)
+          .push(
         MaterialPageRoute(builder: (context) => gameCenter.page(context)),
-      ).then((_) {
+      )
+          .then((_) {
         _isAppHubOpen = false;
       });
     }
@@ -61,7 +63,8 @@ class NavigationService {
   }
 
   /// Opens the Team Center or Team Selector.
-  Future<void> openTeamCenter(BuildContext context, Future<void> Function() showOverlay) async {
+  Future<void> openTeamCenter(
+      BuildContext context, Future<void> Function() showOverlay) async {
     if (_isTeamCenterOpen) return;
 
     _isTeamCenterOpen = true;
@@ -69,23 +72,24 @@ class NavigationService {
       await showOverlay();
     } finally {
       // Small delay to ensure the UI has time to process the close event completely
-      // before allowing another open? 
+      // before allowing another open?
       // Usually await is enough.
       _isTeamCenterOpen = false;
     }
   }
-  
+
   /// Opens the Team Selector dialog.
-  Future<void> openTeamSelector(BuildContext context, WidgetBuilder builder) async {
-      if (_isTeamCenterOpen) return;
-      _isTeamCenterOpen = true;
-      try {
-        await showDialog(context: context, builder: builder);
-      } finally {
-        _isTeamCenterOpen = false;
-      }
+  Future<void> openTeamSelector(
+      BuildContext context, WidgetBuilder builder) async {
+    if (_isTeamCenterOpen) return;
+    _isTeamCenterOpen = true;
+    try {
+      await showDialog(context: context, builder: builder);
+    } finally {
+      _isTeamCenterOpen = false;
+    }
   }
-  
+
   String? _currentOpenAppId;
 
   /// Reopens the last used app if available.
@@ -93,7 +97,7 @@ class NavigationService {
     if (_lastAppId != null) {
       final app = AppRegistry().getApp(_lastAppId!);
       if (app != null) {
-         openApp(context, app);
+        openApp(context, app);
       }
     } else {
       final l10n = AppLocalizations.of(context)!;
@@ -109,12 +113,14 @@ class NavigationService {
 
     trackAppLaunch(app.id);
     _currentOpenAppId = app.id;
-    
-    Navigator.of(context).push(
+
+    Navigator.of(context)
+        .push(
       MaterialPageRoute(
         builder: (context) => app.buildPage(context, arguments: arguments),
       ),
-    ).then((_) {
+    )
+        .then((_) {
       if (_currentOpenAppId == app.id) {
         _currentOpenAppId = null;
       }

@@ -54,7 +54,8 @@ class GamesTimeline extends StatelessWidget {
                 children: [
                   // Past Game (Left)
                   if (pastGame != null)
-                    _buildSideCard(context, pastGame!, 'PAST GAME', isLeft: true)
+                    _buildSideCard(context, pastGame!, 'PAST GAME',
+                        isLeft: true)
                   else
                     const SizedBox(width: 70), // Spacer placeholder
 
@@ -70,8 +71,8 @@ class GamesTimeline extends StatelessWidget {
 
                   // Next Game (Right)
                   if (nextGame != null)
-                    _buildSideCard(
-                        context, nextGame!, 'NEXT GAME', isLeft: false)
+                    _buildSideCard(context, nextGame!, 'NEXT GAME',
+                        isLeft: false)
                   else
                     const SizedBox(width: 70),
                 ],
@@ -120,7 +121,7 @@ class GamesTimeline extends StatelessWidget {
 
     final isWin = myScore > opponentScore;
     final isTie = myScore == opponentScore;
-    
+
     // Result String: W, L, T
     String resultString = 'L';
     if (isWin) {
@@ -130,16 +131,16 @@ class GamesTimeline extends StatelessWidget {
     }
 
     // Score String: Always "Winner-Loser" convention or "MyScore-OpponentScore" logic?
-    // User requested "NYJ 8-35 vs Buffalo". 
+    // User requested "NYJ 8-35 vs Buffalo".
     // Conventionally, American sports show "WinnerScore-LoserScore" (35-8) OR "AwayScore-HomeScore" final.
     // The previous code had `${game.awayScore}-${game.homeScore}`.
-    // Let's stick to a standard display. 
+    // Let's stick to a standard display.
     // Ideally: "W 17-10" or "L 10-17". Usually "W [MyScore]-[OppScore]" or "L [MyScore]-[OppScore]".
     // Let's use "MyScore - OpponentScore" to be clear on the outcome.
-    
+
     // Actually, looking at the screenshot "W 8-35 vs NYJ" (which was wrong).
     // Let's show "MyScore - OpponentScore" so "L 8-35" makes sense (if I lost 8 to 35).
-    
+
     final scoreString = '$myScore-$opponentScore';
 
     return (
@@ -206,7 +207,9 @@ class GamesTimeline extends StatelessWidget {
                       style: TextStyle(
                         color: info.isWin
                             ? Colors.greenAccent
-                            : (info.isTie ? Colors.orangeAccent : Colors.redAccent),
+                            : (info.isTie
+                                ? Colors.orangeAccent
+                                : Colors.redAccent),
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         fontStyle: FontStyle.italic,
@@ -229,7 +232,7 @@ class GamesTimeline extends StatelessWidget {
 
                 // Opponent
                 Text(
-                  'vs ${info.opponent}', 
+                  'vs ${info.opponent}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -286,7 +289,6 @@ class GamesTimeline extends StatelessWidget {
 
   Widget _buildSideCard(BuildContext context, Game game, String label,
       {required bool isLeft}) {
-    
     final info = _getGameDisplayInfo(game);
 
     // Past/Next games are smaller and transparent
@@ -319,10 +321,10 @@ class GamesTimeline extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 4),
-                  
+
                   // Content dependent on Past vs Next (Played vs Not Played)
                   if (info.isPlayed) ...[
-                     Text(
+                    Text(
                       '${info.resultString} ${info.scoreString}', // e.g. "W 21-17"
                       style: const TextStyle(
                         color: Colors.white,
@@ -331,8 +333,8 @@ class GamesTimeline extends StatelessWidget {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                     const SizedBox(height: 1),
-                     Text(
+                    const SizedBox(height: 1),
+                    Text(
                       'vs ${info.opponent}',
                       style: const TextStyle(
                           color: Colors.white70,
@@ -349,7 +351,7 @@ class GamesTimeline extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                     Text(
+                    Text(
                       info.opponent,
                       style: const TextStyle(
                         color: Colors.white,
@@ -362,7 +364,8 @@ class GamesTimeline extends StatelessWidget {
                   const SizedBox(height: 2),
                   // ignore: deprecated_member_use_from_same_package
                   Text(
-                    DateFormat('EEE h:mm a').format(game.gameday), // "SAT 9:00 PM"
+                    DateFormat('EEE h:mm a')
+                        .format(game.gameday), // "SAT 9:00 PM"
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 9,

@@ -27,7 +27,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
   bool _isListening = false;
   bool _isAvailable = false;
   String _partialResult = '';
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -35,12 +35,12 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
   void initState() {
     super.initState();
     _initSpeech();
-    
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
@@ -65,7 +65,8 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
   void _startListening() async {
     if (!_isAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Voice input not available on this device')),
+        const SnackBar(
+            content: Text('Voice input not available on this device')),
       );
       return;
     }
@@ -74,7 +75,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
       _isListening = true;
       _partialResult = '';
     });
-    
+
     _pulseController.repeat(reverse: true);
     widget.onListeningStarted?.call();
 
@@ -93,13 +94,13 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     await _speech.stop();
     _pulseController.stop();
     _pulseController.reset();
-    
+
     setState(() {
       _isListening = false;
     });
-    
+
     widget.onListeningStopped?.call();
-    
+
     // Submit final result
     if (_partialResult.isNotEmpty) {
       widget.onResult(_partialResult);
@@ -110,7 +111,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
     setState(() {
       _partialResult = result.recognizedWords;
     });
-    
+
     if (result.finalResult) {
       widget.onResult(result.recognizedWords);
       _stopListening();
@@ -127,7 +128,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -146,7 +147,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
               textAlign: TextAlign.center,
             ),
           ),
-        
+
         // Mic button with pulse animation
         AnimatedBuilder(
           animation: _pulseAnimation,
@@ -156,8 +157,8 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
               child: FloatingActionButton(
                 heroTag: 'voice_input_fab',
                 onPressed: _isListening ? _stopListening : _startListening,
-                backgroundColor: _isListening 
-                    ? theme.colorScheme.error 
+                backgroundColor: _isListening
+                    ? theme.colorScheme.error
                     : theme.colorScheme.primary,
                 child: Icon(
                   _isListening ? Icons.stop : Icons.mic,
@@ -167,9 +168,9 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget>
             );
           },
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           _isListening ? 'Listening...' : 'Tap to speak',
           style: theme.textTheme.labelSmall?.copyWith(

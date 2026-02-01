@@ -358,8 +358,7 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                           style: TextStyle(
                             fontFamily: AppTextStyles.fontHeading,
                             fontSize: 18,
-                            color:
-                                (_historyColor ?? colors.textPrimary)
+                            color: (_historyColor ?? colors.textPrimary)
                                             .computeLuminance() >
                                         0.5 &&
                                     Theme.of(context).brightness ==

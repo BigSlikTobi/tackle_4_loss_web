@@ -1,6 +1,6 @@
 // Definition of the get_game_recap tool for FunctionGemma
 // This schema tells the LLM how to call our local function.
-// Note: As valid types are not exported, we use a raw JSON schema string 
+// Note: As valid types are not exported, we use a raw JSON schema string
 // which can be injected into the system prompt.
 
 const String getGameRecapToolJson = '''

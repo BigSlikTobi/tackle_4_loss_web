@@ -4,12 +4,33 @@ library;
 
 /// Positions considered offensive
 const offensivePositions = [
-  'QB', 'RB', 'FB', 'WR', 'TE', 'OT', 'OG', 'C', 'T', 'G'
+  'QB',
+  'RB',
+  'FB',
+  'WR',
+  'TE',
+  'OT',
+  'OG',
+  'C',
+  'T',
+  'G'
 ];
 
 /// Positions considered defensive
 const defensivePositions = [
-  'DE', 'DT', 'NT', 'LB', 'ILB', 'OLB', 'MLB', 'CB', 'S', 'SS', 'FS', 'DB', 'EDGE'
+  'DE',
+  'DT',
+  'NT',
+  'LB',
+  'ILB',
+  'OLB',
+  'MLB',
+  'CB',
+  'S',
+  'SS',
+  'FS',
+  'DB',
+  'EDGE'
 ];
 
 /// Represents an NFL player with all attributes.
@@ -79,7 +100,8 @@ class Player {
       conference: json['conference'] as String?,
       division: json['division'] as String?,
       position: json['position'] as String?,
-      jerseyNumber: json['jerseyNumber'] as int? ?? json['jersey_number'] as int?,
+      jerseyNumber:
+          json['jerseyNumber'] as int? ?? json['jersey_number'] as int?,
       age: json['age'] as int?,
       height: json['height'] as int?,
       headshot: json['headshot'] as String?,
@@ -95,25 +117,25 @@ class Player {
   }
 
   Map<String, dynamic> toJson() => {
-    'playerId': playerId,
-    'displayName': displayName,
-    'team': team,
-    'conference': conference,
-    'division': division,
-    'position': position,
-    'jerseyNumber': jerseyNumber,
-    'age': age,
-    'height': height,
-    'headshot': headshot,
-    'college': college,
-    'teamName': teamName,
-    'teamLogo': teamLogo,
-    'weight': weight,
-    'yearsExperience': yearsExperience,
-    'draftYear': draftYear,
-    'draftRound': draftRound,
-    'draftPick': draftPick,
-  };
+        'playerId': playerId,
+        'displayName': displayName,
+        'team': team,
+        'conference': conference,
+        'division': division,
+        'position': position,
+        'jerseyNumber': jerseyNumber,
+        'age': age,
+        'height': height,
+        'headshot': headshot,
+        'college': college,
+        'teamName': teamName,
+        'teamLogo': teamLogo,
+        'weight': weight,
+        'yearsExperience': yearsExperience,
+        'draftYear': draftYear,
+        'draftRound': draftRound,
+        'draftPick': draftPick,
+      };
 
   @override
   bool operator ==(Object other) =>

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../app_registry.dart';
-import '../../services/installed_apps_service.dart';
 import '../../services/new_content_service.dart';
 import '../controllers/os_shell_controller.dart';
 import '../../services/navigation_service.dart';
@@ -99,14 +97,15 @@ class _OSShellViewState extends State<OSShellView>
           children: [
             // 1. App Strip (Horizontal browse)
             const AppStrip(),
-            
+
             // 2. Persistent Dock
             ListenableBuilder(
               listenable: NewContentService(),
               builder: (context, child) {
                 return T4LFloatingNavBar(
                   homeTooltip: AppLocalizations.of(context)!.navHome,
-                  gameCenterTooltip: AppLocalizations.of(context)!.navGameCenter,
+                  gameCenterTooltip:
+                      AppLocalizations.of(context)!.navGameCenter,
                   historyTooltip: AppLocalizations.of(context)!.navHistory,
                   settingsTooltip: AppLocalizations.of(context)!.navSettings,
                   favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
@@ -131,7 +130,8 @@ class _OSShellViewState extends State<OSShellView>
                     } else {
                       NavigationService().openTeamCenter(
                         context,
-                        () => TeamCenterOverlay.show(context, settings.selectedTeam!),
+                        () => TeamCenterOverlay.show(
+                            context, settings.selectedTeam!),
                       );
                     }
                   },
@@ -153,7 +153,7 @@ class _OSShellViewState extends State<OSShellView>
                   if (!shellController.isPageReady) {
                     return const OSShellSkeleton();
                   }
-                  
+
                   return CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
@@ -163,7 +163,8 @@ class _OSShellViewState extends State<OSShellView>
 
                       // Pinned Rich Widgets at the top of the feed
                       SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 16),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
                             // Radio Widget (Compact)
@@ -177,10 +178,10 @@ class _OSShellViewState extends State<OSShellView>
 
                       // News Feed
                       const NewsFeedWidget(),
-                      
+
                       // Bottom Clearance for AppStrip + Dock
                       const SliverPadding(
-                        padding: EdgeInsets.only(bottom: 220), 
+                        padding: EdgeInsets.only(bottom: 220),
                       ),
                     ],
                   );

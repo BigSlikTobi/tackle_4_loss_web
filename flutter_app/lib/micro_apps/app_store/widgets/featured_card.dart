@@ -145,13 +145,13 @@ class AppStoreFeaturedCard extends StatelessWidget {
                           children: [
                             Text(
                               title,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
-                            Text(
+                            const Text(
                               'Feature of the Day',
                               style: TextStyle(
                                 color: Colors.white70,

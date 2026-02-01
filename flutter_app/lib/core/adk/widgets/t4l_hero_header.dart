@@ -124,8 +124,7 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
             _buildImage(),
 
           // 2. Video Player Layer (Fades out when finished)
-          if (_videoController != null &&
-              _videoController!.value.isInitialized)
+          if (_videoController != null && _videoController!.value.isInitialized)
             AnimatedOpacity(
               opacity: _isVideoPlaying ? 1.0 : 0.0,
               duration: const Duration(
@@ -164,7 +163,7 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
               ),
             ),
           ),
-          
+
           // 4. Content (Title/Subtitle) - Replaces FlexibleSpaceBar title
           Positioned(
             bottom: 32, // Replaces previous align logic
@@ -182,13 +181,13 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                     letterSpacing: 1.0,
                     shadows: [
                       Shadow(
-                        color: widget.isDarkMode
-                            ? Colors.black54
-                            : Colors.white24,
+                        color:
+                            widget.isDarkMode ? Colors.black54 : Colors.white24,
                         blurRadius: 10,
                       ),
                     ],
-                    fontSize: 24, // Slightly larger as it's not scaled down by Sliver
+                    fontSize:
+                        24, // Slightly larger as it's not scaled down by Sliver
                     color: widget.isDarkMode
                         ? Colors.white
                         : AppColors.textPrimary,
@@ -203,11 +202,10 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
                       fontFamily: 'Inter',
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color:
-                          (widget.isDarkMode
-                                  ? Colors.white
-                                  : AppColors.textPrimary)
-                              .withValues(alpha: 0.8),
+                      color: (widget.isDarkMode
+                              ? Colors.white
+                              : AppColors.textPrimary)
+                          .withValues(alpha: 0.8),
                       fontStyle: FontStyle.italic,
                       height: 1.2,
                       shadows: [
@@ -234,7 +232,7 @@ class _T4LHeroHeaderState extends State<T4LHeroHeader> {
       ),
     );
   }
-  
+
   Widget _buildImage() {
     return CachedNetworkImage(
       imageUrl: widget.imageUrl,
