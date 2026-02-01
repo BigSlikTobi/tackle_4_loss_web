@@ -17,19 +17,19 @@ class AttributeColors {
 class AttributeTile extends StatefulWidget {
   /// The label for this attribute (e.g., "Team", "Age")
   final String label;
-  
+
   /// The value to display
   final String value;
-  
+
   /// Match status determining background color
   final MatchStatus status;
-  
+
   /// Optional arrow direction for numeric comparisons
   final NumericDirection? direction;
-  
+
   /// Whether this is a "close" match (pulses)
   final bool isClose;
-  
+
   /// Whether to animate the tile
   final bool animate;
 
@@ -47,7 +47,7 @@ class AttributeTile extends StatefulWidget {
   State<AttributeTile> createState() => _AttributeTileState();
 }
 
-class _AttributeTileState extends State<AttributeTile> 
+class _AttributeTileState extends State<AttributeTile>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _flipAnimation;
@@ -98,7 +98,8 @@ class _AttributeTileState extends State<AttributeTile>
   }
 
   String get _displayValue {
-    if (widget.direction != null && widget.direction != NumericDirection.exact) {
+    if (widget.direction != null &&
+        widget.direction != NumericDirection.exact) {
       final arrow = widget.direction == NumericDirection.up ? '↑' : '↓';
       return '${widget.value} $arrow';
     }
@@ -117,7 +118,9 @@ class _AttributeTileState extends State<AttributeTile>
         // Pulse effect for close matches
         double scale = 1.0;
         if (widget.isClose && !_showFront) {
-          scale = 1.0 + (0.05 * (1 + (DateTime.now().millisecondsSinceEpoch % 1000) / 1000));
+          scale = 1.0 +
+              (0.05 *
+                  (1 + (DateTime.now().millisecondsSinceEpoch % 1000) / 1000));
         }
 
         return Transform.scale(
@@ -152,7 +155,7 @@ class _AttributeTileState extends State<AttributeTile>
   }
 
   Widget _buildFrontContent() {
-    return Center(
+    return const Center(
       child: Text(
         '?',
         style: TextStyle(

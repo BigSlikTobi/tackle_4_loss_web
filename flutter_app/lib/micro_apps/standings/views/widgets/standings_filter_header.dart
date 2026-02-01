@@ -158,9 +158,8 @@ class StandingsFilterHeader extends StatelessWidget {
           color: isSelected ? colors.brand : colors.brandLight,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? colors.brand
-                : colors.brand.withValues(alpha: 0.3),
+            color:
+                isSelected ? colors.brand : colors.brand.withValues(alpha: 0.3),
           ),
         ),
         child: Text(

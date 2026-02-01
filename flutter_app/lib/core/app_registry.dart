@@ -43,7 +43,6 @@ class AppRegistry {
     _registeredApps.clear();
   }
 
-
   /// Finds an app by its ID.
   /// Returns null if not found OR if disabled by feature flag.
   MicroApp? getApp(String id) {
@@ -51,7 +50,7 @@ class AppRegistry {
     if (!FeatureFlagService().isEnabled(id)) {
       return null;
     }
-    
+
     try {
       return _registeredApps.firstWhere((element) => element.id == id);
     } catch (e) {
@@ -61,7 +60,8 @@ class AppRegistry {
 
   /// Gets metadata for an app. Returns default if not configured.
   AppMetadata getMetadata(String id) {
-    return _appMetadata[id] ?? AppMetadata(category: 'Productivity', isFeatured: false);
+    return _appMetadata[id] ??
+        AppMetadata(category: 'Productivity', isFeatured: false);
   }
 
   /// Returns the ID of the currently featured app (App of the Month).

@@ -6,12 +6,12 @@ void main() {
   group('Team Model', () {
     group('constructor', () {
       test('creates team with all required fields', () {
-        final team = Team(
+        const team = Team(
           id: 'KC',
           name: 'Kansas City Chiefs',
           logoUrl: 'assets/logos/teams/kc.svg',
-          primaryColor: const Color(0xFFE31837),
-          secondaryColor: const Color(0xFFFFB81C),
+          primaryColor: Color(0xFFE31837),
+          secondaryColor: Color(0xFFFFB81C),
         );
 
         expect(team.id, 'KC');
@@ -23,26 +23,26 @@ void main() {
 
       test('works with different NFL teams', () {
         final teams = [
-          Team(
+          const Team(
             id: 'SF',
             name: 'San Francisco 49ers',
             logoUrl: 'assets/logos/teams/sf.svg',
-            primaryColor: const Color(0xFFAA0000),
-            secondaryColor: const Color(0xFFB3995D),
+            primaryColor: Color(0xFFAA0000),
+            secondaryColor: Color(0xFFB3995D),
           ),
-          Team(
+          const Team(
             id: 'DAL',
             name: 'Dallas Cowboys',
             logoUrl: 'assets/logos/teams/dal.svg',
-            primaryColor: const Color(0xFF002244),
-            secondaryColor: const Color(0xFF869397),
+            primaryColor: Color(0xFF002244),
+            secondaryColor: Color(0xFF869397),
           ),
-          Team(
+          const Team(
             id: 'PHI',
             name: 'Philadelphia Eagles',
             logoUrl: 'assets/logos/teams/phi.svg',
-            primaryColor: const Color(0xFF004C54),
-            secondaryColor: const Color(0xFFA5ACAF),
+            primaryColor: Color(0xFF004C54),
+            secondaryColor: Color(0xFFA5ACAF),
           ),
         ];
 

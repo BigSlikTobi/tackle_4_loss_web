@@ -131,7 +131,7 @@ void main() {
         bool notified = false;
         controller.addListener(() => notified = true);
 
-        controller.setViewMode(StandingsViewMode.division);  // Already default
+        controller.setViewMode(StandingsViewMode.division); // Already default
 
         expect(notified, isFalse);
       });
@@ -186,7 +186,7 @@ void main() {
         bool notified = false;
         controller.addListener(() => notified = true);
 
-        controller.switchTab(GameCenterTab.schedule);  // Already on schedule
+        controller.switchTab(GameCenterTab.schedule); // Already on schedule
 
         expect(notified, isFalse);
       });
@@ -201,7 +201,7 @@ void main() {
         bool notified = false;
         controller.addListener(() => notified = true);
 
-        controller.goToCurrentWeek();  // Already at current week
+        controller.goToCurrentWeek(); // Already at current week
 
         expect(notified, isFalse);
       });
@@ -281,10 +281,10 @@ void main() {
 
       test('fetchGames sets loading state', () async {
         mockScheduleService.mockGames = [];
-        
+
         final future = controller.fetchGames();
         expect(controller.isLoading, isTrue);
-        
+
         await future;
         expect(controller.isLoading, isFalse);
       });
@@ -293,7 +293,7 @@ void main() {
     group('fetchStandings', () {
       test('fetchStandings populates standings from service', () async {
         mockStandingsService.mockStandings = [
-          ConferenceStandings(
+          const ConferenceStandings(
             conference: 'AFC',
             divisions: [],
           ),

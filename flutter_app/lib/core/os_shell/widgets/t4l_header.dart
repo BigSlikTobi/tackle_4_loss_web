@@ -3,14 +3,14 @@ import '../../../../design_tokens.dart';
 import '../../theme/t4l_theme.dart';
 
 /// Standard header component with logo, title, and configurable actions.
-/// 
+///
 /// Use [kHeight] for consistent spacing calculations when positioning
 /// content below the header.
 class T4LHeader extends StatelessWidget {
   /// Standard header height including safe area padding.
   /// Use this constant for consistent body padding across screens.
   static const double kHeight = 68.0;
-  
+
   /// Height including typical safe area (for estimation purposes).
   static const double kHeightWithSafeArea = 100.0;
 
@@ -18,28 +18,28 @@ class T4LHeader extends StatelessWidget {
   final Widget? titleWidget;
   final Color? textColor;
   final List<Widget>? actions;
-  
+
   /// Whether to show a back button before the logo.
   final bool showBackButton;
-  
+
   /// Callback when back button is pressed. Defaults to Navigator.pop.
   final VoidCallback? onBack;
-  
+
   /// Optional widget to display before the logo (e.g., custom back button).
   final Widget? leading;
-  
+
   /// Whether to center the title. When true, title is centered and actions
   /// are positioned at the end.
   final bool centerTitle;
-  
+
   /// Whether to show the T4L logo.
   final bool showLogo;
 
   const T4LHeader({
-    super.key, 
-    this.title, 
-    this.titleWidget, 
-    this.textColor, 
+    super.key,
+    this.title,
+    this.titleWidget,
+    this.textColor,
     this.actions,
     this.showBackButton = false,
     this.onBack,
@@ -52,19 +52,22 @@ class T4LHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     // defaults to theme-aware textPrimary if no specific color is provided
     final themeColors = Theme.of(context).extension<T4LThemeColors>();
-    final effectiveTextColor = textColor ?? themeColors?.textPrimary ?? AppColors.textPrimary;
-    
+    final effectiveTextColor =
+        textColor ?? themeColors?.textPrimary ?? AppColors.textPrimary;
+
     return SafeArea(
       bottom: false,
       child: Container(
         height: kHeight,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: const BoxDecoration(color: Colors.transparent),
-        child: centerTitle ? _buildCenteredLayout(context, effectiveTextColor) : _buildStandardLayout(context, effectiveTextColor),
+        child: centerTitle
+            ? _buildCenteredLayout(context, effectiveTextColor)
+            : _buildStandardLayout(context, effectiveTextColor),
       ),
     );
   }
-  
+
   Widget _buildStandardLayout(BuildContext context, Color effectiveTextColor) {
     return Row(
       children: [
@@ -76,7 +79,7 @@ class T4LHeader extends StatelessWidget {
           _buildBackButton(context, effectiveTextColor),
           const SizedBox(width: 8),
         ],
-        
+
         // Logo Container - Matching web style
         if (showLogo) _buildLogo(),
 
@@ -103,7 +106,7 @@ class T4LHeader extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildCenteredLayout(BuildContext context, Color effectiveTextColor) {
     return Stack(
       alignment: Alignment.center,
@@ -114,8 +117,10 @@ class T4LHeader extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (leading != null) leading!
-              else if (showBackButton) _buildBackButton(context, effectiveTextColor),
+              if (leading != null)
+                leading!
+              else if (showBackButton)
+                _buildBackButton(context, effectiveTextColor),
               if (showLogo) ...[
                 const SizedBox(width: 8),
                 _buildLogo(),
@@ -123,7 +128,7 @@ class T4LHeader extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Centered title
         if (titleWidget != null)
           titleWidget!
@@ -136,7 +141,7 @@ class T4LHeader extends StatelessWidget {
             ),
             overflow: TextOverflow.ellipsis,
           ),
-        
+
         // Actions on right
         if (actions != null)
           Positioned(
@@ -149,7 +154,7 @@ class T4LHeader extends StatelessWidget {
       ],
     );
   }
-  
+
   Widget _buildBackButton(BuildContext context, Color color) {
     return IconButton(
       icon: Icon(Icons.arrow_back_ios_rounded, color: color, size: 20),
@@ -158,7 +163,7 @@ class T4LHeader extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
     );
   }
-  
+
   Widget _buildLogo() {
     return Container(
       width: 44,

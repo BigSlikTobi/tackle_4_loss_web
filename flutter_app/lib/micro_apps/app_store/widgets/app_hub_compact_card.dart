@@ -38,7 +38,8 @@ class AppHubCompactCard extends StatelessWidget {
             // App Icon
             Builder(
               builder: (context) {
-                final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                final isDarkMode =
+                    Theme.of(context).brightness == Brightness.dark;
                 final backgroundColor = isDarkMode
                     ? AppColors.neutralBase
                     : AppColors.backgroundDark;
@@ -58,7 +59,11 @@ class AppHubCompactCard extends StatelessWidget {
                         app.iconAssetPath,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(app.icon, color: isDarkMode ? AppColors.backgroundDark : AppColors.neutralBase, size: 24);
+                          return Icon(app.icon,
+                              color: isDarkMode
+                                  ? AppColors.backgroundDark
+                                  : AppColors.neutralBase,
+                              size: 24);
                         },
                       ),
                     ),

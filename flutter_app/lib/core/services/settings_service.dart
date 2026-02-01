@@ -40,7 +40,8 @@ class SettingsService with ChangeNotifier {
           end: Alignment.bottomRight,
           colors: [
             _selectedTeam!.primaryColor, // Team Color
-            Color.lerp(_selectedTeam!.primaryColor, Colors.black, 0.8)!, // Deep Fade
+            Color.lerp(
+                _selectedTeam!.primaryColor, Colors.black, 0.8)!, // Deep Fade
           ],
         );
       } else {
@@ -49,10 +50,10 @@ class SettingsService with ChangeNotifier {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-             // Start soft but visible (15% mix)
+            // Start soft but visible (15% mix)
             Color.lerp(Colors.white, _selectedTeam!.primaryColor, 0.15)!,
             // End with a distinctive punch (50% mix)
-            Color.lerp(Colors.white, _selectedTeam!.primaryColor, 0.5)!, 
+            Color.lerp(Colors.white, _selectedTeam!.primaryColor, 0.5)!,
           ],
         );
       }
@@ -64,8 +65,8 @@ class SettingsService with ChangeNotifier {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-           Color(0xFF0F0F12),
-           Color(0xFF1A1A24),
+          Color(0xFF0F0F12),
+          Color(0xFF1A1A24),
         ],
       );
     } else {
@@ -116,7 +117,7 @@ class SettingsService with ChangeNotifier {
     if (_selectedTeam?.id != team.id) {
       _selectedTeam = team;
       notifyListeners();
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_teamKey, team.id);
     }
@@ -132,7 +133,8 @@ class SettingsService with ChangeNotifier {
   }
 
   Future<void> toggleTheme() async {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
 
     final prefs = await SharedPreferences.getInstance();

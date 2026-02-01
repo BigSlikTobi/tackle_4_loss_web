@@ -11,7 +11,7 @@ import 'attribute_tile.dart';
 class GuessGrid extends StatelessWidget {
   /// List of all guesses made
   final List<GuessResult> guesses;
-  
+
   /// Maximum number of guesses allowed
   final int maxGuesses;
 
@@ -32,8 +32,10 @@ class GuessGrid extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             itemCount: guesses.length,
-            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.space1),
-            itemBuilder: (context, index) => _buildGuessRow(context, guesses[index], index),
+            separatorBuilder: (_, __) =>
+                const SizedBox(height: AppSpacing.space1),
+            itemBuilder: (context, index) =>
+                _buildGuessRow(context, guesses[index], index),
           ),
         ),
       ],
@@ -52,7 +54,7 @@ class GuessGrid extends StatelessWidget {
       l10n.playerWordleHeaderAge,
       l10n.playerWordleHeaderHt,
     ];
-    
+
     return Row(
       children: headers.map((header) {
         return Expanded(
@@ -60,7 +62,7 @@ class GuessGrid extends StatelessWidget {
           child: Center(
             child: Text(
               header,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: AppTypography.fontWeightBold,
                 color: AppColors.textSecondary,
@@ -75,7 +77,7 @@ class GuessGrid extends StatelessWidget {
   Widget _buildGuessRow(BuildContext context, GuessResult guess, int index) {
     final l10n = AppLocalizations.of(context)!;
     final player = guess.guessedPlayer;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.space1 / 2),
       child: Row(
@@ -126,9 +128,11 @@ class GuessGrid extends StatelessWidget {
             child: AttributeTile(
               label: l10n.playerWordleHeaderNum,
               value: player.jerseyNumber?.toString() ?? '?',
-              status: guess.jerseyComparison.match 
-                  ? MatchStatus.match 
-                  : (guess.jerseyComparison.isClose ? MatchStatus.partial : MatchStatus.miss),
+              status: guess.jerseyComparison.match
+                  ? MatchStatus.match
+                  : (guess.jerseyComparison.isClose
+                      ? MatchStatus.partial
+                      : MatchStatus.miss),
               direction: guess.jerseyComparison.direction,
               isClose: guess.jerseyComparison.isClose,
               animate: index == guesses.length - 1,
@@ -139,9 +143,11 @@ class GuessGrid extends StatelessWidget {
             child: AttributeTile(
               label: l10n.playerWordleHeaderAge,
               value: player.age?.toString() ?? '?',
-              status: guess.ageComparison.match 
-                  ? MatchStatus.match 
-                  : (guess.ageComparison.isClose ? MatchStatus.partial : MatchStatus.miss),
+              status: guess.ageComparison.match
+                  ? MatchStatus.match
+                  : (guess.ageComparison.isClose
+                      ? MatchStatus.partial
+                      : MatchStatus.miss),
               direction: guess.ageComparison.direction,
               isClose: guess.ageComparison.isClose,
               animate: index == guesses.length - 1,
@@ -152,9 +158,11 @@ class GuessGrid extends StatelessWidget {
             child: AttributeTile(
               label: l10n.playerWordleHeaderHt,
               value: player.displayHeight,
-              status: guess.heightComparison.match 
-                  ? MatchStatus.match 
-                  : (guess.heightComparison.isClose ? MatchStatus.partial : MatchStatus.miss),
+              status: guess.heightComparison.match
+                  ? MatchStatus.match
+                  : (guess.heightComparison.isClose
+                      ? MatchStatus.partial
+                      : MatchStatus.miss),
               direction: guess.heightComparison.direction,
               isClose: guess.heightComparison.isClose,
               animate: index == guesses.length - 1,
@@ -173,12 +181,12 @@ class GuessGrid extends StatelessWidget {
           // Player photo
           CircleAvatar(
             radius: 20,
-            foregroundImage: player.headshot != null
-                ? NetworkImage(player.headshot!)
-                : null,
+            foregroundImage:
+                player.headshot != null ? NetworkImage(player.headshot!) : null,
             onForegroundImageError: (_, __) {},
             backgroundColor: AppColors.neutralBorder,
-            child: const Icon(Icons.person, size: 20, color: AppColors.textSecondary),
+            child: const Icon(Icons.person,
+                size: 20, color: AppColors.textSecondary),
           ),
           const SizedBox(width: 8),
           // Player name

@@ -30,7 +30,7 @@ class DeepDiveCollectionScreen extends StatelessWidget {
             )
           : CustomScrollView(
               slivers: [
-              // Note: T4LScaffold automatically provides header clearance
+                // Note: T4LScaffold automatically provides header clearance
 
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(
@@ -48,8 +48,8 @@ class DeepDiveCollectionScreen extends StatelessWidget {
                       final double ratio = (index % 3 == 0)
                           ? 1.0
                           : (index % 3 == 1)
-                          ? 0.75
-                          : 1.25;
+                              ? 0.75
+                              : 1.25;
                       return _buildDeepDiveCard(
                         context,
                         station,
@@ -161,9 +161,7 @@ class DeepDiveCollectionScreen extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 12),
-
           Text(
             station.title,
             style: TextStyle(
@@ -176,9 +174,7 @@ class DeepDiveCollectionScreen extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-
           const SizedBox(height: 4),
-
           Text(
             station.description,
             style: TextStyle(

@@ -9,7 +9,7 @@ class StandingsDataService {
 
   /// Default constructor - initializes Supabase client
   StandingsDataService() : _supabase = Supabase.instance.client;
-  
+
   /// Testing constructor - allows subclasses without Supabase initialization
   @protected
   StandingsDataService.testing() : _supabase = _DummySupabaseClient();
@@ -30,7 +30,8 @@ class StandingsDataService {
 
       final List<dynamic> jsonList = response.data as List<dynamic>;
       return jsonList
-          .map((json) => ConferenceStandings.fromJson(json as Map<String, dynamic>))
+          .map((json) =>
+              ConferenceStandings.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       debugPrint('StandingsDataService.fetchStandings error: $e');

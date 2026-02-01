@@ -56,4 +56,3 @@ class PlayerWordleApp extends MicroApp {
   @override
   Size get widgetSize => const Size(1, 1);
 }
-

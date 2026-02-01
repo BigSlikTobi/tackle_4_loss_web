@@ -21,7 +21,7 @@ class ModelDownloadDialog extends StatefulWidget {
 
 class _ModelDownloadDialogState extends State<ModelDownloadDialog> {
   final FunctionGemmaService _gemmaService = FunctionGemmaService();
-  
+
   double _progress = 0.0;
   bool _isDownloading = false;
   String? _error;
@@ -46,7 +46,7 @@ class _ModelDownloadDialogState extends State<ModelDownloadDialog> {
           });
         },
       );
-      
+
       // Download complete
       if (mounted) {
         Navigator.of(context).pop();
@@ -70,9 +70,11 @@ class _ModelDownloadDialogState extends State<ModelDownloadDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_error != null) ...[
-            Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 16),
-            Text(_error!, textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+            Text(_error!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _startDownload,

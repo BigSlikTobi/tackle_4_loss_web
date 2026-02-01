@@ -29,8 +29,7 @@ class TimelineGameRow extends StatelessWidget {
     }
 
     // Check if this is a prime time game (evening games)
-    final isPrimeTime =
-        game.gametime.contains('20:') ||
+    final isPrimeTime = game.gametime.contains('20:') ||
         game.gametime.contains('21:') ||
         (game.gametime.contains('PM') &&
             (game.gametime.startsWith('8') || game.gametime.startsWith('9')));
@@ -250,9 +249,9 @@ class TimelineGameRow extends StatelessWidget {
     T4LThemeColors colors,
   ) {
     final team = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == teamId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == teamId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     final isWinner = game.winner == teamId;
 
@@ -264,7 +263,9 @@ class TimelineGameRow extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.9),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),

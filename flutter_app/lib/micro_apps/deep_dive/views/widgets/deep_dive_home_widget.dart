@@ -29,7 +29,8 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
       _controller.loadLatestArticle(settings.locale.languageCode).then((_) {
         // Track latest deep dive for badge
         if (_controller.latestArticle != null) {
-          NewContentService().setLatestDeepDiveId(_controller.latestArticle!.id);
+          NewContentService()
+              .setLatestDeepDiveId(_controller.latestArticle!.id);
         }
         _initializeVideo();
       });
@@ -40,15 +41,16 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
   void _initializeVideo() async {
     final article = _controller.latestArticle;
     if (article?.videoUrl != null) {
-      _videoController = VideoPlayerController.networkUrl(Uri.parse(article!.videoUrl!))
-        ..setLooping(true)
-        ..setVolume(0.0) // Mute by default for widget
-        ..initialize().then((_) {
-          if (mounted) {
-            setState(() {});
-            _videoController!.play();
-          }
-        });
+      _videoController =
+          VideoPlayerController.networkUrl(Uri.parse(article!.videoUrl!))
+            ..setLooping(true)
+            ..setVolume(0.0) // Mute by default for widget
+            ..initialize().then((_) {
+              if (mounted) {
+                setState(() {});
+                _videoController!.play();
+              }
+            });
     }
   }
 
@@ -67,7 +69,7 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
         builder: (context, controller, child) {
           final article = controller.latestArticle;
           final colors = Theme.of(context).extension<T4LThemeColors>()!;
-          
+
           if (controller.isLoading) {
             return Container(
               decoration: BoxDecoration(
@@ -79,13 +81,14 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
           }
 
           if (article == null) {
-             return Container(
+            return Container(
               decoration: BoxDecoration(
                 color: colors.surface,
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Center(
-                child: Icon(Icons.article_outlined, color: colors.textSecondary),
+                child:
+                    Icon(Icons.article_outlined, color: colors.textSecondary),
               ),
             );
           }
@@ -118,7 +121,8 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
                   fit: StackFit.expand,
                   children: [
                     // 1. Media Layer (Video or Image)
-                    if (_videoController != null && _videoController!.value.isInitialized)
+                    if (_videoController != null &&
+                        _videoController!.value.isInitialized)
                       FittedBox(
                         fit: BoxFit.cover,
                         child: SizedBox(
@@ -132,7 +136,7 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
                         imageUrl: article.imageUrl,
                         fit: BoxFit.cover,
                       ),
-                    
+
                     // 2. Gradient Overlay for Text Readability
                     Container(
                       decoration: BoxDecoration(
@@ -158,14 +162,15 @@ class _DeepDiveHomeWidgetState extends State<DeepDiveHomeWidget> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: colors.brand,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
+                            child: const Text(
                               'DEEP DIVE',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,

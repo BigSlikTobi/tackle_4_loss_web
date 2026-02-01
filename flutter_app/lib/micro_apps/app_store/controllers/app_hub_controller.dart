@@ -7,7 +7,9 @@ class AppHubController {
 
   /// Returns all available apps in the ecosystem (excluding App Hub itself and apps on home page).
   List<MicroApp> getAllApps() {
-    return _appRegistry.apps.where((app) => app.id != 'app_hub' && !app.showOnHomePage).toList();
+    return _appRegistry.apps
+        .where((app) => app.id != 'app_hub' && !app.showOnHomePage)
+        .toList();
   }
 
   /// Gets apps filtered by category.
@@ -31,23 +33,24 @@ class AppHubController {
   /// Prioritizes featured apps, then falls back to other apps.
   List<MicroApp> getQuickViewApps() {
     final allApps = _appRegistry.apps;
-    
+
     // 1. Get explicitly featured apps
-    final featured = allApps.where(
-      (app) => _appRegistry.getMetadata(app.id).isFeatured
-    ).toList();
-    
+    final featured = allApps
+        .where((app) => _appRegistry.getMetadata(app.id).isFeatured)
+        .toList();
+
     // 2. If we have fewer than 3, fill with others (excluding system apps like app_hub)
     if (featured.length < 3) {
-      final others = allApps.where(
-        (app) => !featured.contains(app) && 
-                 app.id != 'app_hub' &&
-                 app.category != AppCategory.system
-      ).toList();
-      
+      final others = allApps
+          .where((app) =>
+              !featured.contains(app) &&
+              app.id != 'app_hub' &&
+              app.category != AppCategory.system)
+          .toList();
+
       featured.addAll(others.take(3 - featured.length));
     }
-    
+
     return featured.take(3).toList();
   }
 
@@ -60,15 +63,16 @@ class AppHubController {
   Map<AppCategory, List<MicroApp>> getAppsByCategories() {
     final apps = getAllApps();
     final Map<AppCategory, List<MicroApp>> grouped = {};
-    
+
     for (final category in AppCategory.values) {
       if (category == AppCategory.system) continue; // Skip system apps
-      final categoryApps = apps.where((app) => app.category == category).toList();
+      final categoryApps =
+          apps.where((app) => app.category == category).toList();
       if (categoryApps.isNotEmpty) {
         grouped[category] = categoryApps;
       }
     }
-    
+
     return grouped;
   }
 

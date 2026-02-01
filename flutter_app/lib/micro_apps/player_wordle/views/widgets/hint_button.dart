@@ -9,10 +9,10 @@ import '../../../../design_tokens.dart';
 class HintButton extends StatelessWidget {
   /// Whether the hint has already been used
   final bool hintUsed;
-  
+
   /// The revealed college name (if hint used)
   final String? revealedHint;
-  
+
   /// Callback when hint is requested
   final VoidCallback onUseHint;
 
@@ -28,7 +28,7 @@ class HintButton extends StatelessWidget {
     if (hintUsed && revealedHint != null) {
       return _buildRevealedHint(context);
     }
-    
+
     return _buildHintButton(context);
   }
 

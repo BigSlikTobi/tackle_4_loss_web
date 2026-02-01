@@ -10,19 +10,19 @@ import '../../models/news_feed_item.dart';
 class NewsFeedController extends ChangeNotifier {
   final String languageCode;
   final int _pageSize = 20;
-  
+
   List<FeedItem> _items = [];
   bool _isLoading = false;
   bool _hasMore = true;
   String? _error;
   int _offset = 0;
-  
+
   /// Set of item IDs for efficient de-duplication
   final Set<String> _itemIds = {};
-  
+
   /// Supabase Client to use (injectable for testing)
   final SupabaseClient supabaseClient;
-  
+
   /// Supabase Realtime channel for listening to new news updates
   RealtimeChannel? _realtimeChannel;
 
@@ -43,10 +43,10 @@ class NewsFeedController extends ChangeNotifier {
     _itemIds.clear();
     _hasMore = true;
     _error = null;
-    
+
     // Subscribe to realtime updates
     _subscribeToRealtimeUpdates();
-    
+
     await _fetchPage();
   }
 
@@ -54,7 +54,7 @@ class NewsFeedController extends ChangeNotifier {
   void _subscribeToRealtimeUpdates() {
     // Remove existing subscription if any
     _unsubscribeFromRealtime();
-    
+
     _realtimeChannel = supabaseClient
         .channel('news-feed-updates')
         .onPostgresChanges(
@@ -104,7 +104,7 @@ class NewsFeedController extends ChangeNotifier {
   NewsFeedItem? _createItemFromPayload(Map<String, dynamic> record) {
     final id = record['id']?.toString();
     final createdAt = record['created_at'] as String?;
-    
+
     if (id == null || createdAt == null) return null;
 
     // Build the image URL if image_file is present
@@ -119,7 +119,8 @@ class NewsFeedController extends ChangeNotifier {
       id: id,
       xPost: record['x_post'] as String? ?? '',
       imageUrl: imageUrl,
-      source: null, // Not available in realtime payload, will be enriched on refresh
+      source:
+          null, // Not available in realtime payload, will be enriched on refresh
       headline: record['headline'] as String?,
       players: record['players'] as List<dynamic>?,
       teams: record['teams'] as List<dynamic>?,
@@ -177,7 +178,8 @@ class NewsFeedController extends ChangeNotifier {
       }
 
       _hasMore = data['hasMore'] as bool? ?? false;
-      _offset += newItems.length; // Advance offset by fetched count, not added count
+      _offset +=
+          newItems.length; // Advance offset by fetched count, not added count
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -197,4 +199,3 @@ class NewsFeedController extends ChangeNotifier {
     super.dispose();
   }
 }
-

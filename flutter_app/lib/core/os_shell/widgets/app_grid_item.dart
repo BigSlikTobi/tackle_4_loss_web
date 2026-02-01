@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../design_tokens.dart';
 import '../../micro_app.dart';
-import '../../theme/t4l_theme.dart';
-import '../../services/settings_service.dart';
-import 'package:provider/provider.dart';
 import 'micro_app_icon_container.dart';
 
 class OSShellAppItem extends StatelessWidget {

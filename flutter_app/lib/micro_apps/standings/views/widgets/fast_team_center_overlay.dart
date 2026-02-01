@@ -86,8 +86,7 @@ class _LastGameCard extends StatelessWidget {
 
     final isWin =
         teamScore != null && opponentScore != null && teamScore > opponentScore;
-    final isTie =
-        teamScore != null &&
+    final isTie = teamScore != null &&
         opponentScore != null &&
         teamScore == opponentScore;
 
@@ -97,9 +96,9 @@ class _LastGameCard extends StatelessWidget {
     final resultText = isWin ? 'W' : (isTie ? 'T' : 'L');
 
     final opponent = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     return GestureDetector(
       onTap: onTap,
@@ -188,7 +187,10 @@ class _LastGameCard extends StatelessWidget {
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white
+                                    : Colors.white.withValues(alpha: 0.9),
                           ),
                           padding: const EdgeInsets.all(4),
                           child: Image.asset(opponent.logoUrl),
@@ -228,14 +230,14 @@ class _NextGameCard extends StatelessWidget {
     final opponentId = isHome ? game.awayTeam : game.homeTeam;
 
     final team = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == teamId,
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == teamId,
+          orElse: () => teamService.getTeams().first,
+        );
 
     final opponent = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     final dayFormat = DateFormat('EEE');
     final gameDateTime = '${dayFormat.format(game.gameday)} ${game.gametime}';
@@ -314,7 +316,9 @@ class _TeamBadge extends StatelessWidget {
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.white.withValues(alpha: 0.9),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.white.withValues(alpha: 0.9),
         border: Border.all(
           color: colors.brand.withValues(alpha: 0.3),
           width: 1,

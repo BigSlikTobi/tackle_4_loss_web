@@ -125,9 +125,8 @@ class T4LTheme {
     // Else -> Use default brand color
     final brandColor = team != null ? team.secondaryColor : AppColors.brandBase;
     // brandLight is what will be used for card backgrounds in widgets
-    final brandLightColor = team != null
-        ? team.primaryColor
-        : AppColors.brandLight;
+    final brandLightColor =
+        team != null ? team.primaryColor : AppColors.brandLight;
     // Calculate contrast text based on the actual brandLight color
     final contrastTextColor = _getContrastText(brandLightColor);
 
@@ -168,9 +167,8 @@ class T4LTheme {
     // Else -> Use default brand color
     final brandColor = team != null ? team.primaryColor : AppColors.brandBase;
     // brandLight is what will be used for card backgrounds in widgets
-    final brandLightColor = team != null
-        ? team.secondaryColor
-        : AppColors.brandLight;
+    final brandLightColor =
+        team != null ? team.secondaryColor : AppColors.brandLight;
     // Calculate contrast text based on the actual brandLight color
     final contrastTextColor = _getContrastText(brandLightColor);
 

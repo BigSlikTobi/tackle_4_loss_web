@@ -21,14 +21,13 @@ import 'core/services/installed_apps_service.dart';
 import 'core/services/audio_player_service.dart';
 import 'core/services/new_content_service.dart';
 
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   // 1. Initialize Bindings
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load Env
   await dotenv.load(fileName: ".env");
 
@@ -44,21 +43,21 @@ Future<void> main() async {
   );
 
   // 2. Register MicroApps
-  // In a real app we might load these dynamically or via reflection, 
+  // In a real app we might load these dynamically or via reflection,
   // but for now we register them manually on boot.
-  AppRegistry().register(AppHubApp()); 
-  AppRegistry().register(DeepDiveApp()); 
+  AppRegistry().register(AppHubApp());
+  AppRegistry().register(DeepDiveApp());
   AppRegistry().register(BreakingNewsApp());
   AppRegistry().register(RadioApp());
   AppRegistry().register(StandingsApp());
   AppRegistry().register(GameReportsApp());
   AppRegistry().register(PlayerWordleApp());
-  
+
   // 3. Initialize Services
   await InstalledAppsService().init();
   await AudioPlayerService().init(); // Initialize Audio Service
   await NewContentService().init(); // Initialize new content tracking
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -66,7 +65,9 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: InstalledAppsService()),
         ChangeNotifierProxyProvider<SettingsService, RadioController>(
           create: (context) => RadioController(
-            languageCode: Provider.of<SettingsService>(context, listen: false).locale.languageCode,
+            languageCode: Provider.of<SettingsService>(context, listen: false)
+                .locale
+                .languageCode,
           ),
           update: (context, settings, controller) {
             return controller!..loadStations(settings.locale.languageCode);
@@ -105,12 +106,12 @@ class Tackle4LossApp extends StatelessWidget {
             Locale('en'),
             Locale('de'),
           ],
-          
+
           // Use our standardized T4LTheme
           themeMode: settings.themeMode,
           theme: T4LTheme.light(team: settings.selectedTeam),
           darkTheme: T4LTheme.dark(team: settings.selectedTeam),
-          
+
           builder: (context, child) {
             return child!; // Application content
           },

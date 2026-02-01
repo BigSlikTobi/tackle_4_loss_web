@@ -25,7 +25,8 @@ class TeamMenuButton extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
-        color: (color ?? const Color(0xFF252836)).withValues(alpha: 0.9), // Team color or Dark Blue-Grey
+        color: (color ?? const Color(0xFF252836))
+            .withValues(alpha: 0.9), // Team color or Dark Blue-Grey
         borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: onTap,
@@ -72,13 +73,14 @@ class TeamMenuButton extends StatelessWidget {
                               ))
                         : Icon(
                             icon,
-                            color: const Color(0xFF4ADE80), // Green accent from mockup
+                            color: const Color(
+                                0xFF4ADE80), // Green accent from mockup
                             size: 24,
                           ),
                   ),
                 ),
                 const SizedBox(width: 16),
-                
+
                 // Label
                 Expanded(
                   child: Text(
@@ -89,7 +91,7 @@ class TeamMenuButton extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Chevron
                 const Icon(
                   Icons.chevron_right,

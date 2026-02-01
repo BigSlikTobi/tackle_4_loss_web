@@ -6,9 +6,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tackle4loss_mobile/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('Localization switches between EN and DE', (WidgetTester tester) async {
+  testWidgets('Localization switches between EN and DE',
+      (WidgetTester tester) async {
     final settings = SettingsService();
-    
+
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: settings,
@@ -24,7 +25,8 @@ void main() {
               ],
               supportedLocales: const [Locale('en'), Locale('de')],
               home: Builder(
-                builder: (context) => Text(AppLocalizations.of(context)!.navHome),
+                builder: (context) =>
+                    Text(AppLocalizations.of(context)!.navHome),
               ),
             );
           },

@@ -8,7 +8,7 @@ import 'package:tackle4loss_mobile/micro_apps/standings/services/standings_data_
 /// Mock StandingsService that doesn't require Supabase
 class MockStandingsService extends StandingsService {
   MockStandingsService() : super.testing();
-  
+
   @override
   Future<List<Game>> fetchGames() async {
     return [];
@@ -18,7 +18,7 @@ class MockStandingsService extends StandingsService {
 /// Mock StandingsDataService that doesn't require Supabase
 class MockStandingsDataService extends StandingsDataService {
   MockStandingsDataService() : super.testing();
-  
+
   @override
   Future<List<ConferenceStandings>> fetchStandings({int? season}) async {
     return [];

@@ -35,9 +35,8 @@ class TeamStandingsCard extends StatelessWidget {
           // EMOTIONAL DESIGN: Use brandLight as card background
           color: colors.brandLight,
           border: Border.all(
-            color: isExpanded
-                ? colors.brand
-                : colors.brand.withValues(alpha: 0.3),
+            color:
+                isExpanded ? colors.brand : colors.brand.withValues(alpha: 0.3),
             width: isExpanded ? 2 : 1,
           ),
           boxShadow: isExpanded

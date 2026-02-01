@@ -68,7 +68,7 @@ class _GameChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -108,7 +108,7 @@ class _GameChip extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            
+
             // Teams and score
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -181,23 +181,24 @@ class _TeamLogo extends StatelessWidget {
           height: 24,
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
-          return Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Center(
-              child: Text(
-                teamCode,
-                style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+            return Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(4),
               ),
-            ),
-          );
-        },
+              child: Center(
+                child: Text(
+                  teamCode,
+                  style:
+                      const TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
+                ),
+              ),
+            );
+          },
+        ),
       ),
-    ),
-  );
+    );
   }
 }

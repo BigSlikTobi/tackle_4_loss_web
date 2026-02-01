@@ -24,26 +24,30 @@ class BreakingNewsApp implements MicroApp {
   IconData get icon => Icons.flash_on_rounded;
 
   @override
-  String get iconAssetPath => 'lib/micro_apps/breaking_news/store_assets/breaking_news_icon.png';
+  String get iconAssetPath =>
+      'lib/micro_apps/breaking_news/store_assets/breaking_news_icon.png';
 
   @override
-  String? get iconDarkAssetPath => 'lib/micro_apps/breaking_news/store_assets/news_breaking_dark.svg';
+  String? get iconDarkAssetPath =>
+      'lib/micro_apps/breaking_news/store_assets/news_breaking_dark.svg';
 
   @override
-  String? get iconLightAssetPath => 'lib/micro_apps/breaking_news/store_assets/breaking_news_lite.svg';
+  String? get iconLightAssetPath =>
+      'lib/micro_apps/breaking_news/store_assets/breaking_news_lite.svg';
 
   @override
   Color get themeColor => const Color(0xFFD32F2F); // Red
-  
+
   @override
-  String get storeImageAsset => 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=3540&auto=format&fit=crop';
+  String get storeImageAsset =>
+      'https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=3540&auto=format&fit=crop';
 
   @override
   String get descriptionAsset => ''; // To be implemented
 
   @override
   WidgetBuilder get page => (context) => const BreakingNewsListScreen();
-  
+
   @override
   Widget buildPage(BuildContext context, {Object? arguments}) {
     String? initialArticleId;
@@ -69,4 +73,3 @@ class BreakingNewsApp implements MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const BreakingNewsWidget();
 }
-

@@ -18,11 +18,11 @@ class AudioPlayerService {
   @visibleForTesting
   AudioPlayerService.testing();
 
-  /// Initialize the audio service. 
+  /// Initialize the audio service.
   /// This should be called once at app startup.
   Future<void> init() async {
     if (_audioHandler != null) return;
-    
+
     _audioHandler = await AudioService.init(
       builder: () => T4LAudioHandler(),
       config: const AudioServiceConfig(
@@ -32,13 +32,13 @@ class AudioPlayerService {
       ),
     );
   }
-  
+
   /// Stream of the current playback state (playing, paused, buffering, etc.)
-  Stream<PlaybackState> get playbackStateStream => 
+  Stream<PlaybackState> get playbackStateStream =>
       _audioHandler?.playbackState ?? Stream.value(PlaybackState());
-      
+
   /// Stream of the current media item (title, album, art, etc.)
-  Stream<MediaItem?> get mediaItemStream => 
+  Stream<MediaItem?> get mediaItemStream =>
       _audioHandler?.mediaItem ?? Stream.value(null);
 
   /// Current value helpers
@@ -46,7 +46,8 @@ class AudioPlayerService {
   MediaItem? get currentMediaItem => _audioHandler?.mediaItem.value;
 
   /// Play a specific URL with metadata
-  Future<void> play(String url, String title, String author, String imageUrl) async {
+  Future<void> play(
+      String url, String title, String author, String imageUrl) async {
     if (_audioHandler == null) return;
 
     final mediaItem = MediaItem(
@@ -61,16 +62,19 @@ class AudioPlayerService {
   }
 
   /// Play a list of items (Playlist)
-  Future<void> playPlaylist(List<Map<String, String>> items, {int initialIndex = 0}) async {
+  Future<void> playPlaylist(List<Map<String, String>> items,
+      {int initialIndex = 0}) async {
     if (_audioHandler == null) return;
-    
-    final mediaItems = items.map((item) => MediaItem(
-      id: item['url']!,
-      album: "T4L Radio",
-      title: item['title']!,
-      artist: item['author'] ?? "Team T4L",
-      artUri: Uri.parse(item['imageUrl']!),
-    )).toList();
+
+    final mediaItems = items
+        .map((item) => MediaItem(
+              id: item['url']!,
+              album: "T4L Radio",
+              title: item['title']!,
+              artist: item['author'] ?? "Team T4L",
+              artUri: Uri.parse(item['imageUrl']!),
+            ))
+        .toList();
 
     await _audioHandler!.addQueueItems(mediaItems, initialIndex: initialIndex);
   }
@@ -78,7 +82,8 @@ class AudioPlayerService {
   Future<void> resume() async => await _audioHandler?.play();
   Future<void> pause() async => await _audioHandler?.pause();
   Future<void> stop() async => await _audioHandler?.stop();
-  Future<void> seek(Duration position) async => await _audioHandler?.seek(position);
+  Future<void> seek(Duration position) async =>
+      await _audioHandler?.seek(position);
   Future<void> skipToNext() async => await _audioHandler?.skipToNext();
   Future<void> skipToPrevious() async => await _audioHandler?.skipToPrevious();
 
@@ -86,14 +91,39 @@ class AudioPlayerService {
   Future<void> insertNext(List<Map<String, String>> items) async {
     if (_audioHandler == null) return;
 
-    final mediaItems = items.map((item) => MediaItem(
-      id: item['url']!,
-      album: "T4L Radio",
-      title: item['title']!,
-      artist: item['author'] ?? "Team T4L",
-      artUri: Uri.parse(item['imageUrl']!),
-    )).toList();
+    final mediaItems = items
+        .map((item) => MediaItem(
+              id: item['url']!,
+              album: "T4L Radio",
+              title: item['title']!,
+              artist: item['author'] ?? "Team T4L",
+              artUri: Uri.parse(item['imageUrl']!),
+            ))
+        .toList();
 
     await _audioHandler!.insertQueueItemsNext(mediaItems);
+  }
+
+  /// Stream that emits when the queue is exhausted (all items played)
+  /// Listen to this to fetch and append more content for continuous playback
+  Stream<void> get onQueueExhausted =>
+      _audioHandler?.onQueueExhausted ?? const Stream.empty();
+
+  /// Append items to the end of the queue (for continuous streaming)
+  /// If queue was exhausted, this will resume playback with the new content
+  Future<void> appendToQueue(List<Map<String, String>> items) async {
+    if (_audioHandler == null) return;
+
+    final mediaItems = items
+        .map((item) => MediaItem(
+              id: item['url']!,
+              album: "T4L Radio",
+              title: item['title']!,
+              artist: item['author'] ?? "Team T4L",
+              artUri: Uri.parse(item['imageUrl']!),
+            ))
+        .toList();
+
+    await _audioHandler!.appendQueueItems(mediaItems);
   }
 }

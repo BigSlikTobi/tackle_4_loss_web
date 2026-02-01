@@ -23,13 +23,15 @@ class AppHubApp extends MicroApp {
   IconData get icon => Icons.apps;
 
   @override
-  String get iconAssetPath => 'lib/micro_apps/app_store/store_assets/app_store_icon.png';
+  String get iconAssetPath =>
+      'lib/micro_apps/app_store/store_assets/app_store_icon.png';
 
   @override
   Color get themeColor => Colors.blueAccent;
 
   @override
-  String get storeImageAsset => 'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=3540&auto=format&fit=crop';
+  String get storeImageAsset =>
+      'https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=3540&auto=format&fit=crop';
 
   @override
   String get descriptionAsset => '';
@@ -46,4 +48,3 @@ class AppHubApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const SizedBox();
 }
-

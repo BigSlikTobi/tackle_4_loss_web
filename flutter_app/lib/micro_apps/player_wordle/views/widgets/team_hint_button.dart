@@ -10,19 +10,19 @@ import '../../../../core/theme/t4l_theme.dart';
 class TeamHintButton extends StatelessWidget {
   /// Whether the team hint can be used (after 3 guesses without correct team)
   final bool canUse;
-  
+
   /// Whether the user has enough points (>= 50)
   final bool hasEnoughPoints;
-  
+
   /// Current points balance
   final int totalPoints;
-  
+
   /// The revealed team name (if hint used)
   final String? revealedTeam;
-  
+
   /// Callback when hint is requested
   final VoidCallback onUseHint;
-  
+
   /// Cost of the team hint
   static const int cost = 50;
 
@@ -41,17 +41,17 @@ class TeamHintButton extends StatelessWidget {
     if (!canUse && revealedTeam == null) {
       return const SizedBox.shrink();
     }
-    
+
     if (revealedTeam != null) {
       return _buildRevealedHint(context);
     }
-    
+
     return _buildHintButton(context);
   }
 
   Widget _buildRevealedHint(BuildContext context) {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.space2,
@@ -90,13 +90,11 @@ class TeamHintButton extends StatelessWidget {
   Widget _buildHintButton(BuildContext context) {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final isEnabled = hasEnoughPoints;
-    
+
     return TextButton.icon(
       onPressed: isEnabled ? onUseHint : null,
       style: TextButton.styleFrom(
-        foregroundColor: isEnabled 
-            ? colors.brand 
-            : colors.textSecondary,
+        foregroundColor: isEnabled ? colors.brand : colors.textSecondary,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.space2,
           vertical: AppSpacing.space1,
@@ -109,7 +107,7 @@ class TeamHintButton extends StatelessWidget {
         ),
       ),
       icon: Icon(
-        Icons.shield_outlined, 
+        Icons.shield_outlined,
         size: 18,
         color: isEnabled ? colors.brand : colors.textSecondary,
       ),
@@ -125,12 +123,10 @@ class TeamHintButton extends StatelessWidget {
             ),
           ),
           Text(
-            isEnabled 
-                ? '$cost PTS' 
-                : 'Need $cost pts (have $totalPoints)',
+            isEnabled ? '$cost PTS' : 'Need $cost pts (have $totalPoints)',
             style: TextStyle(
               fontSize: 9,
-              color: isEnabled 
+              color: isEnabled
                   ? colors.brand.withValues(alpha: 0.7)
                   : colors.textSecondary.withValues(alpha: 0.7),
             ),
@@ -140,4 +136,3 @@ class TeamHintButton extends StatelessWidget {
     );
   }
 }
-

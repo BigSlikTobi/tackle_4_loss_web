@@ -6,13 +6,13 @@ class BackgroundHintWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return const Stack(
       children: [
         // Left Hint (Refuse)
         Align(
           alignment: Alignment.centerLeft,
           child: Padding(
-            padding: const EdgeInsets.only(left: 20),
+            padding: EdgeInsets.only(left: 20),
             child: Opacity(
               opacity: 0.4, // Increased visibility
               child: RotatedBox(
@@ -26,12 +26,12 @@ class BackgroundHintWidget extends StatelessWidget {
             ),
           ),
         ),
-        
+
         // Right Hint (Save)
         Align(
           alignment: Alignment.centerRight,
           child: Padding(
-            padding: const EdgeInsets.only(right: 20),
+            padding: EdgeInsets.only(right: 20),
             child: Opacity(
               opacity: 0.4, // Increased visibility
               child: Icon(
@@ -42,12 +42,12 @@ class BackgroundHintWidget extends StatelessWidget {
             ),
           ),
         ),
-        
-        // Top/Center Hint (Flip?) 
+
+        // Top/Center Hint (Flip?)
         // Or specific arrows like user drew?
-        // Let's stick to simple side indicators as base, 
+        // Let's stick to simple side indicators as base,
         // User drew curved arrows at top.
-        // We can add those as custom painters later if needed, 
+        // We can add those as custom painters later if needed,
         // but simple icons are cleaner for now.
       ],
     );

@@ -19,7 +19,8 @@ class RosterPlayer {
 
   factory RosterPlayer.fromJson(Map<String, dynamic> json) {
     return RosterPlayer(
-      id: json['id'] as String? ?? '', // ID might not be in response, use empty string if so
+      id: json['id'] as String? ??
+          '', // ID might not be in response, use empty string if so
       name: json['name'] as String? ?? 'Unknown',
       number: json['number'] as String? ?? '',
       position: json['position'] as String? ?? '',
@@ -38,7 +39,8 @@ class RosterPlayer {
         position: 'QB',
         experience: '19Y',
         college: 'California',
-        imageUrl: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '2',
@@ -47,7 +49,8 @@ class RosterPlayer {
         position: 'WR',
         experience: '2Y',
         college: 'Ohio State',
-        imageUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '3',
@@ -56,7 +59,8 @@ class RosterPlayer {
         position: 'RB',
         experience: '2Y',
         college: 'Iowa State',
-        imageUrl: 'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1552058544-f2b08422138a?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '4',
@@ -65,16 +69,18 @@ class RosterPlayer {
         position: 'T',
         experience: '13Y',
         college: 'USC',
-        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop',
       ),
-       const RosterPlayer(
+      const RosterPlayer(
         id: '5',
         name: 'Mike Williams',
         number: '18',
         position: 'WR',
         experience: '7Y',
         college: 'Clemson',
-        imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
       ),
     ];
   }
@@ -88,7 +94,8 @@ class RosterPlayer {
         position: 'CB',
         experience: '2Y',
         college: 'Cincinnati',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '102',
@@ -97,7 +104,8 @@ class RosterPlayer {
         position: 'DT',
         experience: '5Y',
         college: 'Alabama',
-        imageUrl: 'https://images.unsplash.com/photo-1531384441138-2736e62e0566?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1531384441138-2736e62e0566?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '103',
@@ -106,7 +114,8 @@ class RosterPlayer {
         position: 'LB',
         experience: '10Y',
         college: 'Alabama',
-        imageUrl: 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '104',
@@ -115,7 +124,8 @@ class RosterPlayer {
         position: 'CB',
         experience: '6Y',
         college: 'Kan. State',
-        imageUrl: 'https://images.unsplash.com/photo-1499996860823-5214fcc65f6f?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1499996860823-5214fcc65f6f?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '105',
@@ -124,7 +134,8 @@ class RosterPlayer {
         position: 'DE',
         experience: '2Y',
         college: 'Florida St.',
-        imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop',
       ),
     ];
   }
@@ -138,7 +149,8 @@ class RosterPlayer {
         position: 'K',
         experience: '12Y',
         college: 'Missouri West.',
-        imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop',
       ),
       const RosterPlayer(
         id: '202',
@@ -147,7 +159,8 @@ class RosterPlayer {
         position: 'P',
         experience: '15Y',
         college: 'SMU',
-        imageUrl: 'https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?w=200&h=200&fit=crop',
+        imageUrl:
+            'https://images.unsplash.com/photo-1583195764036-6dc248ac07d9?w=200&h=200&fit=crop',
       ),
     ];
   }

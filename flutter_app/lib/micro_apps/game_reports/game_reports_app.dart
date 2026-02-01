@@ -25,16 +25,19 @@ class GameReportsApp extends MicroApp {
   IconData get icon => Icons.article_rounded;
 
   @override
-  String get iconAssetPath => 'lib/micro_apps/game_reports/store_assets/game_reports_icon.png';
+  String get iconAssetPath =>
+      'lib/micro_apps/game_reports/store_assets/game_reports_icon.png';
 
   @override
   Color get themeColor => const Color(0xFFFF6B35); // Vibrant orange
 
   @override
-  String get storeImageAsset => 'lib/micro_apps/game_reports/store_assets/game_reports_store.png';
+  String get storeImageAsset =>
+      'lib/micro_apps/game_reports/store_assets/game_reports_store.png';
 
   @override
-  String get descriptionAsset => 'lib/micro_apps/game_reports/store_assets/description.md';
+  String get descriptionAsset =>
+      'lib/micro_apps/game_reports/store_assets/description.md';
 
   @override
   WidgetBuilder get page => (context) => const GameReportScreen();
@@ -48,4 +51,3 @@ class GameReportsApp extends MicroApp {
   @override
   WidgetBuilder get widgetBuilder => (context) => const SizedBox.shrink();
 }
-

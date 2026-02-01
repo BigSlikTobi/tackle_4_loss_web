@@ -7,7 +7,7 @@ void main() {
       final service = NavigationService();
       service.trackAppLaunch('deep_dive');
       expect(service.lastAppId, 'deep_dive');
-      
+
       service.trackAppLaunch('breaking_news');
       expect(service.lastAppId, 'breaking_news');
     });
@@ -15,10 +15,10 @@ void main() {
     test('trackAppLaunch does not update lastAppId for system apps', () {
       final service = NavigationService();
       service.trackAppLaunch('deep_dive'); // Set initial
-      
+
       service.trackAppLaunch('app_hub');
       expect(service.lastAppId, 'deep_dive'); // Should still be deep_dive
-      
+
       service.trackAppLaunch('settings');
       expect(service.lastAppId, 'deep_dive'); // Should still be deep_dive
     });

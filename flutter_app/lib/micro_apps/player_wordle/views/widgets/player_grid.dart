@@ -84,7 +84,9 @@ class PlayerGrid extends StatelessWidget {
                         shape: BoxShape.circle,
                         color: colors.surface,
                         border: Border.all(
-                          color: isGuessed ? colors.border : colors.brand.withValues(alpha: 0.3),
+                          color: isGuessed
+                              ? colors.border
+                              : colors.brand.withValues(alpha: 0.3),
                           width: 2,
                         ),
                         boxShadow: AppShadows.sm,
@@ -94,7 +96,8 @@ class PlayerGrid extends StatelessWidget {
                             ? Image.network(
                                 player.headshot!,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _buildPlaceholder(colors),
+                                errorBuilder: (_, __, ___) =>
+                                    _buildPlaceholder(colors),
                               )
                             : _buildPlaceholder(colors),
                       ),
@@ -106,7 +109,9 @@ class PlayerGrid extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: isGuessed ? colors.textSecondary : colors.textPrimary,
+                        color: isGuessed
+                            ? colors.textSecondary
+                            : colors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 2,

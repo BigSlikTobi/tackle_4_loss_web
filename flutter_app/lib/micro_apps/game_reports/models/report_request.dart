@@ -2,13 +2,13 @@
 class ReportRequest {
   /// The game ID to generate a report for.
   final String gameId;
-  
+
   /// Optional team to focus the narrative on.
   final String? focusTeam;
-  
+
   /// Report style preference.
   final ReportStyle style;
-  
+
   /// Whether to use cloud enhancement.
   final bool useCloudEnhancement;
 
@@ -24,10 +24,10 @@ class ReportRequest {
 enum ReportStyle {
   /// Brief, easy-to-read summary for casual fans.
   casual,
-  
+
   /// Detailed breakdown with more context.
   detailed,
-  
+
   /// Stats-focused analysis for analytics enthusiasts.
   stats,
 }
@@ -43,7 +43,7 @@ extension ReportStyleExtension on ReportStyle {
         return 'Stats Focus';
     }
   }
-  
+
   String get description {
     switch (this) {
       case ReportStyle.casual:

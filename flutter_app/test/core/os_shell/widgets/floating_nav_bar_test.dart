@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tackle4loss_mobile/core/os_shell/widgets/t4l_floating_nav_bar.dart';
 import 'package:tackle4loss_mobile/core/widgets/notification_badge.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 void main() {
-  testWidgets('T4LFloatingNavBar renders all buttons', (WidgetTester tester) async {
+  testWidgets('T4LFloatingNavBar renders all buttons',
+      (WidgetTester tester) async {
     bool homePressed = false;
     bool gameCenterPressed = false;
     bool historyPressed = false;
@@ -35,7 +35,7 @@ void main() {
     expect(find.byTooltip('Game Center'), findsOneWidget);
     expect(find.byTooltip('History'), findsOneWidget);
     expect(find.byTooltip('Settings'), findsOneWidget);
-    
+
     // Center button uses Image, not Icon
     expect(find.byType(Image), findsOneWidget);
 
@@ -56,7 +56,8 @@ void main() {
     expect(teamPressed, isTrue);
   });
 
-  testWidgets('T4LFloatingNavBar shows badge when showGameCenterBadge is true', (WidgetTester tester) async {
+  testWidgets('T4LFloatingNavBar shows badge when showGameCenterBadge is true',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
@@ -77,7 +78,8 @@ void main() {
     expect(find.text('1'), findsOneWidget);
   });
 
-  testWidgets('T4LFloatingNavBar hides badge when showGameCenterBadge is false', (WidgetTester tester) async {
+  testWidgets('T4LFloatingNavBar hides badge when showGameCenterBadge is false',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

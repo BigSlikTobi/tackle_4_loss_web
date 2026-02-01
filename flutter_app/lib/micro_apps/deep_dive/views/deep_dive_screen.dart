@@ -27,7 +27,7 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
   late final DeepDiveDetailController _controller;
   late final PageController _pageController;
   final ScrollController _scrollController = ScrollController();
-  int _currentPage = 0;
+  final int _currentPage = 0;
 
   @override
   void initState() {
@@ -170,8 +170,8 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                           colors.brand.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(8),
                                       border: Border.all(
-                                        color: colors.brand
-                                            .withValues(alpha: 0.2),
+                                        color:
+                                            colors.brand.withValues(alpha: 0.2),
                                       ),
                                     ),
                                     child: Row(
@@ -214,10 +214,8 @@ class _DeepDiveScreenState extends State<DeepDiveScreen> {
                                 children: [
                                   if (sections.isNotEmpty)
                                     Column(
-                                      children: sections
-                                          .asMap()
-                                          .entries
-                                          .map((entry) {
+                                      children:
+                                          sections.asMap().entries.map((entry) {
                                         final index = entry.key;
                                         final section = entry.value;
                                         return Padding(

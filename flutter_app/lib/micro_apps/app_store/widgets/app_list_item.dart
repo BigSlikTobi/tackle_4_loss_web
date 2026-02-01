@@ -45,7 +45,8 @@ class AppStoreListItem extends StatelessWidget {
             // App Icon
             Builder(
               builder: (context) {
-                final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+                final isDarkMode =
+                    Theme.of(context).brightness == Brightness.dark;
                 final backgroundColor = isDarkMode
                     ? AppColors.neutralBase
                     : AppColors.backgroundDark;
@@ -65,7 +66,11 @@ class AppStoreListItem extends StatelessWidget {
                         iconAssetPath,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(icon, color: isDarkMode ? AppColors.backgroundDark : AppColors.neutralBase, size: 30);
+                          return Icon(icon,
+                              color: isDarkMode
+                                  ? AppColors.backgroundDark
+                                  : AppColors.neutralBase,
+                              size: 30);
                         },
                       ),
                     ),

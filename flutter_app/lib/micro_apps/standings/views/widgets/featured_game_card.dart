@@ -283,9 +283,9 @@ class FeaturedGameCard extends StatelessWidget {
     Color teamColor,
   ) {
     final team = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == teamId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == teamId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     return Column(
       children: [

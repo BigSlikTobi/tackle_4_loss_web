@@ -37,12 +37,12 @@ void main() {
 
     test('loadAllArticles updates internal state', () async {
       final future = controller.loadAllArticles('en');
-      
+
       // Loading should be true while future is pending
       expect(controller.isLoading, true);
-      
+
       await future;
-      
+
       // Loading should be false after completion
       expect(controller.isLoading, false);
       expect(controller.articles.length, 1);

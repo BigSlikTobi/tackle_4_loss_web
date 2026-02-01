@@ -105,7 +105,7 @@ class FunctionExecutor {
   String _generateOpening(Game game) {
     final winner = game.winner;
     final venue = game.stadium ?? 'the stadium';
-    
+
     if (winner == null) {
       return 'In a hard-fought Week ${game.week} matchup at $venue, '
           'the ${game.awayTeam} and ${game.homeTeam} played to a '
@@ -113,8 +113,9 @@ class FunctionExecutor {
     }
 
     final isHomeWinner = winner == game.homeTeam;
-    final winnerText = isHomeWinner ? 'The home team' : 'The visiting ${game.awayTeam}';
-    
+    final winnerText =
+        isHomeWinner ? 'The home team' : 'The visiting ${game.awayTeam}';
+
     return '$winnerText emerged victorious in Week ${game.week} action at $venue, '
         'defeating the opponent ${game.awayScore}-${game.homeScore}.';
   }
@@ -126,7 +127,8 @@ class FunctionExecutor {
       buffer.writeln('This one was never really close, as ${game.winner} '
           'controlled the game from start to finish.');
     } else if (scoreDiff <= 7) {
-      buffer.writeln('It was a back-and-forth battle that came down to the wire.');
+      buffer.writeln(
+          'It was a back-and-forth battle that came down to the wire.');
     } else {
       buffer.writeln('The game featured solid performances from both sides.');
     }
@@ -178,11 +180,12 @@ class FunctionExecutor {
     final buffer = StringBuffer();
 
     buffer.writeln('**Game Statistics:**');
-    buffer.writeln('- Final Score: ${game.awayTeam} ${game.awayScore} @ ${game.homeTeam} ${game.homeScore}');
+    buffer.writeln(
+        '- Final Score: ${game.awayTeam} ${game.awayScore} @ ${game.homeTeam} ${game.homeScore}');
     buffer.writeln('- Total Points: $total');
     buffer.writeln('- Point Differential: $scoreDiff');
     buffer.writeln('- Week ${game.week} | ${game.gameType} Game');
-    
+
     if (game.isOvertime) {
       buffer.writeln('- Overtime: Yes');
     }

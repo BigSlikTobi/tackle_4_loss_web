@@ -21,8 +21,8 @@ class StandingsController extends ChangeNotifier {
   StandingsController({
     StandingsService? scheduleService,
     StandingsDataService? standingsService,
-  }) : _scheduleService = scheduleService ?? StandingsService(),
-       _standingsService = standingsService ?? StandingsDataService();
+  })  : _scheduleService = scheduleService ?? StandingsService(),
+        _standingsService = standingsService ?? StandingsDataService();
 
   // Tab State
   GameCenterTab _activeTab = GameCenterTab.schedule;

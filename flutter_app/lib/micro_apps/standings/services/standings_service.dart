@@ -9,7 +9,7 @@ class StandingsService {
 
   /// Default constructor - initializes Supabase client
   StandingsService() : _supabase = Supabase.instance.client;
-  
+
   /// Testing constructor - allows subclasses without Supabase initialization
   @protected
   StandingsService.testing() : _supabase = _DummySupabaseClient();
@@ -38,11 +38,11 @@ class StandingsService {
   /// Returns a map where keys are week numbers and values are lists of games.
   Map<int, List<Game>> groupGamesByWeek(List<Game> games) {
     final Map<int, List<Game>> grouped = {};
-    
+
     for (final game in games) {
       grouped.putIfAbsent(game.week, () => []).add(game);
     }
-    
+
     return grouped;
   }
 

@@ -21,19 +21,21 @@ class TeamRosterScreen extends StatefulWidget {
   State<TeamRosterScreen> createState() => _TeamRosterScreenState();
 }
 
-class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerProviderStateMixin {
+class _TeamRosterScreenState extends State<TeamRosterScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _tabs = ['OFFENSE', 'DEFENSE', 'SPECIAL TEAMS'];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this, initialIndex: 1);
-    
+    _tabController =
+        TabController(length: _tabs.length, vsync: this, initialIndex: 1);
+
     // Load roster data when screen opens (safe due to controller check)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.controller.loadTeamRoster(widget.team.id);
-      
+
       // Preload Offense and Special Teams since Defense was preloaded in Overlay
       _preloadImages(widget.controller.offenseRoster);
       _preloadImages(widget.controller.specialTeamsRoster);
@@ -59,82 +61,87 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ChangeNotifierProvider.value(
-      value: widget.controller,
-      child: Scaffold(
-        backgroundColor: Colors.transparent, // Transparent for blur to work
-        body: Stack(
-          children: [
-          // Background Blur (same as TeamCenterOverlay)
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-
-          // Gradient overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    widget.team.primaryColor.withValues(alpha: 0.15),
-                    colors.background.withValues(alpha: 0.0),
-                  ],
-                  stops: const [0.0, 0.4],
+        value: widget.controller,
+        child: Scaffold(
+          backgroundColor: Colors.transparent, // Transparent for blur to work
+          body: Stack(
+            children: [
+              // Background Blur (same as TeamCenterOverlay)
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(color: Colors.transparent),
                 ),
               ),
-            ),
-          ),
-          
-          SafeArea(
-            child: Column(
-              children: [
-                // 1. Header
-                _buildHeader(colors),
 
-                // 2. Tabs
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  child: _buildSegmentedControl(colors, isDark),
-                ),
-
-                // 3. Tab Bar View (Lists)
-                Expanded(
-                  child: Consumer<TeamCenterController>(
-                    builder: (context, controller, child) {
-                      if (controller.isRosterLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      
-                      if (controller.rosterError != null) {
-                         return Center(
-                           child: Text(
-                             'Failed to load roster',
-                               style: TextStyle(color: colors.textMuted),
-                           ),
-                         );
-                      }
-
-                      return TabBarView(
-                        controller: _tabController,
-                        children: [
-                          _buildRosterList(controller.offenseRoster, colors),
-                          _buildRosterList(controller.defenseRoster, colors),
-                          _buildRosterList(controller.specialTeamsRoster, colors),
-                        ],
-                      );
-                    },
+              // Gradient overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        widget.team.primaryColor.withValues(alpha: 0.15),
+                        colors.background.withValues(alpha: 0.0),
+                      ],
+                      stops: const [0.0, 0.4],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+
+              SafeArea(
+                child: Column(
+                  children: [
+                    // 1. Header
+                    _buildHeader(colors),
+
+                    // 2. Tabs
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      child: _buildSegmentedControl(colors, isDark),
+                    ),
+
+                    // 3. Tab Bar View (Lists)
+                    Expanded(
+                      child: Consumer<TeamCenterController>(
+                        builder: (context, controller, child) {
+                          if (controller.isRosterLoading) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+
+                          if (controller.rosterError != null) {
+                            return Center(
+                              child: Text(
+                                'Failed to load roster',
+                                style: TextStyle(color: colors.textMuted),
+                              ),
+                            );
+                          }
+
+                          return TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildRosterList(
+                                  controller.offenseRoster, colors),
+                              _buildRosterList(
+                                  controller.defenseRoster, colors),
+                              _buildRosterList(
+                                  controller.specialTeamsRoster, colors),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ));
+        ));
   }
 
   Widget _buildHeader(T4LThemeColors colors) {
@@ -155,13 +162,15 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: colors.surface.withValues(alpha: 0.2),
-                    border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+                    border:
+                        Border.all(color: colors.border.withValues(alpha: 0.5)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(5),
                     child: Image.asset(
                       widget.team.logoUrl,
-                      errorBuilder: (_, __, ___) => Icon(Icons.shield, color: colors.textPrimary, size: 16),
+                      errorBuilder: (_, __, ___) => Icon(Icons.shield,
+                          color: colors.textPrimary, size: 16),
                     ),
                   ),
                 ),
@@ -179,7 +188,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
                 ),
               ],
             ),
-            
+
             // Close Button
             Positioned(
               right: 0,
@@ -251,7 +260,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
     return Container(
       height: 72,
       decoration: BoxDecoration(
-        color: colors.surface.withValues(alpha: 0.95), // More opaque for visibility
+        color: colors.surface
+            .withValues(alpha: 0.95), // More opaque for visibility
         borderRadius: BorderRadius.circular(36),
         border: Border.all(color: colors.border.withValues(alpha: 0.4)),
       ),
@@ -283,9 +293,10 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
               ),
               child: Center(
                 child: SizedBox(
-                   width: 20, 
-                   height: 20, 
-                   child: CircularProgressIndicator(strokeWidth: 2, color: widget.team.primaryColor),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: widget.team.primaryColor),
                 ),
               ),
             ),
@@ -300,9 +311,9 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
               child: Icon(Icons.person, color: colors.textSecondary),
             ),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Name & Number
           Expanded(
             flex: 4,
@@ -333,7 +344,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
               ],
             ),
           ),
-          
+
           // Position
           Expanded(
             flex: 1,
@@ -359,7 +370,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
               ),
             ),
           ),
-          
+
           // Experience
           Expanded(
             flex: 1,
@@ -373,7 +384,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
               textAlign: TextAlign.center,
             ),
           ),
-          
+
           // College
           Expanded(
             flex: 2,
@@ -390,7 +401,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> with SingleTickerPr
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          
+
           const SizedBox(width: 16),
         ],
       ),

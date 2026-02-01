@@ -25,13 +25,16 @@ class RadioApp extends MicroApp {
   IconData get icon => Icons.radio;
 
   @override
-  String get iconAssetPath => 'lib/micro_apps/radio/store_assets/radio_icon.png';
+  String get iconAssetPath =>
+      'lib/micro_apps/radio/store_assets/radio_icon.png';
 
   @override
-  String? get iconDarkAssetPath => 'lib/micro_apps/radio/store_assets/radio_dark.svg';
+  String? get iconDarkAssetPath =>
+      'lib/micro_apps/radio/store_assets/radio_dark.svg';
 
   @override
-  String? get iconLightAssetPath => 'lib/micro_apps/radio/store_assets/radio_lite.svg';
+  String? get iconLightAssetPath =>
+      'lib/micro_apps/radio/store_assets/radio_lite.svg';
 
   @override
   Color get themeColor => AppColors.brandBase;
@@ -40,7 +43,8 @@ class RadioApp extends MicroApp {
   String get storeImageAsset => 'lib/micro_apps/radio/store_assets/image.png';
 
   @override
-  String get descriptionAsset => 'lib/micro_apps/radio/store_assets/description.md';
+  String get descriptionAsset =>
+      'lib/micro_apps/radio/store_assets/description.md';
 
   @override
   WidgetBuilder get page => (context) => const RadioScreen();
@@ -49,9 +53,8 @@ class RadioApp extends MicroApp {
   bool get hasWidget => true;
 
   @override
-  Size get widgetSize => const Size(2, 1); 
-  
+  Size get widgetSize => const Size(2, 1);
+
   @override
   WidgetBuilder get widgetBuilder => (context) => const RadioHomeWidget();
 }
-

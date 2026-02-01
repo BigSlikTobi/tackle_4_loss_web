@@ -55,8 +55,7 @@ abstract class MicroApp {
 
   /// The widget builder for the home screen widget.
   /// Returns a SizedBox by default.
-  WidgetBuilder get widgetBuilder =>
-      (context) => const SizedBox();
+  WidgetBuilder get widgetBuilder => (context) => const SizedBox();
 
   /// Builds the app's main page, optionally accepting arguments.
   /// Defaults to calling [page].
@@ -64,4 +63,3 @@ abstract class MicroApp {
     return page(context);
   }
 }
-

@@ -110,9 +110,8 @@ class MiniPlayer extends StatelessWidget {
                           color: colors.brand,
                           size: 40,
                         ),
-                        onPressed: playing
-                            ? audioService.pause
-                            : audioService.resume,
+                        onPressed:
+                            playing ? audioService.pause : audioService.resume,
                       );
                     },
                   ),

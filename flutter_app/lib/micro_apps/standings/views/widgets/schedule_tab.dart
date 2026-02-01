@@ -47,8 +47,8 @@ class ScheduleTab extends StatelessWidget {
   }
 
   Widget _buildGamesList(
-    BuildContext context, 
-    StandingsController controller, 
+    BuildContext context,
+    StandingsController controller,
     Team? themeTeam,
   ) {
     final games = controller.selectedWeekGames;
@@ -117,7 +117,7 @@ class ScheduleTab extends StatelessWidget {
 
   Widget _buildEmptyState(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -135,7 +135,7 @@ class ScheduleTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.space1),
-          Text(
+          const Text(
             'Check back later for game schedules',
             style: AppTextStyles.caption,
           ),

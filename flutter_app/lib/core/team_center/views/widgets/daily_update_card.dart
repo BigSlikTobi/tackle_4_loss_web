@@ -22,7 +22,8 @@ class DailyUpdateCard extends StatelessWidget {
       return _buildSkeleton(context);
     }
 
-    final displayTitle = article!.title.isNotEmpty ? article!.title : 'Latest Team Update';
+    final displayTitle =
+        article!.title.isNotEmpty ? article!.title : 'Latest Team Update';
 
     return Container(
       height: 220,
@@ -45,14 +46,15 @@ class DailyUpdateCard extends StatelessWidget {
             children: [
               // Hero Image
               Image.network(
-                article!.imageUrl.isNotEmpty 
-                    ? article!.imageUrl 
+                article!.imageUrl.isNotEmpty
+                    ? article!.imageUrl
                     : 'https://images.unsplash.com/photo-1566577739112-5180d4bf9390?q=80&w=3426&auto=format&fit=crop',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: const Color(0xFF1F2937),
                   child: const Center(
-                    child: Icon(Icons.image_not_supported, color: Colors.white24, size: 40),
+                    child: Icon(Icons.image_not_supported,
+                        color: Colors.white24, size: 40),
                   ),
                 ),
               ),
@@ -79,14 +81,17 @@ class DailyUpdateCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     // Badge
+                    // Badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: (teamColor ?? const Color(0xFF0F5132)).withValues(alpha: 0.2),
+                        color: (teamColor ?? const Color(0xFF0F5132))
+                            .withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: (teamColor ?? const Color(0xFF4ADE80)).withValues(alpha: 0.5),
+                          color: (teamColor ?? const Color(0xFF4ADE80))
+                              .withValues(alpha: 0.5),
                           width: 1,
                         ),
                       ),
@@ -100,9 +105,9 @@ class DailyUpdateCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                     const Spacer(),
-                    
+
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -127,7 +132,7 @@ class DailyUpdateCard extends StatelessWidget {
                               Text(
                                 // Placeholder format: "October 14 • 2 min watch"
                                 // In real app, format article!.publishedAt
-                                'Today • Listen now', 
+                                'Today • Listen now',
                                 style: TextStyle(
                                   color: Colors.white.withValues(alpha: 0.7),
                                   fontSize: 13,
@@ -137,9 +142,9 @@ class DailyUpdateCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(width: 16),
-                        
+
                         // Glassmorphic Play Button
                         GestureDetector(
                           onTap: onTap,
@@ -181,7 +186,7 @@ class DailyUpdateCard extends StatelessWidget {
   Widget _buildSkeleton(BuildContext context) {
     return Container(
       height: 220,
-       decoration: BoxDecoration(
+      decoration: BoxDecoration(
         color: const Color(0xFF1F2937),
         borderRadius: BorderRadius.circular(24),
       ),

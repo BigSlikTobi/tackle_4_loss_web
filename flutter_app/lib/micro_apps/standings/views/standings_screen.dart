@@ -161,8 +161,8 @@ class _StandingsScreenContent extends StatelessWidget {
                   color: isActive
                       ? Colors.white
                       : (isDark
-                            ? AppColors.textSubDark
-                            : AppColors.textSubLight),
+                          ? AppColors.textSubDark
+                          : AppColors.textSubLight),
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
@@ -181,9 +181,10 @@ class _StandingsScreenContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.error_outline, size: 48, color: AppColors.breakingNewsRed),
+          const Icon(Icons.error_outline,
+              size: 48, color: AppColors.breakingNewsRed),
           const SizedBox(height: AppSpacing.space2),
-          Text('Failed to load data', style: AppTextStyles.h3),
+          const Text('Failed to load data', style: AppTextStyles.h3),
           const SizedBox(height: AppSpacing.space1),
           Text(
             controller.error ?? 'Unknown error',

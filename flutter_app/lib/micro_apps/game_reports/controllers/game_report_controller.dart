@@ -18,7 +18,7 @@ class GameReportController extends ChangeNotifier {
   int _remainingCloudReports = 0; // Initialize securely, update in init
   Game? _selectedGame;
   ReportStyle _selectedStyle = ReportStyle.casual;
-  
+
   // New: Analysis envelope and chat
   AnalysisEnvelope? _currentEnvelope;
   final List<ChatMessage> _chatMessages = [];
@@ -32,6 +32,7 @@ class GameReportController extends ChangeNotifier {
   Game? get selectedGame => _selectedGame;
   ReportStyle get selectedStyle => _selectedStyle;
   bool get canUseCloud => _remainingCloudReports > 0;
+
   /// AI is always "ready" since we use cloud + templates now
   bool get isModelReady => true;
   AnalysisEnvelope? get currentEnvelope => _currentEnvelope;
@@ -100,12 +101,11 @@ class GameReportController extends ChangeNotifier {
         style: _selectedStyle,
         useCloud: useCloud,
       );
-      
+
       // Update quota locally after generation
       if (useCloud) {
         await _refreshCloudQuota();
       }
-      
     } catch (e) {
       _error = 'Failed to generate report: $e';
       debugPrint('GameReportController.generateReport error: $e');
@@ -183,13 +183,12 @@ class GameReportController extends ChangeNotifier {
         selectedGame: _selectedGame,
         currentEnvelope: _currentEnvelope,
       );
-      
+
       _chatMessages.add(ChatMessage(text: response, isUser: false));
-      
+
       // Update quota if intent used cloud resources (this is a bit tricky since the service handles it, but we need to reflect it in UI)
       // For now, let's just refresh whenever we do something that might use quota
       await _refreshCloudQuota();
-      
     } catch (e) {
       _chatMessages.add(ChatMessage(
         text: 'Sorry, I couldn\'t process that. Try again?',

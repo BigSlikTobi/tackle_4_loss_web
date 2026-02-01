@@ -26,14 +26,14 @@ class NewContentService with ChangeNotifier {
   /// Initialize service by loading persisted values.
   Future<void> init() async {
     if (_isInitialized) return;
-    
+
     final prefs = await SharedPreferences.getInstance();
     _lastSeenDeepDiveId = prefs.getString(_lastSeenDeepDiveKey);
     _lastSeenAppCount = prefs.getInt(_lastSeenAppCountKey) ?? 0;
-    
+
     // Get current app count from registry
     _updateCurrentAppCount();
-    
+
     _isInitialized = true;
     notifyListeners();
   }
@@ -69,7 +69,7 @@ class NewContentService with ChangeNotifier {
   /// Mark the current deep dive as seen.
   Future<void> markDeepDiveSeen(String id) async {
     if (_lastSeenDeepDiveId == id) return;
-    
+
     _lastSeenDeepDiveId = id;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_lastSeenDeepDiveKey, id);
@@ -93,7 +93,7 @@ class NewContentService with ChangeNotifier {
     _latestDeepDiveId = null;
     _currentAppCount = 0;
     _isInitialized = false;
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_lastSeenDeepDiveKey);
     await prefs.remove(_lastSeenAppCountKey);

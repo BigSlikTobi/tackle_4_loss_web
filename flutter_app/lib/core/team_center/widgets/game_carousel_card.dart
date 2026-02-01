@@ -33,9 +33,9 @@ class GameCarouselCard extends StatelessWidget {
     final opponentId = isHome ? game.awayTeam : game.homeTeam;
 
     final opponent = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == opponentId.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     final isPlayed = game.isPlayed;
 
@@ -45,12 +45,10 @@ class GameCarouselCard extends StatelessWidget {
     if (isPlayed) {
       final teamScore = isHome ? game.homeScore : game.awayScore;
       final opponentScore = isHome ? game.awayScore : game.homeScore;
-      final isWin =
-          teamScore != null &&
+      final isWin = teamScore != null &&
           opponentScore != null &&
           teamScore > opponentScore;
-      final isTie =
-          teamScore != null &&
+      final isTie = teamScore != null &&
           opponentScore != null &&
           teamScore == opponentScore;
       resultText = isWin ? 'W' : (isTie ? 'T' : 'L');

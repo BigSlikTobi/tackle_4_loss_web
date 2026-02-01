@@ -62,7 +62,6 @@ class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
 
             return CustomScrollView(
               slivers: [
-
                 // Featured Article (First Item)
                 if (controller.articles.isNotEmpty)
                   SliverToBoxAdapter(
@@ -92,11 +91,11 @@ class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
                     sliver: SliverGrid(
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.65,
-                          ),
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: 0.65,
+                      ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         // Offset index by 1 because first item is featured
                         final article = controller.articles[index + 1];

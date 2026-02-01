@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../design_tokens.dart';
@@ -14,11 +13,12 @@ class OnboardingOverlay extends StatefulWidget {
   State<OnboardingOverlay> createState() => _OnboardingOverlayState();
 }
 
-class _OnboardingOverlayState extends State<OnboardingOverlay> with SingleTickerProviderStateMixin {
+class _OnboardingOverlayState extends State<OnboardingOverlay>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   @override
   void initState() {
     super.initState();
@@ -70,7 +70,7 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> with SingleTicker
             color: Colors.black.withValues(alpha: 0.7),
           ),
         ),
-        
+
         // Centered Card with Scale/Fade
         Center(
           child: ScaleTransition(
@@ -84,7 +84,7 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> with SingleTicker
                   children: [
                     const HowToPlayCard(),
                     const SizedBox(height: AppSpacing.space4),
-                    
+
                     // Got it button
                     SizedBox(
                       width: double.infinity,
@@ -95,7 +95,8 @@ class _OnboardingOverlayState extends State<OnboardingOverlay> with SingleTicker
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppBorders.radiusXl),
+                            borderRadius:
+                                BorderRadius.circular(AppBorders.radiusXl),
                           ),
                           elevation: 8,
                         ),

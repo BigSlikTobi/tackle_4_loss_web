@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../design_tokens.dart';
 import '../../widgets/notification_badge.dart';
@@ -64,22 +63,19 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Adaptive glass colors
-    final glassColor = isDark 
+    final glassColor = isDark
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.white.withValues(alpha: 0.6);
-    
+
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.12)
         : Colors.white.withValues(alpha: 0.4);
-        
+
     final shadowColor = isDark
         ? Colors.black.withValues(alpha: 0.3)
         : Colors.black.withValues(alpha: 0.1);
-
-    final iconColor = isDark ? Colors.white70 : AppColors.textPrimary.withValues(alpha: 0.7);
-    final activeIconColor = isDark ? Colors.white : AppColors.textPrimary;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -138,7 +134,8 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                     Positioned(
                       top: 4,
                       right: 4,
-                      child: NotificationBadge(show: widget.showGameCenterBadge),
+                      child:
+                          NotificationBadge(show: widget.showGameCenterBadge),
                     ),
                 ],
               ),
@@ -234,21 +231,13 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
 
 class _NavBarButton extends StatelessWidget {
   final VoidCallback onTap;
-  final IconData? icon;
   final String? svgAsset;
-  final Widget? child;
   final String? tooltip;
-  final double opacity;
-  final Color? color;
 
   const _NavBarButton({
     required this.onTap,
-    this.icon,
     this.svgAsset,
-    this.child,
     this.tooltip,
-    this.opacity = 1.0,
-    this.color,
   });
 
   @override
@@ -258,26 +247,23 @@ class _NavBarButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
-        child: Opacity(
-          opacity: opacity,
-          child: Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            child: child ?? (svgAsset != null
-                ? SvgPicture.asset(
-                    svgAsset!,
-                    width: 24,
-                    height: 24,
-                    colorFilter: Theme.of(context).brightness == Brightness.dark
-                        ? ColorFilter.mode(
-                            Colors.white.withValues(alpha: 0.9),
-                            BlendMode.srcIn,
-                          )
-                        : null,
-                  )
-                : Icon(icon, color: color ?? Colors.white70, size: 24)),
-          ),
+        child: Container(
+          width: 48,
+          height: 48,
+          alignment: Alignment.center,
+          child: svgAsset != null
+              ? SvgPicture.asset(
+                  svgAsset!,
+                  width: 24,
+                  height: 24,
+                  colorFilter: Theme.of(context).brightness == Brightness.dark
+                      ? ColorFilter.mode(
+                          Colors.white.withValues(alpha: 0.9),
+                          BlendMode.srcIn,
+                        )
+                      : null,
+                )
+              : const SizedBox.shrink(),
         ),
       ),
     );

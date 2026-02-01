@@ -1,10 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../design_tokens.dart';
 import '../../services/installed_apps_service.dart';
 import '../../services/navigation_service.dart';
-import '../../theme/t4l_theme.dart';
 import 'app_grid_item.dart';
 
 class AppStrip extends StatelessWidget {
@@ -13,7 +11,9 @@ class AppStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final installedAppsService = Provider.of<InstalledAppsService>(context);
-    final apps = installedAppsService.installedApps.where((app) => app.id != 'standings').toList();
+    final apps = installedAppsService.installedApps
+        .where((app) => app.id != 'standings')
+        .toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Theme-aware glassmorphism

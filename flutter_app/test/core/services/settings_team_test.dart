@@ -12,7 +12,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('setFavoriteTeam updates selectedTeam and notifies listeners', () async {
+    test('setFavoriteTeam updates selectedTeam and notifies listeners',
+        () async {
       final service = SettingsService();
       var notified = false;
       service.addListener(() => notified = true);

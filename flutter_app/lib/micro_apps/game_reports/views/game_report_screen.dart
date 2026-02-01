@@ -26,7 +26,7 @@ class _GameReportScreenState extends State<GameReportScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final FocusNode _inputFocusNode = FocusNode();
-  
+
   List<Game> _completedGames = [];
   bool _isLoadingGames = true;
 
@@ -40,7 +40,7 @@ class _GameReportScreenState extends State<GameReportScreen> {
   Future<void> _initialize() async {
     await _controller.init();
     await _loadCompletedGames();
-    
+
     if (widget.initialGame != null) {
       _controller.selectGame(widget.initialGame!);
       _controller.fetchAnalysisEnvelope();
@@ -63,7 +63,7 @@ class _GameReportScreenState extends State<GameReportScreen> {
   void _sendMessage() {
     final text = _inputController.text.trim();
     if (text.isEmpty) return;
-    
+
     _controller.sendChatMessage(text);
     _inputController.clear();
     _scrollToBottom();
@@ -156,10 +156,10 @@ class _GameReportScreenState extends State<GameReportScreen> {
                 children: [
                   // Compact Game Header
                   _buildGameHeader(),
-                  
+
                   // Chat Messages Area (Scrollable)
                   Expanded(child: _buildChatArea()),
-                  
+
                   // Quick Actions + Input
                   _buildBottomSection(),
                 ],
@@ -237,7 +237,8 @@ class _GameReportScreenState extends State<GameReportScreen> {
                               ),
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
                                 '@',
                                 style: theme.textTheme.bodySmall?.copyWith(
@@ -305,22 +306,23 @@ class _GameReportScreenState extends State<GameReportScreen> {
           height: 28,
           fit: BoxFit.contain,
           errorBuilder: (_, __, ___) => Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            color: Colors.grey.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(
-              teamCode,
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Colors.grey.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                teamCode,
+                style:
+                    const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildChatArea() {
@@ -411,7 +413,7 @@ class _GameReportScreenState extends State<GameReportScreen> {
 
   Widget _buildMessageBubble(ChatMessage message, ThemeData theme) {
     final isUser = message.isUser;
-    
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -421,8 +423,8 @@ class _GameReportScreenState extends State<GameReportScreen> {
           maxWidth: MediaQuery.of(context).size.width * 0.8,
         ),
         decoration: BoxDecoration(
-          color: isUser 
-              ? theme.colorScheme.primary 
+          color: isUser
+              ? theme.colorScheme.primary
               : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
@@ -434,8 +436,8 @@ class _GameReportScreenState extends State<GameReportScreen> {
         child: Text(
           message.text,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isUser 
-                ? theme.colorScheme.onPrimary 
+            color: isUser
+                ? theme.colorScheme.onPrimary
                 : theme.colorScheme.onSurface,
           ),
         ),
@@ -481,7 +483,7 @@ class _GameReportScreenState extends State<GameReportScreen> {
     return Consumer<GameReportController>(
       builder: (context, controller, _) {
         final theme = Theme.of(context);
-        
+
         if (controller.selectedGame == null) {
           return const SizedBox.shrink();
         }
@@ -513,7 +515,7 @@ class _GameReportScreenState extends State<GameReportScreen> {
                 isLoading: controller.isChatLoading,
               ),
               const SizedBox(height: 12),
-              
+
               // Input Field + Mic
               Row(
                 children: [

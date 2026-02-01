@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../design_tokens.dart';
@@ -58,27 +57,23 @@ class PlayerWordleSettingsDialog extends StatelessWidget {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
     final isSelected = controller.selectedDifficulty == difficulty;
     final isUnlocked = controller.isDifficultyUnlocked(difficulty);
-    final color = isSelected 
+    final color = isSelected
         ? colors.brand
-        : (isUnlocked ? colors.textPrimary : colors.textSecondary.withValues(alpha: 0.5));
+        : (isUnlocked
+            ? colors.textPrimary
+            : colors.textSecondary.withValues(alpha: 0.5));
 
     return InkWell(
-      onTap: isUnlocked 
-          ? () => controller.setDifficulty(difficulty) 
-          : null,
+      onTap: isUnlocked ? () => controller.setDifficulty(difficulty) : null,
       borderRadius: BorderRadius.circular(AppBorders.radiusMd),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.space2, 
-          horizontal: AppSpacing.space2
-        ),
+            vertical: AppSpacing.space2, horizontal: AppSpacing.space2),
         margin: const EdgeInsets.only(bottom: AppSpacing.space1),
         decoration: BoxDecoration(
           color: isSelected ? colors.brand.withValues(alpha: 0.1) : null,
           borderRadius: BorderRadius.circular(AppBorders.radiusMd),
-          border: isSelected 
-              ? Border.all(color: colors.brand) 
-              : null,
+          border: isSelected ? Border.all(color: colors.brand) : null,
         ),
         child: Row(
           children: [
@@ -99,8 +94,8 @@ class PlayerWordleSettingsDialog extends StatelessWidget {
                     description,
                     style: TextStyle(
                       fontSize: 10,
-                      color: isUnlocked 
-                          ? colors.textSecondary 
+                      color: isUnlocked
+                          ? colors.textSecondary
                           : colors.textSecondary.withValues(alpha: 0.5),
                     ),
                   ),

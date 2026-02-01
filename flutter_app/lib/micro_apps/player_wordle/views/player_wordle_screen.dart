@@ -21,9 +21,9 @@ import 'widgets/guess_panel.dart';
 class PlayerWordleScreen extends StatelessWidget {
   /// Initial game mode (daily or career)
   final GameMode initialMode;
-  
+
   const PlayerWordleScreen({
-    super.key, 
+    super.key,
     this.initialMode = GameMode.career,
   });
 
@@ -48,12 +48,13 @@ class _PlayerWordleScreenContent extends StatefulWidget {
   const _PlayerWordleScreenContent();
 
   @override
-  State<_PlayerWordleScreenContent> createState() => _PlayerWordleScreenContentState();
+  State<_PlayerWordleScreenContent> createState() =>
+      _PlayerWordleScreenContentState();
 }
 
-class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> {
+class _PlayerWordleScreenContentState
+    extends State<_PlayerWordleScreenContent> {
   final FocusNode _searchFocusNode = FocusNode();
-
 
   @override
   void initState() {
@@ -78,12 +79,10 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
       context: context,
       builder: (context) => ChangeNotifierProvider.value(
         value: controller,
-        child: PlayerWordleSettingsDialog(),
+        child: const PlayerWordleSettingsDialog(),
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -107,14 +106,14 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
           }
 
           final gameState = controller.gameState;
-          
-
 
           return Stack(
             children: [
               // Main Game Content
               if (gameState == null)
-                Center(child: Text(AppLocalizations.of(context)!.playerWordleNoGameLoaded))
+                Center(
+                    child: Text(
+                        AppLocalizations.of(context)!.playerWordleNoGameLoaded))
               else if (gameState.isGameOver && controller.mysteryPlayer != null)
                 _buildGameOverView(context, controller)
               else
@@ -163,7 +162,6 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
     PlayerWordleController controller,
     GameState gameState,
   ) {
-
     return Stack(
       children: [
         // Scrollable Middle Section (Guesses) - Now behind the glass
@@ -173,9 +171,10 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
               : ListView.builder(
                   padding: const EdgeInsets.only(
                     top: AppSpacing.space2, // Clean spacing below header
-                    left: AppSpacing.space2, 
+                    left: AppSpacing.space2,
                     right: AppSpacing.space2,
-                    bottom: 300, // Large padding to allow scrolling above the glass bar
+                    bottom:
+                        300, // Large padding to allow scrolling above the glass bar
                   ),
                   itemCount: gameState.guesses.length,
                   itemBuilder: (context, index) {
@@ -183,7 +182,8 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: GuessCard(
-                        key: ValueKey(gameState.guesses[reversedIndex].guessedPlayer.playerId),
+                        key: ValueKey(gameState
+                            .guesses[reversedIndex].guessedPlayer.playerId),
                         guess: gameState.guesses[reversedIndex],
                         guessNumber: reversedIndex + 1,
                         isLatest: reversedIndex == gameState.guesses.length - 1,
@@ -204,7 +204,8 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
             filteredPlayers: controller.searchResults,
             isLoading: controller.isSearching,
             difficulty: gameState.difficulty,
-            guessedPlayerIds: gameState.guesses.map((g) => g.guessedPlayer.playerId).toSet(),
+            guessedPlayerIds:
+                gameState.guesses.map((g) => g.guessedPlayer.playerId).toSet(),
             isDailyChallenge: controller.isDailyChallenge,
             dailyStreak: controller.dailyStreak,
             remainingGuesses: gameState.remainingGuesses,
@@ -218,19 +219,18 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
     );
   }
 
-
   Widget _buildEmptyGuessState() {
     return Consumer<PlayerWordleController>(
       builder: (context, controller, _) {
         final l10n = AppLocalizations.of(context)!;
         final points = controller.totalPoints;
-        
+
         // Determine achieved career rank based on total points
         Difficulty careerRank;
         int currentThreshold;
         int nextThreshold;
         String nextLevelName;
-        
+
         if (points < 500) {
           careerRank = Difficulty.fan;
           currentThreshold = 0;
@@ -252,9 +252,9 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
           nextThreshold = 5000;
           nextLevelName = l10n.playerWordleMaxLevel;
         }
-        
-        final progress = careerRank == Difficulty.allMadden 
-            ? 1.0 
+
+        final progress = careerRank == Difficulty.allMadden
+            ? 1.0
             : (points - currentThreshold) / (nextThreshold - currentThreshold);
         final pointsToNext = nextThreshold - points;
 
@@ -265,26 +265,29 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-
-                
                 // Level Progress (Compact)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppColors.brandBase, AppColors.brandBase.withValues(alpha: 0.7)],
+                          colors: [
+                            AppColors.brandBase,
+                            AppColors.brandBase.withValues(alpha: 0.7)
+                          ],
                         ),
-                        borderRadius: BorderRadius.circular(AppBorders.radiusFull),
+                        borderRadius:
+                            BorderRadius.circular(AppBorders.radiusFull),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             '${controller.totalPoints}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
@@ -310,18 +313,21 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(AppBorders.radiusFull),
+                              borderRadius:
+                                  BorderRadius.circular(AppBorders.radiusFull),
                               child: LinearProgressIndicator(
                                 value: progress.clamp(0.0, 1.0),
                                 minHeight: 6,
                                 backgroundColor: AppColors.neutralSoft,
-                                valueColor: AlwaysStoppedAnimation(AppColors.brandBase),
+                                valueColor: const AlwaysStoppedAnimation(
+                                    AppColors.brandBase),
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              l10n.playerWordlePointsToNext(pointsToNext, nextLevelName),
-                              style: TextStyle(
+                              l10n.playerWordlePointsToNext(
+                                  pointsToNext, nextLevelName),
+                              style: const TextStyle(
                                 fontSize: 10,
                                 color: AppColors.textSecondary,
                               ),
@@ -333,7 +339,8 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.emoji_events, color: Colors.amber, size: 16),
+                          const Icon(Icons.emoji_events,
+                              color: Colors.amber, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             l10n.playerWordleLevelAllMadden,
@@ -348,7 +355,7 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
                     ],
                   ],
                 ),
-                
+
                 // Extra space to ensure content stays above the bottom interaction bar
                 // Extra space to ensure content stays above the bottom interaction bar
                 const SizedBox(height: 80),
@@ -359,8 +366,6 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
       },
     );
   }
-  
-
 
   Widget _buildGameOverView(
     BuildContext context,
@@ -396,17 +401,20 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: AppColors.breakingNewsRed,
             ),
             const SizedBox(height: AppSpacing.space3),
-            Text(AppLocalizations.of(context)!.playerWordleFailedToLoad, style: AppTextStyles.h2),
+            Text(AppLocalizations.of(context)!.playerWordleFailedToLoad,
+                style: AppTextStyles.h2),
             const SizedBox(height: AppSpacing.space1),
             Text(
-              controller.error ?? AppLocalizations.of(context)!.playerWordleUnknownError,
-              style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+              controller.error ??
+                  AppLocalizations.of(context)!.playerWordleUnknownError,
+              style:
+                  AppTextStyles.body.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.space4),
@@ -428,8 +436,4 @@ class _PlayerWordleScreenContentState extends State<_PlayerWordleScreenContent> 
       ),
     );
   }
-
-
 }
-
-

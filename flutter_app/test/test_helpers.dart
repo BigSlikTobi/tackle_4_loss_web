@@ -40,10 +40,22 @@ class TeamFactory {
   static List<Team> createList([int count = 3]) {
     final teams = <Team>[
       create(id: 'KC', name: 'Kansas City Chiefs'),
-      create(id: 'SF', name: 'San Francisco 49ers', primaryColor: const Color(0xFFAA0000)),
-      create(id: 'DAL', name: 'Dallas Cowboys', primaryColor: const Color(0xFF002244)),
-      create(id: 'PHI', name: 'Philadelphia Eagles', primaryColor: const Color(0xFF004C54)),
-      create(id: 'BUF', name: 'Buffalo Bills', primaryColor: const Color(0xFF00338D)),
+      create(
+          id: 'SF',
+          name: 'San Francisco 49ers',
+          primaryColor: const Color(0xFFAA0000)),
+      create(
+          id: 'DAL',
+          name: 'Dallas Cowboys',
+          primaryColor: const Color(0xFF002244)),
+      create(
+          id: 'PHI',
+          name: 'Philadelphia Eagles',
+          primaryColor: const Color(0xFF004C54)),
+      create(
+          id: 'BUF',
+          name: 'Buffalo Bills',
+          primaryColor: const Color(0xFF00338D)),
     ];
     return teams.take(count).toList();
   }
@@ -84,10 +96,12 @@ class GameFactory {
   }
 
   static List<Game> createWeekSchedule(int week, [int count = 4]) {
-    return List.generate(count, (i) => create(
-      id: 'game_w${week}_$i',
-      week: week,
-    ));
+    return List.generate(
+        count,
+        (i) => create(
+              id: 'game_w${week}_$i',
+              week: week,
+            ));
   }
 }
 
@@ -140,20 +154,21 @@ class NotifiesMatcher extends Matcher {
   bool matches(dynamic item, Map matchState) {
     int notifyCount = 0;
     void listener() => notifyCount++;
-    
+
     notifier.addListener(listener);
     if (item is Function()) {
       item();
     }
     notifier.removeListener(listener);
-    
+
     matchState['actualCount'] = notifyCount;
     return notifyCount >= expectedCount;
   }
 
   @override
   Description describe(Description description) {
-    return description.add('notifies listeners at least $expectedCount time(s)');
+    return description
+        .add('notifies listeners at least $expectedCount time(s)');
   }
 
   @override

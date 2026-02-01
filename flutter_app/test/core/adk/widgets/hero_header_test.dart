@@ -4,7 +4,8 @@ import 'package:network_image_mock/network_image_mock.dart';
 import 'package:tackle4loss_mobile/core/adk/widgets/t4l_hero_header.dart';
 
 void main() {
-  testWidgets('T4LHeroHeader renders title and image', (WidgetTester tester) async {
+  testWidgets('T4LHeroHeader renders title and image',
+      (WidgetTester tester) async {
     const testTitle = 'Test Header';
     const testImage = 'https://example.com/image.png';
 

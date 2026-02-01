@@ -1,9 +1,9 @@
 /// Types of content that can appear in the news feed
 enum FeedItemType {
   newsUpdate,
-  video,       // Future: video content
+  video, // Future: video content
   personalized, // Future: personalized recommendations
-  deepDive,    // Deep dive article content
+  deepDive, // Deep dive article content
 }
 
 /// Base class for all feed items - extensible for future content types
@@ -20,7 +20,7 @@ sealed class FeedItem {
 
   factory FeedItem.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String? ?? 'newsUpdate';
-    
+
     switch (type) {
       case 'video':
         return VideoFeedItem.fromJson(json);
@@ -42,7 +42,7 @@ class NewsFeedItem extends FeedItem {
   final String? source;
   final String? headline;
   final List<dynamic>? players; // List of player objects with headshot_url
-  final List<dynamic>? teams;   // List of team objects with team_id
+  final List<dynamic>? teams; // List of team objects with team_id
 
   NewsFeedItem({
     required super.id,
@@ -91,7 +91,7 @@ class VideoFeedItem extends FeedItem {
       title: json['title'] as String? ?? '',
       thumbnailUrl: json['thumbnailUrl'] as String?,
       videoUrl: json['videoUrl'] as String? ?? '',
-      duration: json['durationSeconds'] != null 
+      duration: json['durationSeconds'] != null
           ? Duration(seconds: json['durationSeconds'] as int)
           : null,
       createdAt: DateTime.parse(json['createdAt'] as String),

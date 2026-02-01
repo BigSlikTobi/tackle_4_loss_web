@@ -9,9 +9,10 @@ import 'package:mocktail/mocktail.dart';
 // Simple mock since we are testing state logic primarily
 class MockAudioPlayerService extends AudioPlayerService {
   MockAudioPlayerService() : super.testing();
-  
+
   @override
-  Future<void> playPlaylist(List<Map<String, String>> items, {int initialIndex = 0}) async {
+  Future<void> playPlaylist(List<Map<String, String>> items,
+      {int initialIndex = 0}) async {
     // Mock interaction
   }
 }
@@ -20,20 +21,18 @@ class MockHttpClient extends Mock implements http.Client {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  
+
   setUpAll(() async {
     // Register fallback values if needed
     registerFallbackValue(Uri());
     SharedPreferences.setMockInitialValues({});
 
     final mockHttpClient = MockHttpClient();
-    
+
     // Mock success response for Supabase Edge Functions (POST)
-    when(() => mockHttpClient.post(
-      any(), 
-      headers: any(named: 'headers'), 
-      body: any(named: 'body')
-    )).thenAnswer((_) async => http.Response('[]', 200));
+    when(() => mockHttpClient.post(any(),
+            headers: any(named: 'headers'), body: any(named: 'body')))
+        .thenAnswer((_) async => http.Response('[]', 200));
 
     // Initialize Supabase with mock client
     // Check if already initialized to avoid errors
@@ -47,7 +46,7 @@ void main() {
       );
     }
   });
-  
+
   group('RadioController', () {
     late RadioController controller;
 
@@ -71,12 +70,12 @@ void main() {
 
     test('stations filter by category', () async {
       // wait for load
-      await Future.delayed(const Duration(milliseconds: 100)); 
-      
+      await Future.delayed(const Duration(milliseconds: 100));
+
       controller.selectCategory('deep_dive');
       final deepDives = controller.stations;
       expect(deepDives.every((s) => s.categoryId == 'deep_dive'), true);
-      
+
       controller.selectCategory('news');
       final news = controller.stations;
       expect(news.every((s) => s.categoryId == 'news'), true);

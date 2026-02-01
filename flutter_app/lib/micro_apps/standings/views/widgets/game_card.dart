@@ -38,9 +38,9 @@ class GameCard extends StatelessWidget {
     } else {
       // Fallback (No user team selected): Use Home Team & Opposite Logic (Dark/White)
       final homeTeam = teamService.getTeams().firstWhere(
-        (t) => t.id.toUpperCase() == game.homeTeam.toUpperCase(),
-        orElse: () => teamService.getTeams().first,
-      );
+            (t) => t.id.toUpperCase() == game.homeTeam.toUpperCase(),
+            orElse: () => teamService.getTeams().first,
+          );
       backgroundColor = isAppDark ? Colors.white : homeTeam.primaryColor;
       isCardDark = !isAppDark;
     }
@@ -205,9 +205,9 @@ class GameCard extends StatelessWidget {
     bool isHome = false,
   }) {
     final team = teamService.getTeams().firstWhere(
-      (t) => t.id.toUpperCase() == teamCode.toUpperCase(),
-      orElse: () => teamService.getTeams().first,
-    );
+          (t) => t.id.toUpperCase() == teamCode.toUpperCase(),
+          orElse: () => teamService.getTeams().first,
+        );
 
     return Column(
       children: [
@@ -226,10 +226,13 @@ class GameCard extends StatelessWidget {
         Container(
           width: 48,
           height: 48,
-          padding: const EdgeInsets.all(4), // Add padding for white circle effect
+          padding:
+              const EdgeInsets.all(4), // Add padding for white circle effect
           decoration: BoxDecoration(
-             shape: BoxShape.circle,
-             color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.transparent,
+            shape: BoxShape.circle,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.transparent,
           ),
           child: Image.asset(
             team.logoUrl,

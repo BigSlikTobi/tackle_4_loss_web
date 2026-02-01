@@ -44,10 +44,10 @@ class _ChatInterfaceState extends State<ChatInterface> {
   void _sendMessage() {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
-    
+
     widget.onSendMessage(text);
     _controller.clear();
-    
+
     // Scroll to bottom
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
@@ -71,7 +71,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
-    
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       padding: EdgeInsets.only(bottom: bottomPadding),
@@ -91,13 +91,14 @@ class _ChatInterfaceState extends State<ChatInterface> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Icon(Icons.chat_bubble_outline, color: theme.colorScheme.primary),
+                Icon(Icons.chat_bubble_outline,
+                    color: theme.colorScheme.primary),
                 const SizedBox(width: 8),
                 Text(
                   'Ask about the game',
@@ -113,9 +114,9 @@ class _ChatInterfaceState extends State<ChatInterface> {
               ],
             ),
           ),
-          
+
           const Divider(height: 1),
-          
+
           // Messages list
           Expanded(
             child: widget.messages.isEmpty
@@ -129,7 +130,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
                     },
                   ),
           ),
-          
+
           // Loading indicator
           if (widget.isLoading)
             const Padding(
@@ -147,14 +148,15 @@ class _ChatInterfaceState extends State<ChatInterface> {
                 ],
               ),
             ),
-          
+
           // Input field
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
               border: Border(
-                top: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+                top: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2)),
               ),
             ),
             child: Row(
@@ -222,7 +224,7 @@ class _ChatInterfaceState extends State<ChatInterface> {
 
   Widget _buildMessageBubble(ChatMessage message, ThemeData theme) {
     final isUser = message.isUser;
-    
+
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -232,8 +234,8 @@ class _ChatInterfaceState extends State<ChatInterface> {
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
         decoration: BoxDecoration(
-          color: isUser 
-              ? theme.colorScheme.primary 
+          color: isUser
+              ? theme.colorScheme.primary
               : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
@@ -245,8 +247,8 @@ class _ChatInterfaceState extends State<ChatInterface> {
         child: Text(
           message.text,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: isUser 
-                ? theme.colorScheme.onPrimary 
+            color: isUser
+                ? theme.colorScheme.onPrimary
                 : theme.colorScheme.onSurface,
           ),
         ),

@@ -26,7 +26,7 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     // Load injury data when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.controller.loadInjuries(widget.team.id);
@@ -83,7 +83,7 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                 ),
               ),
             ),
-            
+
             SafeArea(
               child: Column(
                 children: [
@@ -98,16 +98,17 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                     child: Consumer<TeamCenterController>(
                       builder: (context, controller, child) {
                         if (controller.isInjuriesLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
-                        
+
                         if (controller.injuriesError != null) {
-                           return Center(
-                             child: Text(
-                               'Failed to load injuries',
-                                style: TextStyle(color: colors.textMuted),
-                             ),
-                           );
+                          return Center(
+                            child: Text(
+                              'Failed to load injuries',
+                              style: TextStyle(color: colors.textMuted),
+                            ),
+                          );
                         }
 
                         final hasNoInjuries = controller.outInjuries.isEmpty &&
@@ -119,11 +120,13 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_circle_outline, color: const Color(0xFF22C55E), size: 48),
+                                const Icon(Icons.check_circle_outline,
+                                    color: Color(0xFF22C55E), size: 48),
                                 const SizedBox(height: 12),
                                 Text(
                                   'No injuries reported',
-                                  style: TextStyle(color: colors.textPrimary, fontSize: 16),
+                                  style: TextStyle(
+                                      color: colors.textPrimary, fontSize: 16),
                                 ),
                               ],
                             ),
@@ -131,14 +134,24 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                         }
 
                         return ListView(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           children: [
                             if (controller.outInjuries.isNotEmpty)
-                              _buildInjurySection('OUT', controller.outInjuries, const Color(0xFFEF4444), colors),
+                              _buildInjurySection('OUT', controller.outInjuries,
+                                  const Color(0xFFEF4444), colors),
                             if (controller.doubtfulInjuries.isNotEmpty)
-                              _buildInjurySection('DOUBTFUL', controller.doubtfulInjuries, const Color(0xFFF59E0B), colors),
+                              _buildInjurySection(
+                                  'DOUBTFUL',
+                                  controller.doubtfulInjuries,
+                                  const Color(0xFFF59E0B),
+                                  colors),
                             if (controller.questionableInjuries.isNotEmpty)
-                              _buildInjurySection('QUESTIONABLE', controller.questionableInjuries, const Color(0xFFF59E0B), colors),
+                              _buildInjurySection(
+                                  'QUESTIONABLE',
+                                  controller.questionableInjuries,
+                                  const Color(0xFFF59E0B),
+                                  colors),
                           ],
                         );
                       },
@@ -171,13 +184,15 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: colors.surface.withValues(alpha: 0.2),
-                    border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+                    border:
+                        Border.all(color: colors.border.withValues(alpha: 0.5)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8),
                     child: Image.asset(
                       widget.team.logoUrl,
-                      errorBuilder: (_, __, ___) => Icon(Icons.shield, color: colors.textPrimary, size: 24),
+                      errorBuilder: (_, __, ___) => Icon(Icons.shield,
+                          color: colors.textPrimary, size: 24),
                     ),
                   ),
                 ),
@@ -195,7 +210,7 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                 ),
               ],
             ),
-            
+
             // Close Button
             Positioned(
               right: 0,
@@ -260,7 +275,8 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
     );
   }
 
-  Widget _buildInjurySection(String title, List<InjuryPlayer> players, Color statusColor, T4LThemeColors colors) {
+  Widget _buildInjurySection(String title, List<InjuryPlayer> players,
+      Color statusColor, T4LThemeColors colors) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -283,7 +299,8 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -301,15 +318,17 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
               ],
             ),
           ),
-          
+
           // Player Cards
-          ...players.map((player) => _buildPlayerCard(player, statusColor, colors)),
+          ...players
+              .map((player) => _buildPlayerCard(player, statusColor, colors)),
         ],
       ),
     );
   }
 
-  Widget _buildPlayerCard(InjuryPlayer player, Color statusColor, T4LThemeColors colors) {
+  Widget _buildPlayerCard(
+      InjuryPlayer player, Color statusColor, T4LThemeColors colors) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -331,7 +350,8 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                     height: 56,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colors.border.withValues(alpha: 0.4)),
+                      border: Border.all(
+                          color: colors.border.withValues(alpha: 0.4)),
                       image: DecorationImage(
                         image: imageProvider,
                         fit: BoxFit.cover,
@@ -344,13 +364,15 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                     decoration: BoxDecoration(
                       color: colors.surface.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colors.border.withValues(alpha: 0.4)),
+                      border: Border.all(
+                          color: colors.border.withValues(alpha: 0.4)),
                     ),
                     child: Center(
                       child: SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: widget.team.primaryColor),
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: widget.team.primaryColor),
                       ),
                     ),
                   ),
@@ -360,9 +382,11 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                     decoration: BoxDecoration(
                       color: colors.surface.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: colors.border.withValues(alpha: 0.4)),
+                      border: Border.all(
+                          color: colors.border.withValues(alpha: 0.4)),
                     ),
-                    child: Icon(Icons.person, color: colors.textSecondary, size: 24),
+                    child: Icon(Icons.person,
+                        color: colors.textSecondary, size: 24),
                   ),
                 ),
                 // Number Badge
@@ -371,7 +395,8 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                     bottom: 0,
                     left: 0,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: widget.team.primaryColor,
                         borderRadius: const BorderRadius.only(
@@ -391,9 +416,9 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                   ),
               ],
             ),
-            
+
             const SizedBox(width: 12),
-            
+
             // Player Info
             Expanded(
               child: Column(
@@ -423,15 +448,17 @@ class _TeamInjuryReportScreenState extends State<TeamInjuryReportScreen> {
                   // Injury Type and Participation chips
                   Row(
                     children: [
-                      _buildChip(Icons.medical_services_outlined, player.injuryType, colors),
+                      _buildChip(Icons.medical_services_outlined,
+                          player.injuryType, colors),
                       const SizedBox(width: 8),
-                      _buildChip(Icons.directions_run, player.participation, colors),
+                      _buildChip(
+                          Icons.directions_run, player.participation, colors),
                     ],
                   ),
                 ],
               ),
             ),
-            
+
             // Status Badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
