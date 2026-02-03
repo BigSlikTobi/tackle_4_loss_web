@@ -23,6 +23,11 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   late NewsFeedController _controller;
   bool _initialized = false;
   String? _currentLanguageCode;
+  ScrollController? _scrollController;
+  DateTime? _lastLoadMoreAt;
+
+  static const double _loadMoreThreshold = 320.0;
+  static const Duration _loadMoreThrottle = Duration(milliseconds: 600);
 
   void _initializeController(SettingsService settings) {
     _controller = NewsFeedController(
@@ -31,11 +36,40 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
     _controller.loadInitial();
   }
 
+  void _attachScrollController(ScrollController? controller) {
+    if (_scrollController == controller) return;
+    _scrollController?.removeListener(_onScroll);
+    _scrollController = controller;
+    _scrollController?.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final controller = _scrollController;
+    if (controller == null || !controller.hasClients) return;
+    final position = controller.position;
+    if (!position.isScrollingNotifier.value) return;
+    if (position.maxScrollExtent - position.pixels <= _loadMoreThreshold) {
+      _maybeLoadMore();
+    }
+  }
+
+  void _maybeLoadMore() {
+    if (_controller.isLoading || !_controller.hasMore) return;
+    final now = DateTime.now();
+    if (_lastLoadMoreAt != null &&
+        now.difference(_lastLoadMoreAt!) < _loadMoreThrottle) {
+      return;
+    }
+    _lastLoadMoreAt = now;
+    _controller.loadMore();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final settings = Provider.of<SettingsService>(context);
     final newLanguageCode = settings.locale.languageCode;
+    _attachScrollController(PrimaryScrollController.maybeOf(context));
 
     if (!_initialized) {
       // First initialization
@@ -45,6 +79,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
     } else if (_currentLanguageCode != newLanguageCode) {
       // Language changed - reinitialize controller
       _currentLanguageCode = newLanguageCode;
+      _lastLoadMoreAt = null;
       _controller.dispose();
       _initializeController(settings);
     }
@@ -52,6 +87,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
 
   @override
   void dispose() {
+    _scrollController?.removeListener(_onScroll);
     _controller.dispose();
     super.dispose();
   }
@@ -154,7 +190,6 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                   if (index >= _controller.items.length) {
                     // Loading indicator at the end
                     if (_controller.hasMore) {
-                      _controller.loadMore();
                       return const NewsFeedItemSkeleton();
                     }
                     return const SizedBox.shrink();
