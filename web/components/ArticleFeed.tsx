@@ -18,6 +18,7 @@ const DeepDiveGlyph = () => (
 
 const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect, selectedLanguage }) => {
   const { play } = useAudio();
+  const locale = selectedLanguage === 'de' ? 'de-DE' : 'en-US';
 
   return (
     <div className="space-y-6">
@@ -46,7 +47,7 @@ const ArticleFeed: React.FC<ArticleFeedProps> = ({ articles, onSelect, selectedL
             <div className="space-y-1">
               <div className="deep-dive-meta flex items-center gap-2 text-zinc-500">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>{new Date(article.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                <span>{new Date(article.published_at).toLocaleDateString(locale, { month: 'short', day: 'numeric' })}</span>
               </div>
 
               <h3 className="deep-dive-title-sm text-zinc-900 group-hover:text-[var(--brand)] transition-colors">

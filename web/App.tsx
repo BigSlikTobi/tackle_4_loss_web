@@ -17,8 +17,10 @@ import AppStore from './components/AppStore';
 import Settings from './components/Settings';
 import { designTokens } from './design-tokens';
 
+const localeForLanguage = (languageCode: string) => (languageCode === 'de' ? 'de-DE' : 'en-US');
+
 // --- Helper: Parse Supabase Section Format ---
-function parseArticle(supabaseArticle: SupabaseArticle): Article {
+function parseArticle(supabaseArticle: SupabaseArticle, locale: string): Article {
   const sections: ArticleSection[] = Object.entries(supabaseArticle.sections || {})
     .sort(([keyA], [keyB]) => keyA.localeCompare(keyB, undefined, { numeric: true }))
     .map(([key, rawText]) => {
@@ -47,7 +49,7 @@ function parseArticle(supabaseArticle: SupabaseArticle): Article {
     title: supabaseArticle.title,
     subtitle: supabaseArticle.subtitle,
     author: supabaseArticle.author,
-    date: new Date(supabaseArticle.published_at).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }),
+    date: new Date(supabaseArticle.published_at).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }),
     heroImage: supabaseArticle.hero_image_url,
     languageCode: supabaseArticle.language_code,
     audioFile: supabaseArticle.audio_file,
@@ -118,7 +120,7 @@ export default function App() {
       if (error) throw error;
 
       const fullArticle = data as SupabaseArticle;
-      const parsed = parseArticle(fullArticle);
+      const parsed = parseArticle(fullArticle, localeForLanguage(selectedLanguage));
       setSelectedArticle(parsed);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
@@ -303,4 +305,3 @@ export default function App() {
 // Actually I can just add imports at the top of this file using a replace on top lines first? 
 // No, I'll assume I can edit the whole file or do top lines separately. 
 // I'll do imports first.)
-
