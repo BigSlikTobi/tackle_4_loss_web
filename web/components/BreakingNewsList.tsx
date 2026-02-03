@@ -39,7 +39,7 @@ export default function BreakingNewsList({ languageCode }: BreakingNewsListProps
                 {
                     event: '*',
                     schema: 'content',
-                    table: 'breaking_news'
+                    table: 'news_updates'
                 },
                 () => {
                     console.log('Breaking news changed, refreshing...');

@@ -1,36 +1,55 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts"
+import { createClient } from "jsr:@supabase/supabase-js@2"
 
 const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers":
+        "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+}
+
+interface PlayerData {
+    player_id?: string
+    [key: string]: unknown
+}
+
+// Utility to strip undefined values from an object
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([, v]) => v !== undefined)
+    ) as Partial<T>
 }
 
 serve(async (req) => {
-    if (req.method === 'OPTIONS') {
-        return new Response('ok', { headers: corsHeaders })
+    if (req.method === "OPTIONS") {
+        return new Response("ok", { headers: corsHeaders })
     }
 
     try {
+        const authHeader = req.headers.get("Authorization") ?? ""
         const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+            Deno.env.get("SUPABASE_URL") ?? "",
+            Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+            {
+                global: authHeader
+                    ? { headers: { Authorization: authHeader } }
+                    : {},
+            },
         )
 
-        const { language_code } = await req.json()
+        const { language_code } = await req.json().catch(() => ({}))
 
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
         let query = supabaseClient
-            .schema('content')
-            .from('news_updates')
-            .select('id, created_at, headline, sub_header, introduction_paragraph, content, image_file, teams, players, url, tts_file')
-            .gt('created_at', twentyFourHoursAgo)
-            .order('created_at', { ascending: false })
+            .schema("content")
+            .from("news_updates")
+            .select("*")
+            .gt("created_at", twentyFourHoursAgo)
+            .order("created_at", { ascending: false })
 
         if (language_code) {
-            query = query.eq('language_code', language_code)
+            query = query.eq("language_code", language_code)
         }
 
         const { data, error } = await query
@@ -39,69 +58,97 @@ serve(async (req) => {
 
         // Extract all player IDs to fetch headshots in one go
         const playerIds = new Set<string>()
-        data.forEach((item: any) => {
-            if (item.players && Array.isArray(item.players)) {
-                item.players.forEach((p: any) => {
+        data.forEach((item: Record<string, unknown>) => {
+            const players = item.players as PlayerData[] | undefined
+            if (players && Array.isArray(players)) {
+                players.forEach((p: PlayerData) => {
                     if (p.player_id) playerIds.add(p.player_id)
                 })
             }
         })
 
         // Fetch player details (headshot) from public.players
-        let playersMap = new Map<string, any>()
+        const playersMap = new Map<string, { headshot?: string }>()
         if (playerIds.size > 0) {
             const { data: playersData, error: playersError } = await supabaseClient
-                .from('players')
-                .select('player_id, headshot')
-                .in('player_id', Array.from(playerIds))
+                .from("players")
+                .select("player_id, headshot")
+                .in("player_id", Array.from(playerIds))
 
             if (!playersError && playersData) {
-                playersData.forEach((p: any) => playersMap.set(p.player_id, p))
+                playersData.forEach((p: { player_id: string; headshot?: string }) => 
+                    playersMap.set(p.player_id, p)
+                )
             }
         }
 
-        const mappedData = data.map((item: any) => {
+        const mappedData = data.map((item: Record<string, unknown>) => {
+            const imageRaw =
+                (item.image_url as string | undefined) ??
+                (item.image_file as string | undefined) ??
+                (item.imageUrl as string | undefined)
+            let imageUrl = imageRaw
+            if (imageUrl && !imageUrl.startsWith("http")) {
+                imageUrl = `${Deno.env.get("SUPABASE_URL")}/storage/v1/object/public/content/${imageUrl}`
+            }
+
+            const createdAt =
+                (item.created_at as string | undefined) ??
+                (item.createdAt as string | undefined)
+            const audioFile =
+                (item.audio_file as string | undefined) ??
+                (item.tts_file as string | undefined) ??
+                (item.audioFile as string | undefined)
+            const xPost =
+                (item.x_post as string | undefined) ??
+                (item.xPost as string | undefined)
+
             // Enrich players with headshot_url
-            // Defensive check: ensure players is an array before mapping
-            const playersArray = Array.isArray(item.players) ? item.players : []
-            const enrichedPlayers = playersArray.map((p: any) => {
-                const details = playersMap.get(p.player_id)
+            const playersArray = Array.isArray(item.players) ? item.players as PlayerData[] : []
+            const enrichedPlayers = playersArray.map((p: PlayerData) => {
+                const details = playersMap.get(p.player_id ?? "")
                 return {
                     ...p,
-                    headshot_url: details?.headshot
+                    headshot_url: details?.headshot,
                 }
             })
 
-            // Construct image URL (existing logic)
-            let imageUrl = item.image_file
-            if (imageUrl && !imageUrl.startsWith('http')) {
-                imageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${imageUrl}`
-            }
-
-            return {
-                id: item.id,
-                headline: item.headline,
-                subHeader: item.sub_header,
-                introductionParagraph: item.introduction_paragraph,
-                content: item.content, // New field
-                createdAt: item.created_at,
-                imageUrl: imageUrl,
-                teams: Array.isArray(item.teams) ? item.teams : [],
-                players: enrichedPlayers, // Enriched list
-                url: item.url,
-                audioFile: item.tts_file
-            }
+            // Build response object and strip undefined values
+            return stripUndefined({
+                id: item.id as string,
+                headline: item.headline as string,
+                created_at: createdAt,
+                image_url: imageUrl,
+                x_post: xPost,
+                audio_file: audioFile,
+                createdAt,
+                imageUrl,
+                xPost,
+                audioFile,
+                subHeader:
+                    (item.sub_header as string | undefined) ??
+                    (item.subHeader as string | undefined),
+                introductionParagraph:
+                    (item.introduction_paragraph as string | undefined) ??
+                    (item.introductionParagraph as string | undefined) ??
+                    (item.introduction as string | undefined),
+                content: item.content as string | undefined,
+                teams: Array.isArray(item.teams) ? item.teams : undefined,
+                players: enrichedPlayers.length > 0 ? enrichedPlayers : undefined,
+                url: item.url as string | undefined,
+            })
         })
 
-        if (error) throw error
-
         return new Response(JSON.stringify(mappedData), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 200,
         })
     } catch (error) {
-        return new Response(JSON.stringify({ error: error.message }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        const message = error instanceof Error 
+            ? error.message 
+            : (error as { message?: string })?.message ?? JSON.stringify(error)
+        return new Response(JSON.stringify({ error: message }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 400,
         })
     }

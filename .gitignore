@@ -76,5 +76,12 @@ flutter_app/assets/logos/
 supabase/.temp/project-ref
 supabase/.temp/pooler-url
 assets/creative_logos/
+
+# Supabase local state files
+supabase/.temp/
+supabase/.branches/
+
+# vsCode mcps
 .vscode/settings.json
 docs/mcp.md
+
