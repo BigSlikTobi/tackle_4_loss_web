@@ -10,6 +10,7 @@ lerna-debug.log*
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea
 .DS_Store
 *.suo
@@ -79,3 +80,8 @@ assets/creative_logos/
 # Supabase local state files
 supabase/.temp/
 supabase/.branches/
+
+# vsCode mcps
+.vscode/settings.json
+docs/mcp.md
+
