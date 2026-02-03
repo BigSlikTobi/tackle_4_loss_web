@@ -8,6 +8,13 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 }
 
+// Utility to strip undefined values from an object
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined)
+  ) as Partial<T>
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
@@ -59,7 +66,8 @@ serve(async (req: Request) => {
       data.image_source ??
       (Array.isArray(data.article_images) ? data.article_images[0]?.source : data.article_images?.source)
 
-    const mappedData = {
+    // Build response object and strip undefined values
+    const mappedData = stripUndefined({
       id: data.id,
       headline: data.headline,
       created_at: createdAt,
@@ -74,7 +82,7 @@ serve(async (req: Request) => {
       audioFile,
       sourceUrl,
       imageSource,
-    }
+    })
 
     return new Response(JSON.stringify(mappedData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

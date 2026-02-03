@@ -13,6 +13,13 @@ interface PlayerData {
     [key: string]: unknown
 }
 
+// Utility to strip undefined values from an object
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Partial<T> {
+    return Object.fromEntries(
+        Object.entries(obj).filter(([, v]) => v !== undefined)
+    ) as Partial<T>
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders })
@@ -106,9 +113,10 @@ serve(async (req) => {
                 }
             })
 
-            return {
-                id: item.id,
-                headline: item.headline,
+            // Build response object and strip undefined values
+            return stripUndefined({
+                id: item.id as string,
+                headline: item.headline as string,
                 created_at: createdAt,
                 image_url: imageUrl,
                 x_post: xPost,
@@ -124,11 +132,11 @@ serve(async (req) => {
                     (item.introduction_paragraph as string | undefined) ??
                     (item.introductionParagraph as string | undefined) ??
                     (item.introduction as string | undefined),
-                content: item.content,
+                content: item.content as string | undefined,
                 teams: Array.isArray(item.teams) ? item.teams : undefined,
                 players: enrichedPlayers.length > 0 ? enrichedPlayers : undefined,
-                url: item.url,
-            }
+                url: item.url as string | undefined,
+            })
         })
 
         return new Response(JSON.stringify(mappedData), {
