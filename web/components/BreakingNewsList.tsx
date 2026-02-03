@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { normalizeBreakingNewsList } from '../lib/breakingNews';
 import { BreakingNews } from '../types';
 import { Loader2 } from 'lucide-react';
 import BreakingNewsModal from './BreakingNewsModal';
@@ -21,7 +22,7 @@ export default function BreakingNewsList({ languageCode }: BreakingNewsListProps
                 });
 
                 if (error) throw error;
-                setNews(data || []);
+                setNews(normalizeBreakingNewsList(data));
             } catch (error) {
                 console.error('Error fetching breaking news:', error);
             } finally {

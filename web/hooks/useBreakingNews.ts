@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { normalizeBreakingNews, normalizeBreakingNewsList } from '../lib/breakingNews';
 import { supabase } from '../lib/supabase';
 import { BreakingNews } from '../types';
 
@@ -15,8 +16,9 @@ export function useBreakingNews(languageCode: string) {
                 body: { language_code: languageCode }
             });
             if (!error && data) {
-                setNews(data);
-                checkUnreadStatus(data);
+                const normalized = normalizeBreakingNewsList(data);
+                setNews(normalized);
+                checkUnreadStatus(normalized);
             }
         };
 
@@ -30,7 +32,7 @@ export function useBreakingNews(languageCode: string) {
                 (payload) => {
                     console.log('New breaking news!', payload);
                     fetchNews();
-                    handleNewNotification(payload.new as BreakingNews);
+                    handleNewNotification(normalizeBreakingNews(payload.new as Record<string, unknown>));
                 }
             )
             .subscribe();

@@ -81,15 +81,15 @@ serve(async (req) => {
             return {
                 id: item.id,
                 headline: item.headline,
-                subHeader: item.sub_header,
-                introductionParagraph: item.introduction_paragraph,
-                content: item.content, // New field
-                createdAt: item.created_at,
-                imageUrl: imageUrl,
+                sub_header: item.sub_header,
+                introduction_paragraph: item.introduction_paragraph,
+                content: item.content,
+                created_at: item.created_at,
+                image_url: imageUrl,
                 teams: Array.isArray(item.teams) ? item.teams : [],
-                players: enrichedPlayers, // Enriched list
+                players: enrichedPlayers,
                 url: item.url,
-                audioFile: item.tts_file
+                audio_file: item.tts_file
             }
         })
 
