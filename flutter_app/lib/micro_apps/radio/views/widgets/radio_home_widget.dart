@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tackle4loss_mobile/core/theme/t4l_theme.dart';
@@ -18,7 +17,11 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
   late ScrollController _scrollController;
-  Timer? _marqueeTimer;
+  late AnimationController _marqueeController;
+  double _lastMarqueeExtent = 0;
+  bool _marqueeActive = false;
+  bool _marqueeCheckScheduled = false;
+  static const double _marqueeSpeedPxPerSecond = 30;
 
   @override
   void initState() {
@@ -30,46 +33,81 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
 
     _scrollController = ScrollController();
 
-    // Start marquee effect after a short delay
-    Future.delayed(const Duration(seconds: 2), _startMarquee);
+    _marqueeController = AnimationController(vsync: this)
+      ..addListener(() {
+        if (!_scrollController.hasClients) return;
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        if (maxScroll <= 0) return;
+        _scrollController.jumpTo(_marqueeController.value * maxScroll);
+      });
+
+    _scheduleMarqueeCheck();
   }
 
-  void _startMarquee() {
-    if (!mounted) return;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scheduleMarqueeCheck();
+  }
 
-    _marqueeTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (!mounted) {
-        timer.cancel();
+  @override
+  void didUpdateWidget(covariant RadioHomeWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _scheduleMarqueeCheck();
+  }
+
+  void _scheduleMarqueeCheck() {
+    if (_marqueeCheckScheduled) return;
+    _marqueeCheckScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _evaluateMarquee());
+  }
+
+  void _evaluateMarquee() {
+    _marqueeCheckScheduled = false;
+    if (!mounted || !_scrollController.hasClients) return;
+
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final tickerEnabled = TickerMode.of(context);
+    final shouldRun = tickerEnabled && maxScroll > 0;
+
+    if (shouldRun) {
+      if (_marqueeActive &&
+          (_lastMarqueeExtent - maxScroll).abs() < 0.5 &&
+          _marqueeController.isAnimating) {
         return;
       }
 
-      if (_scrollController.hasClients) {
-        double maxScroll = _scrollController.position.maxScrollExtent;
-        double currentScroll = _scrollController.offset;
-
-        if (currentScroll >= maxScroll) {
+      _lastMarqueeExtent = maxScroll;
+      final durationMs = (maxScroll / _marqueeSpeedPxPerSecond * 1000)
+          .round()
+          .clamp(1000, 60000);
+      _marqueeController.duration = Duration(milliseconds: durationMs);
+      if (!_marqueeController.isAnimating) {
+        _marqueeController.repeat();
+      }
+      _marqueeActive = true;
+    } else {
+      if (_marqueeActive) {
+        _marqueeController.stop();
+        if (_scrollController.hasClients) {
           _scrollController.jumpTo(0);
-        } else {
-          _scrollController.animateTo(
-            currentScroll + 1.0,
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.linear,
-          );
         }
       }
-    });
+      _marqueeActive = false;
+    }
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
-    _marqueeTimer?.cancel();
+    _marqueeController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    _scheduleMarqueeCheck();
     final defaultColors = Theme.of(context).extension<T4LThemeColors>()!;
     final l10n = AppLocalizations.of(context)!;
 
@@ -88,8 +126,9 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
       // Dark Mode (App is Dark): Widget is Light (White)
       backgroundColor = Colors.white;
       // Text is dark (Team or Black)
-      foregroundColor =
-          selectedTeam != null ? selectedTeam.primaryColor : Colors.black;
+      foregroundColor = selectedTeam != null
+          ? selectedTeam.primaryColor
+          : Colors.black;
       // Play button background: Dark (Team Color)
       iconBackgroundColor = selectedTeam != null
           ? selectedTeam.primaryColor
