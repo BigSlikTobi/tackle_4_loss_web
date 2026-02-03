@@ -26,7 +26,7 @@ export function useBreakingNews(languageCode: string) {
             .channel('breaking-news-system')
             .on(
                 'postgres_changes',
-                { event: 'INSERT', schema: 'content', table: 'breaking_news' },
+                { event: 'INSERT', schema: 'content', table: 'news_updates' },
                 (payload) => {
                     console.log('New breaking news!', payload);
                     fetchNews();
