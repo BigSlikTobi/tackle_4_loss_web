@@ -120,6 +120,8 @@ class FunctionGemmaService {
     }
 
     try {
+      await _closeChatSession();
+
       // Create a new chat session for each request
       _chatSession = await _model!.createChat(
         tools: tools ?? [],
@@ -145,14 +147,31 @@ class FunctionGemmaService {
     } catch (e) {
       debugPrint('Inference error: $e');
       return null;
+    } finally {
+      await _closeChatSession();
     }
   }
 
   /// Cleanup resources when the service is no longer needed.
   Future<void> dispose() async {
+    await _closeChatSession();
     await _model?.close();
     _chatSession = null;
     _model = null;
     _isInitialized = false;
+  }
+
+  Future<void> _closeChatSession() async {
+    final session = _chatSession;
+    _chatSession = null;
+    if (session == null) {
+      return;
+    }
+
+    try {
+      await session.session.close();
+    } catch (e) {
+      debugPrint('Failed to close chat session: $e');
+    }
   }
 }
