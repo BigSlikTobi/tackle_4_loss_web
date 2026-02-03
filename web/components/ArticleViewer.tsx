@@ -19,6 +19,8 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
   const [videoReady, setVideoReady] = useState(false);
   const [isAudioReady, setIsAudioReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const scrollRafId = useRef<number | null>(null);
+  const lastScrollProgress = useRef<number>(-1);
   const heroRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -27,7 +29,8 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
 
   // Track scroll progress within current section
   useEffect(() => {
-    const handleScroll = () => {
+    const updateScrollProgress = () => {
+      scrollRafId.current = null;
       if (!sectionRef.current) return;
 
       const rect = sectionRef.current.getBoundingClientRect();
@@ -38,12 +41,27 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
       // Calculate how much of the section has been scrolled through
       const scrolled = Math.max(0, windowHeight - sectionTop);
       const progress = Math.min((scrolled / sectionHeight) * 100, 100);
-      setSectionScrollProgress(progress);
+      if (progress !== lastScrollProgress.current) {
+        lastScrollProgress.current = progress;
+        setSectionScrollProgress(progress);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial calculation
-    return () => window.removeEventListener('scroll', handleScroll);
+    const scheduleUpdate = () => {
+      if (scrollRafId.current != null) return;
+      scrollRafId.current = window.requestAnimationFrame(updateScrollProgress);
+    };
+
+    lastScrollProgress.current = -1;
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    scheduleUpdate(); // Initial calculation
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      if (scrollRafId.current != null) {
+        window.cancelAnimationFrame(scrollRafId.current);
+        scrollRafId.current = null;
+      }
+    };
   }, [currentSectionIndex]);
 
   // Expose hero media element to parent for transitions
