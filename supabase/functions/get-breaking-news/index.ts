@@ -22,24 +22,34 @@ serve(async (req) => {
 
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-        let query = supabaseClient
-            .schema('content')
-            .from('news_updates')
-            .select('id, created_at, headline, sub_header, introduction_paragraph, content, image_file, teams, players, url, tts_file')
-            .gt('created_at', twentyFourHoursAgo)
-            .order('created_at', { ascending: false })
+        const fetchFromTable = async (table: string) => {
+            let query = supabaseClient
+                .schema('content')
+                .from(table)
+                .select('*')
+                .gt('created_at', twentyFourHoursAgo)
+                .order('created_at', { ascending: false })
 
-        if (language_code) {
-            query = query.eq('language_code', language_code)
+            if (language_code) {
+                query = query.eq('language_code', language_code)
+            }
+
+            return await query
         }
 
-        const { data, error } = await query
+        let { data, error } = await fetchFromTable('breaking_news')
+        if (error) {
+            const fallback = await fetchFromTable('news_updates')
+            data = fallback.data
+            error = fallback.error
+        }
 
         if (error) throw error
 
         // Extract all player IDs to fetch headshots in one go
+        const rows = data ?? []
         const playerIds = new Set<string>()
-        data.forEach((item: any) => {
+        rows.forEach((item: any) => {
             if (item.players && Array.isArray(item.players)) {
                 item.players.forEach((p: any) => {
                     if (p.player_id) playerIds.add(p.player_id)
@@ -60,7 +70,7 @@ serve(async (req) => {
             }
         }
 
-        const mappedData = data.map((item: any) => {
+        const mappedData = rows.map((item: any) => {
             // Enrich players with headshot_url
             // Defensive check: ensure players is an array before mapping
             const playersArray = Array.isArray(item.players) ? item.players : []
@@ -73,23 +83,25 @@ serve(async (req) => {
             })
 
             // Construct image URL (existing logic)
-            let imageUrl = item.image_file
-            if (imageUrl && !imageUrl.startsWith('http')) {
+            let imageUrl = item.image_url ?? item.image_file ?? item.imageUrl ?? item.imageFile
+            if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('http')) {
                 imageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${imageUrl}`
             }
 
             return {
                 id: item.id,
                 headline: item.headline,
-                subHeader: item.sub_header,
-                introductionParagraph: item.introduction_paragraph,
-                content: item.content, // New field
-                createdAt: item.created_at,
-                imageUrl: imageUrl,
+                sub_header: item.sub_header ?? item.subHeader ?? null,
+                introduction_paragraph:
+                    item.introduction_paragraph ?? item.introductionParagraph ?? null,
+                content: item.content ?? null,
+                created_at: item.created_at ?? item.createdAt ?? null,
+                image_url: imageUrl ?? null,
                 teams: Array.isArray(item.teams) ? item.teams : [],
-                players: enrichedPlayers, // Enriched list
-                url: item.url,
-                audioFile: item.tts_file
+                players: enrichedPlayers,
+                url: item.url ?? null,
+                x_post: item.x_post ?? item.xPost ?? null,
+                audio_file: item.audio_file ?? item.tts_file ?? item.audioFile ?? null
             }
         })
 

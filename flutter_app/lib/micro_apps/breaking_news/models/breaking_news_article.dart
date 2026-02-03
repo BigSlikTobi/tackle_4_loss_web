@@ -2,10 +2,7 @@ class TeamReference {
   final String teamId;
   final String? logoUrl;
 
-  TeamReference({
-    required this.teamId,
-    this.logoUrl,
-  });
+  TeamReference({required this.teamId, this.logoUrl});
 
   factory TeamReference.fromJson(Map<String, dynamic> json) {
     return TeamReference(
@@ -20,11 +17,7 @@ class PlayerReference {
   final String? name;
   final String? id;
 
-  PlayerReference({
-    this.headshotUrl,
-    this.name,
-    this.id,
-  });
+  PlayerReference({this.headshotUrl, this.name, this.id});
 
   factory PlayerReference.fromJson(Map<String, dynamic> json) {
     return PlayerReference(
@@ -63,14 +56,21 @@ class BreakingNewsArticle {
   });
 
   factory BreakingNewsArticle.fromJson(Map<String, dynamic> json) {
+    final createdAtValue = json['created_at'] ?? json['createdAt'];
+    final createdAtString = createdAtValue is String ? createdAtValue : null;
+
     return BreakingNewsArticle(
       id: json['id'].toString(), // Safely handle int or String Ids
       headline: json['headline'] as String,
-      subHeader: json['subHeader'] as String?,
-      introductionParagraph: json['introductionParagraph'] as String?,
+      subHeader: json['sub_header'] as String? ?? json['subHeader'] as String?,
+      introductionParagraph:
+          json['introduction_paragraph'] as String? ??
+          json['introductionParagraph'] as String?,
       content: json['content'] as String?,
-      imageUrl: json['imageUrl'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      imageUrl: json['image_url'] as String? ?? json['imageUrl'] as String?,
+      createdAt: createdAtString != null
+          ? DateTime.parse(createdAtString)
+          : DateTime.now(),
       teams: (json['teams'] as List<dynamic>?)
           ?.whereType<Map>()
           .map((e) => TeamReference.fromJson(Map<String, dynamic>.from(e)))
@@ -80,7 +80,7 @@ class BreakingNewsArticle {
           .map((e) => PlayerReference.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
       url: json['url'] as String?,
-      audioFile: json['audioFile'] as String?,
+      audioFile: json['audio_file'] as String? ?? json['audioFile'] as String?,
     );
   }
 }

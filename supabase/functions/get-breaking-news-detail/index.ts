@@ -25,27 +25,40 @@ serve(async (req: Request) => {
       throw new Error('Missing ID parameter')
     }
 
-    const { data, error } = await supabaseClient
-      .schema('content')
-      .from('news_updates')
-      .select('id, headline, created_at, content, introduction, source_url, tts_file, article_images(image_url, source)')
-      .eq('id', id)
-      .single()
+    const fetchFromTable = async (table: string) => {
+      return await supabaseClient
+        .schema('content')
+        .from(table)
+        .select('*')
+        .eq('id', id)
+        .single()
+    }
+
+    let { data, error } = await fetchFromTable('breaking_news')
+    if (error) {
+      const fallback = await fetchFromTable('news_updates')
+      data = fallback.data
+      error = fallback.error
+    }
 
     if (error) throw error
 
     const images = Array.isArray(data.article_images) ? data.article_images[0] : data.article_images
+    let imageUrl = data.image_url ?? data.image_file ?? images?.image_url
+    if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('http')) {
+      imageUrl = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/content/${imageUrl}`
+    }
 
     const mappedData = {
       id: data.id,
       headline: data.headline,
-      created_at: data.created_at,
-      content: data.content,
-      introduction: data.introduction,
-      source_url: data.source_url,
-      image_url: images?.image_url,
-      image_source: images?.source,
-      audio_file: data.tts_file
+      created_at: data.created_at ?? data.createdAt ?? null,
+      content: data.content ?? null,
+      introduction: data.introduction ?? data.introduction_paragraph ?? null,
+      source_url: data.source_url ?? data.url ?? null,
+      image_url: imageUrl ?? null,
+      image_source: images?.source ?? data.image_source ?? null,
+      audio_file: data.audio_file ?? data.tts_file ?? data.audioFile ?? null
     }
 
     return new Response(JSON.stringify(mappedData), {
