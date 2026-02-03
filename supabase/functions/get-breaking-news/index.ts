@@ -8,6 +8,11 @@ const corsHeaders = {
     "Access-Control-Allow-Methods": "POST, OPTIONS",
 }
 
+interface PlayerData {
+    player_id?: string
+    [key: string]: unknown
+}
+
 serve(async (req) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders })
@@ -44,6 +49,32 @@ serve(async (req) => {
 
         if (error) throw error
 
+        // Extract all player IDs to fetch headshots in one go
+        const playerIds = new Set<string>()
+        data.forEach((item: Record<string, unknown>) => {
+            const players = item.players as PlayerData[] | undefined
+            if (players && Array.isArray(players)) {
+                players.forEach((p: PlayerData) => {
+                    if (p.player_id) playerIds.add(p.player_id)
+                })
+            }
+        })
+
+        // Fetch player details (headshot) from public.players
+        const playersMap = new Map<string, { headshot?: string }>()
+        if (playerIds.size > 0) {
+            const { data: playersData, error: playersError } = await supabaseClient
+                .from("players")
+                .select("player_id, headshot")
+                .in("player_id", Array.from(playerIds))
+
+            if (!playersError && playersData) {
+                playersData.forEach((p: { player_id: string; headshot?: string }) => 
+                    playersMap.set(p.player_id, p)
+                )
+            }
+        }
+
         const mappedData = data.map((item: Record<string, unknown>) => {
             const imageRaw =
                 (item.image_url as string | undefined) ??
@@ -65,6 +96,16 @@ serve(async (req) => {
                 (item.x_post as string | undefined) ??
                 (item.xPost as string | undefined)
 
+            // Enrich players with headshot_url
+            const playersArray = Array.isArray(item.players) ? item.players as PlayerData[] : []
+            const enrichedPlayers = playersArray.map((p: PlayerData) => {
+                const details = playersMap.get(p.player_id ?? "")
+                return {
+                    ...p,
+                    headshot_url: details?.headshot,
+                }
+            })
+
             return {
                 id: item.id,
                 headline: item.headline,
@@ -85,12 +126,10 @@ serve(async (req) => {
                     (item.introduction as string | undefined),
                 content: item.content,
                 teams: Array.isArray(item.teams) ? item.teams : undefined,
-                players: Array.isArray(item.players) ? item.players : undefined,
+                players: enrichedPlayers.length > 0 ? enrichedPlayers : undefined,
                 url: item.url,
             }
         })
-
-        if (error) throw error
 
         return new Response(JSON.stringify(mappedData), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
