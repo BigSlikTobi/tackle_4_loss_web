@@ -161,6 +161,20 @@ class FunctionGemmaService {
     _isInitialized = false;
   }
 
+  /// Safely closes the current chat session to prevent memory/GPU leaks.
+  ///
+  /// This method:
+  /// - Captures the session reference locally before nulling to avoid race conditions
+  /// - Nulls [_chatSession] immediately to prevent concurrent access
+  /// - Silently catches and logs any close errors to avoid disrupting the caller
+  ///
+  /// Called automatically:
+  /// - Before creating a new session in [generateResponse]
+  /// - After completing or failing a response in [generateResponse] (via finally)
+  /// - In [dispose] for final cleanup
+  @visibleForTesting
+  Future<void> closeChatSession() => _closeChatSession();
+
   Future<void> _closeChatSession() async {
     final session = _chatSession;
     _chatSession = null;
