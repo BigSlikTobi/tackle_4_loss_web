@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../controllers/news_feed_controller.dart';
 import '../../../models/news_feed_item.dart';
 import '../../../services/settings_service.dart';
-import '../../../theme/t4l_theme.dart';
 import 'news_feed_item_card.dart';
 import 'video_feed_item_card.dart';
 import 'personalized_feed_item_card.dart';
@@ -117,7 +116,6 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   Widget build(BuildContext context) {
     final settings = Provider.of<SettingsService>(context);
     final userTeamId = settings.selectedTeam?.id;
-    final t4lColors = Theme.of(context).extension<T4LThemeColors>();
 
     return ListenableBuilder(
       listenable: _controller,
