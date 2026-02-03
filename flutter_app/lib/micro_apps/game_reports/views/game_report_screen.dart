@@ -50,12 +50,14 @@ class _GameReportScreenState extends State<GameReportScreen> {
   Future<void> _loadCompletedGames() async {
     try {
       final allGames = await _standingsService.fetchGames();
+      if (!mounted) return;
       setState(() {
         _completedGames = allGames.where((g) => g.isPlayed).toList()
           ..sort((a, b) => b.gameday.compareTo(a.gameday));
         _isLoadingGames = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoadingGames = false);
     }
   }
