@@ -120,6 +120,8 @@ class FunctionGemmaService {
     }
 
     try {
+      await _closeChatSession();
+
       // Create a new chat session for each request
       _chatSession = await _model!.createChat(
         tools: tools ?? [],
@@ -145,14 +147,45 @@ class FunctionGemmaService {
     } catch (e) {
       debugPrint('Inference error: $e');
       return null;
+    } finally {
+      await _closeChatSession();
     }
   }
 
   /// Cleanup resources when the service is no longer needed.
   Future<void> dispose() async {
+    await _closeChatSession();
     await _model?.close();
     _chatSession = null;
     _model = null;
     _isInitialized = false;
+  }
+
+  /// Safely closes the current chat session to prevent memory/GPU leaks.
+  ///
+  /// This method:
+  /// - Captures the session reference locally before nulling to avoid race conditions
+  /// - Nulls [_chatSession] immediately to prevent concurrent access
+  /// - Silently catches and logs any close errors to avoid disrupting the caller
+  ///
+  /// Called automatically:
+  /// - Before creating a new session in [generateResponse]
+  /// - After completing or failing a response in [generateResponse] (via finally)
+  /// - In [dispose] for final cleanup
+  @visibleForTesting
+  Future<void> closeChatSession() => _closeChatSession();
+
+  Future<void> _closeChatSession() async {
+    final session = _chatSession;
+    _chatSession = null;
+    if (session == null) {
+      return;
+    }
+
+    try {
+      await session.session.close();
+    } catch (e) {
+      debugPrint('Failed to close chat session: $e');
+    }
   }
 }
