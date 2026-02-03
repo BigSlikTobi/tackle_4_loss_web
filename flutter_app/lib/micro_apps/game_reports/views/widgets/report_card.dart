@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../models/report_response.dart';
 
 /// Widget for displaying a generated game report.
@@ -196,10 +197,23 @@ class ReportCard extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        // Share button (placeholder for future)
         IconButton(
-          onPressed: () {
-            // TODO: Implement share functionality
+          onPressed: () async {
+            final shareText = _buildShareText();
+
+            try {
+              await Share.share(
+                shareText,
+                subject: report.headline,
+              );
+            } catch (error) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Sharing is not available right now.'),
+                ),
+              );
+            }
           },
           icon: Icon(
             Icons.share_outlined,
@@ -210,6 +224,26 @@ class ReportCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _buildShareText() {
+    final buffer = StringBuffer()
+      ..writeln(report.headline)
+      ..writeln()
+      ..writeln(report.formattedScore)
+      ..writeln()
+      ..writeln(report.body.trim());
+
+    if (report.highlights.isNotEmpty) {
+      buffer
+        ..writeln()
+        ..writeln('Key Takeaways:');
+      for (final highlight in report.highlights) {
+        buffer.writeln('- $highlight');
+      }
+    }
+
+    return buffer.toString().trim();
   }
 
   String _formatTimestamp(DateTime dt) {
