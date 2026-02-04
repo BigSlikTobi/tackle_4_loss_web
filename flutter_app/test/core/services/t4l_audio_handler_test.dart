@@ -2,12 +2,24 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:tackle4loss_mobile/core/services/t4l_audio_handler.dart';
+
+class MockAudioPlayer extends Mock implements AudioPlayer {}
+
+class FakeAudioSource extends Fake implements AudioSource {}
 
 // Test the queue exhaustion and continuous playback logic
-// Note: Full T4LAudioHandler testing requires mocking audioplayers and audio_session
+// Note: Full T4LAudioHandler testing requires mocking just_audio and audio_session
 // which are platform-specific. These tests focus on the queue logic.
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeAudioSource());
+    registerFallbackValue(Duration.zero);
+  });
+
   group('T4LAudioHandler Queue Logic', () {
     test('queue exhaustion signal emits when no more tracks', () async {
       // This test verifies the expected behavior of queue exhaustion
@@ -87,6 +99,116 @@ void main() {
       wasExhausted =
           emptyQueue.isEmpty || currentIndex >= emptyQueue.length - 1;
       expect(wasExhausted, true);
+    });
+  });
+
+  group('T4LAudioHandler (just_audio integration)', () {
+    late MockAudioPlayer mockPlayer;
+    late StreamController<PlaybackEvent> playbackEvents;
+    late StreamController<int?> currentIndexEvents;
+    late StreamController<PlayerState> playerStateEvents;
+
+    setUp(() {
+      mockPlayer = MockAudioPlayer();
+      playbackEvents = StreamController<PlaybackEvent>.broadcast();
+      currentIndexEvents = StreamController<int?>.broadcast();
+      playerStateEvents = StreamController<PlayerState>.broadcast();
+
+      when(() => mockPlayer.playbackEventStream)
+          .thenAnswer((_) => playbackEvents.stream);
+      when(() => mockPlayer.currentIndexStream)
+          .thenAnswer((_) => currentIndexEvents.stream);
+      when(() => mockPlayer.playerStateStream)
+          .thenAnswer((_) => playerStateEvents.stream);
+
+      when(() => mockPlayer.processingState)
+          .thenReturn(ProcessingState.ready);
+      when(() => mockPlayer.playing).thenReturn(false);
+      when(() => mockPlayer.position).thenReturn(Duration.zero);
+      when(() => mockPlayer.bufferedPosition).thenReturn(Duration.zero);
+      when(() => mockPlayer.speed).thenReturn(1.0);
+      when(() => mockPlayer.currentIndex).thenReturn(0);
+      when(() => mockPlayer.hasNext).thenReturn(false);
+      when(() => mockPlayer.hasPrevious).thenReturn(false);
+
+      when(() => mockPlayer.setAudioSource(
+            any(),
+            initialIndex: any(named: 'initialIndex'),
+            initialPosition: any(named: 'initialPosition'),
+          )).thenAnswer((_) async => null);
+      when(() => mockPlayer.play()).thenAnswer((_) async => null);
+      when(() => mockPlayer.pause()).thenAnswer((_) async => null);
+      when(() => mockPlayer.stop()).thenAnswer((_) async => null);
+      when(() => mockPlayer.seek(any(), index: any(named: 'index')))
+          .thenAnswer((_) async => null);
+      when(() => mockPlayer.seekToNext()).thenAnswer((_) async => null);
+      when(() => mockPlayer.seekToPrevious()).thenAnswer((_) async => null);
+    });
+
+    tearDown(() async {
+      await playbackEvents.close();
+      await currentIndexEvents.close();
+      await playerStateEvents.close();
+    });
+
+    test('emits queue exhausted when completed on last item', () async {
+      final handler =
+          T4LAudioHandler(player: mockPlayer, configureSession: false);
+      handler.queue.add(const [
+        MediaItem(id: '1', title: 'Track 1'),
+        MediaItem(id: '2', title: 'Track 2'),
+      ]);
+      when(() => mockPlayer.currentIndex).thenReturn(1);
+
+      final exhausted = Completer<void>();
+      final sub = handler.onQueueExhausted.listen((_) {
+        if (!exhausted.isCompleted) {
+          exhausted.complete();
+        }
+      });
+
+      playerStateEvents.add(PlayerState(false, ProcessingState.completed));
+
+      await exhausted.future.timeout(const Duration(milliseconds: 100));
+      await sub.cancel();
+    });
+
+    test('appendQueueItems resumes playback when exhausted', () async {
+      final handler =
+          T4LAudioHandler(player: mockPlayer, configureSession: false);
+      handler.queue.add(const [
+        MediaItem(id: '1', title: 'Track 1'),
+      ]);
+      when(() => mockPlayer.processingState)
+          .thenReturn(ProcessingState.completed);
+      when(() => mockPlayer.currentIndex).thenReturn(0);
+      when(() => mockPlayer.playing).thenReturn(false);
+
+      await handler.appendQueueItems(const [
+        MediaItem(id: '2', title: 'Track 2'),
+      ]);
+
+      verify(() => mockPlayer.seek(Duration.zero, index: 1)).called(1);
+      verify(() => mockPlayer.play()).called(1);
+    });
+
+    test('insertQueueItemsNext inserts after current index', () async {
+      final handler =
+          T4LAudioHandler(player: mockPlayer, configureSession: false);
+
+      await handler.addQueueItems(const [
+        MediaItem(id: '1', title: 'Track 1'),
+        MediaItem(id: '2', title: 'Track 2'),
+      ]);
+
+      when(() => mockPlayer.currentIndex).thenReturn(0);
+
+      await handler.insertQueueItemsNext(const [
+        MediaItem(id: '3', title: 'Track 3'),
+      ]);
+
+      expect(handler.queue.value.map((item) => item.id).toList(),
+          ['1', '3', '2']);
     });
   });
 

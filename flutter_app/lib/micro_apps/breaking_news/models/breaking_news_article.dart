@@ -78,7 +78,9 @@ class BreakingNewsArticle {
     if (sourceUrl == null) return 'Source';
     try {
       final uri = Uri.parse(sourceUrl!);
-      return uri.host.replaceFirst('www.', '');
+      final host = uri.host.replaceFirst('www.', '');
+      if (host.isEmpty) return 'Source';
+      return host;
     } catch (_) {
       return 'Source';
     }
