@@ -81,7 +81,7 @@ assets/creative_logos/
 supabase/.temp/
 supabase/.branches/
 
-# vsCode mcps
+# vsCode docs & mcps
 .vscode/settings.json
 docs/mcp.md
-
+docs/git_worktree_guide.md
