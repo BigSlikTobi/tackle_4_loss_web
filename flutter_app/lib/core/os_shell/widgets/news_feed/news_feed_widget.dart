@@ -24,6 +24,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   String? _currentLanguageCode;
   ScrollController? _scrollController;
   DateTime? _lastLoadMoreAt;
+  int _lastPrecachingIndex = -1;
 
   static const double _loadMoreThreshold = 320.0;
   static const Duration _loadMoreThrottle = Duration(milliseconds: 600);
@@ -32,6 +33,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
     _controller = NewsFeedController(
       languageCode: settings.locale.languageCode,
     );
+    _lastPrecachingIndex = -1;
     _controller.loadInitial();
   }
 
@@ -94,8 +96,13 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   /// Pre-cache images for upcoming feed items to improve perceived loading speed
   void _precacheUpcomingImages(BuildContext context, int currentIndex) {
     const lookAhead = 3;
+    if (currentIndex + lookAhead <= _lastPrecachingIndex) return;
+    var maxPrecachingIndex = _lastPrecachingIndex;
     for (int i = 1; i <= lookAhead; i++) {
       final nextIndex = currentIndex + i;
+      if (nextIndex <= _lastPrecachingIndex) {
+        continue;
+      }
       if (nextIndex < _controller.items.length) {
         final item = _controller.items[nextIndex];
         if (item is NewsFeedItem && item.imageUrl != null) {
@@ -107,9 +114,13 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
             ),
             context,
           );
+          if (nextIndex > maxPrecachingIndex) {
+            maxPrecachingIndex = nextIndex;
+          }
         }
       }
     }
+    _lastPrecachingIndex = maxPrecachingIndex;
   }
 
   @override
