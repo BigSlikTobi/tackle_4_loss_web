@@ -46,6 +46,8 @@ export default function BreakingNewsModal({
     const [sectionScrollProgress, setSectionScrollProgress] = useState(0);
     const [isAudioReady, setIsAudioReady] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
+    const scrollRafId = useRef<number | null>(null);
+    const lastScrollProgress = useRef<number>(-1);
 
     // Refs
     const heroRef = useRef<HTMLDivElement>(null);
@@ -107,7 +109,8 @@ export default function BreakingNewsModal({
 
     // --- 2. SCROLL PROGRESS LOGIC (Adapted for Modal) ---
     useEffect(() => {
-        const handleScroll = () => {
+        const updateScrollProgress = () => {
+            scrollRafId.current = null;
             // NOTE: In ArticleViewer, we track window scroll.
             // Here, because it's a modal, we must track the overflow container's scroll.
             const scrollContainer = contentRef.current;
@@ -127,14 +130,29 @@ export default function BreakingNewsModal({
             const scrolled = Math.max(0, startOffset - sectionTop);
             const progress = Math.min((scrolled / sectionHeight) * 100, 100);
 
-            setSectionScrollProgress(progress);
+            if (progress !== lastScrollProgress.current) {
+                lastScrollProgress.current = progress;
+                setSectionScrollProgress(progress);
+            }
+        };
+
+        const scheduleUpdate = () => {
+            if (scrollRafId.current != null) return;
+            scrollRafId.current = window.requestAnimationFrame(updateScrollProgress);
         };
 
         const container = contentRef.current;
         if (container) {
-            container.addEventListener('scroll', handleScroll);
-            handleScroll(); // Initial check
-            return () => container.removeEventListener('scroll', handleScroll);
+            lastScrollProgress.current = -1;
+            container.addEventListener('scroll', scheduleUpdate, { passive: true });
+            scheduleUpdate(); // Initial check
+            return () => {
+                container.removeEventListener('scroll', scheduleUpdate);
+                if (scrollRafId.current != null) {
+                    window.cancelAnimationFrame(scrollRafId.current);
+                    scrollRafId.current = null;
+                }
+            };
         }
     }, [article, currentSectionIndex]);
 
