@@ -20,11 +20,17 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
   Stream<void> get onQueueExhausted => _queueExhaustedController.stream;
 
   bool _queueExhaustedNotified = false;
+  bool _disposed = false;
+  late final Future<void> _initFuture;
+  Future<void> _queueOperation = Future.value();
+  StreamSubscription<PlaybackEvent>? _playbackEventSub;
+  StreamSubscription<int?>? _currentIndexSub;
+  StreamSubscription<PlayerState>? _playerStateSub;
 
   /// Initialise our audio handler.
   T4LAudioHandler({AudioPlayer? player, bool configureSession = true})
       : _player = player ?? AudioPlayer() {
-    _init(configureSession: configureSession);
+    _initFuture = _init(configureSession: configureSession);
   }
 
   Future<void> _init({required bool configureSession}) async {
@@ -49,14 +55,14 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
       await session.setActive(true);
     }
 
-    _player.playbackEventStream.listen(
+    _playbackEventSub = _player.playbackEventStream.listen(
       _broadcastState,
       onError: (Object error, StackTrace stackTrace) {
         debugPrint("T4LAudioHandler: Playback error: $error");
       },
     );
 
-    _player.currentIndexStream.listen((index) {
+    _currentIndexSub = _player.currentIndexStream.listen((index) {
       if (index == null) return;
       final currentQueue = queue.value;
       if (index >= 0 && index < currentQueue.length) {
@@ -64,13 +70,34 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
       }
     });
 
-    _player.playerStateStream.listen((state) {
+    _playerStateSub = _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _notifyQueueExhaustedIfNeeded();
       } else {
         _queueExhaustedNotified = false;
       }
     });
+  }
+
+  Future<void> _ensureInitialized() async {
+    await _initFuture;
+  }
+
+  Future<T> _runQueueOperation<T>(Future<T> Function() action) {
+    final completer = Completer<T>();
+    _queueOperation = _queueOperation.then((_) async {
+      if (_disposed) {
+        completer.completeError(StateError('Audio handler disposed'));
+        return;
+      }
+      try {
+        final result = await action();
+        completer.complete(result);
+      } catch (e, st) {
+        completer.completeError(e, st);
+      }
+    });
+    return completer.future;
   }
 
   void _notifyQueueExhaustedIfNeeded() {
@@ -84,11 +111,26 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
     }
   }
 
-  AudioSource _sourceForMediaItem(MediaItem item) {
-    return AudioSource.uri(
-      Uri.parse(item.id),
-      tag: item,
-    );
+  Uri? _safeUri(String raw) {
+    final uri = Uri.tryParse(raw);
+    if (uri == null || !uri.hasScheme) {
+      return null;
+    }
+    return uri;
+  }
+
+  List<MediaItem> _validateItems(List<MediaItem> items, List<Uri> urisOut) {
+    final validItems = <MediaItem>[];
+    for (final item in items) {
+      final uri = _safeUri(item.id);
+      if (uri == null) {
+        debugPrint('T4LAudioHandler: Skipping invalid media item id: ${item.id}');
+        continue;
+      }
+      validItems.add(item);
+      urisOut.add(uri);
+    }
+    return validItems;
   }
 
   /// Broadcasts the current state to all clients.
@@ -130,10 +172,24 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
     int initialIndex = 0,
     bool autoplay = true,
   }) async {
-    _queueExhaustedNotified = false;
-    queue.add(items);
+    await _ensureInitialized();
+    await _runQueueOperation(
+        () => _setQueueInternal(items, initialIndex, autoplay));
+  }
 
-    if (items.isEmpty) {
+  Future<void> _setQueueInternal(
+    List<MediaItem> items,
+    int initialIndex,
+    bool autoplay,
+  ) async {
+    _queueExhaustedNotified = false;
+
+    final uris = <Uri>[];
+    final validItems = _validateItems(items, uris);
+
+    queue.add(validItems);
+
+    if (validItems.isEmpty) {
       await _player.stop();
       mediaItem.add(null);
       return;
@@ -146,14 +202,34 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
       initialIndex = items.length - 1;
     }
 
-    mediaItem.add(items[initialIndex]);
+    final validOriginalIndices = <int>[];
+    for (var i = 0; i < items.length; i++) {
+      final uri = _safeUri(items[i].id);
+      if (uri != null) {
+        validOriginalIndices.add(i);
+      }
+    }
+
+    var resolvedIndex = 0;
+    final nextValid =
+        validOriginalIndices.indexWhere((index) => index >= initialIndex);
+    if (nextValid != -1) {
+      resolvedIndex = nextValid;
+    } else {
+      resolvedIndex = validItems.length - 1;
+    }
+
+    mediaItem.add(validItems[resolvedIndex]);
     _playlist = ConcatenatingAudioSource(
-      children: items.map(_sourceForMediaItem).toList(),
+      children: List<AudioSource>.generate(
+        validItems.length,
+        (index) => AudioSource.uri(uris[index], tag: validItems[index]),
+      ),
     );
 
     await _player.setAudioSource(
       _playlist,
-      initialIndex: initialIndex,
+      initialIndex: resolvedIndex,
       initialPosition: Duration.zero,
     );
 
@@ -163,22 +239,33 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
   }
 
   @override
-  Future<void> play() => _player.play();
+  Future<void> play() async {
+    await _ensureInitialized();
+    await _player.play();
+  }
 
   @override
-  Future<void> pause() => _player.pause();
+  Future<void> pause() async {
+    await _ensureInitialized();
+    await _player.pause();
+  }
 
   @override
   Future<void> stop() async {
+    await _ensureInitialized();
     await _player.stop();
     mediaItem.add(null);
   }
 
   @override
-  Future<void> seek(Duration position) => _player.seek(position);
+  Future<void> seek(Duration position) async {
+    await _ensureInitialized();
+    await _player.seek(position);
+  }
 
   @override
   Future<void> skipToNext() async {
+    await _ensureInitialized();
     if (_player.hasNext) {
       await _player.seekToNext();
       if (!_player.playing) {
@@ -191,6 +278,7 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
   @override
   Future<void> skipToPrevious() async {
+    await _ensureInitialized();
     if (_player.hasPrevious) {
       await _player.seekToPrevious();
       if (!_player.playing) {
@@ -222,50 +310,88 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
 
   /// Insert items into the queue immediately after the current item
   Future<void> insertQueueItemsNext(List<MediaItem> items) async {
-    if (items.isEmpty) return;
+    await _ensureInitialized();
+    await _runQueueOperation(() async {
+      if (items.isEmpty) return;
 
-    final currentQueue = queue.value;
-    if (currentQueue.isEmpty) {
-      await addQueueItems(items);
-      return;
-    }
+      final currentQueue = queue.value;
+      if (currentQueue.isEmpty) {
+        await _setQueueInternal(items, 0, true);
+        return;
+      }
 
-    final insertIndex = (_player.currentIndex ?? 0) + 1;
-    final newQueue = List<MediaItem>.from(currentQueue);
-    newQueue.insertAll(insertIndex, items);
-    queue.add(newQueue);
+      final currentIndex = _player.currentIndex ?? 0;
+      final insertIndex =
+          (currentIndex + 1).clamp(0, currentQueue.length);
 
-    await _playlist.insertAll(
-      insertIndex,
-      items.map(_sourceForMediaItem).toList(),
-    );
+      final uris = <Uri>[];
+      final validItems = _validateItems(items, uris);
+      if (validItems.isEmpty) return;
+
+      final newQueue = List<MediaItem>.from(currentQueue);
+      newQueue.insertAll(insertIndex, validItems);
+      queue.add(newQueue);
+
+      await _playlist.insertAll(
+        insertIndex,
+        List<AudioSource>.generate(
+          validItems.length,
+          (index) => AudioSource.uri(uris[index], tag: validItems[index]),
+        ),
+      );
+    });
   }
 
   /// Append items to the end of the queue (for continuous streaming)
   /// If the queue was exhausted, this will start playing the first appended item
   Future<void> appendQueueItems(List<MediaItem> items) async {
-    if (items.isEmpty) return;
+    await _ensureInitialized();
+    await _runQueueOperation(() async {
+      if (items.isEmpty) return;
 
-    final currentQueue = queue.value;
-    if (currentQueue.isEmpty) {
-      await addQueueItems(items);
-      return;
-    }
+      final currentQueue = queue.value;
+      if (currentQueue.isEmpty) {
+        await _setQueueInternal(items, 0, true);
+        return;
+      }
 
-    final wasExhausted =
-        _player.processingState == ProcessingState.completed ||
-            ((_player.currentIndex ?? 0) >= currentQueue.length - 1 &&
-                !_player.playing);
+      final baseLength = currentQueue.length;
+      final currentIndex = _player.currentIndex ?? 0;
+      final processingState = _player.processingState;
+      final isPlaying = _player.playing;
+      final wasExhausted = processingState == ProcessingState.completed ||
+          (currentIndex >= baseLength - 1 && !isPlaying);
 
-    final newQueue = List<MediaItem>.from(currentQueue)..addAll(items);
-    queue.add(newQueue);
+      final uris = <Uri>[];
+      final validItems = _validateItems(items, uris);
+      if (validItems.isEmpty) return;
 
-    await _playlist.addAll(items.map(_sourceForMediaItem).toList());
-    _queueExhaustedNotified = false;
+      final newQueue = List<MediaItem>.from(currentQueue)..addAll(validItems);
+      queue.add(newQueue);
 
-    if (wasExhausted) {
-      await _player.seek(Duration.zero, index: currentQueue.length);
-      await _player.play();
-    }
+      await _playlist.addAll(
+        List<AudioSource>.generate(
+          validItems.length,
+          (index) => AudioSource.uri(uris[index], tag: validItems[index]),
+        ),
+      );
+      _queueExhaustedNotified = false;
+
+      if (wasExhausted) {
+        await _player.seek(Duration.zero, index: baseLength);
+        await _player.play();
+      }
+    });
+  }
+
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    await _initFuture;
+    await _playbackEventSub?.cancel();
+    await _currentIndexSub?.cancel();
+    await _playerStateSub?.cancel();
+    await _queueExhaustedController.close();
+    await _player.dispose();
   }
 }

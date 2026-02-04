@@ -155,8 +155,8 @@ void main() {
       final handler =
           T4LAudioHandler(player: mockPlayer, configureSession: false);
       handler.queue.add(const [
-        MediaItem(id: '1', title: 'Track 1'),
-        MediaItem(id: '2', title: 'Track 2'),
+        MediaItem(id: 'https://example.com/1.mp3', title: 'Track 1'),
+        MediaItem(id: 'https://example.com/2.mp3', title: 'Track 2'),
       ]);
       when(() => mockPlayer.currentIndex).thenReturn(1);
 
@@ -177,7 +177,7 @@ void main() {
       final handler =
           T4LAudioHandler(player: mockPlayer, configureSession: false);
       handler.queue.add(const [
-        MediaItem(id: '1', title: 'Track 1'),
+        MediaItem(id: 'https://example.com/1.mp3', title: 'Track 1'),
       ]);
       when(() => mockPlayer.processingState)
           .thenReturn(ProcessingState.completed);
@@ -185,7 +185,7 @@ void main() {
       when(() => mockPlayer.playing).thenReturn(false);
 
       await handler.appendQueueItems(const [
-        MediaItem(id: '2', title: 'Track 2'),
+        MediaItem(id: 'https://example.com/2.mp3', title: 'Track 2'),
       ]);
 
       verify(() => mockPlayer.seek(Duration.zero, index: 1)).called(1);
@@ -197,18 +197,24 @@ void main() {
           T4LAudioHandler(player: mockPlayer, configureSession: false);
 
       await handler.addQueueItems(const [
-        MediaItem(id: '1', title: 'Track 1'),
-        MediaItem(id: '2', title: 'Track 2'),
+        MediaItem(id: 'https://example.com/1.mp3', title: 'Track 1'),
+        MediaItem(id: 'https://example.com/2.mp3', title: 'Track 2'),
       ]);
 
       when(() => mockPlayer.currentIndex).thenReturn(0);
 
       await handler.insertQueueItemsNext(const [
-        MediaItem(id: '3', title: 'Track 3'),
+        MediaItem(id: 'https://example.com/3.mp3', title: 'Track 3'),
       ]);
 
-      expect(handler.queue.value.map((item) => item.id).toList(),
-          ['1', '3', '2']);
+      expect(
+        handler.queue.value.map((item) => item.id).toList(),
+        [
+          'https://example.com/1.mp3',
+          'https://example.com/3.mp3',
+          'https://example.com/2.mp3',
+        ],
+      );
     });
   });
 
