@@ -33,16 +33,30 @@ export default function BreakingNewsList({ languageCode }: BreakingNewsListProps
 
         // Realtime Subscription
         const channel = supabase
-            .channel('breaking-news-changes')
+            .channel(`breaking-news-changes-${languageCode}`)
             .on(
                 'postgres_changes',
                 {
-                    event: '*',
+                    event: 'INSERT',
                     schema: 'content',
-                    table: 'news_updates'
+                    table: 'news_updates',
+                    filter: `language_code=eq.${languageCode}`
                 },
                 () => {
-                    console.log('Breaking news changed, refreshing...');
+                    console.log('Breaking news inserted, refreshing...');
+                    fetchBreakingNews();
+                }
+            )
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'content',
+                    table: 'news_updates',
+                    filter: `language_code=eq.${languageCode}`
+                },
+                () => {
+                    console.log('Breaking news updated, refreshing...');
                     fetchBreakingNews();
                 }
             )

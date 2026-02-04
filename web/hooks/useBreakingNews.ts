@@ -23,10 +23,15 @@ export function useBreakingNews(languageCode: string) {
         fetchNews();
 
         const channel = supabase
-            .channel('breaking-news-system')
+            .channel(`breaking-news-system-${languageCode}`)
             .on(
                 'postgres_changes',
-                { event: 'INSERT', schema: 'content', table: 'news_updates' },
+                {
+                    event: 'INSERT',
+                    schema: 'content',
+                    table: 'news_updates',
+                    filter: `language_code=eq.${languageCode}`
+                },
                 (payload) => {
                     console.log('New breaking news!', payload);
                     fetchNews();
