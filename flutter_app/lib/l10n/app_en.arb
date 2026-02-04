@@ -21,6 +21,8 @@
   "breakingNewsBackTitle": "Full Story",
   "breakingNewsTag": "BREAKING",
   "breakingNewsSavedLabel": "Saved",
+  "breakingNewsEmptyState": "No breaking news available.",
+  "breakingNewsDetailLoadError": "Failed to load full article content.",
   "deepDiveChapter": "CHAPTER {index}",
   "@deepDiveChapter": {
     "placeholders": {

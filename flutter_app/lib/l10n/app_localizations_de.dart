@@ -63,6 +63,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get breakingNewsSavedLabel => 'Saved';
 
   @override
+  String get breakingNewsEmptyState => 'Keine Breaking News verfugbar.';
+
+  @override
+  String get breakingNewsDetailLoadError =>
+      'Vollstandiger Artikel konnte nicht geladen werden.';
+
+  @override
   String deepDiveChapter(int index) {
     return 'KAPITEL $index';
   }

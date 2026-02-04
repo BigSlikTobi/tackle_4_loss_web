@@ -17,6 +17,8 @@
   "breakingNewsHistory": "VERLAUF",
   "breakingNewsBackTitle": "Hintergrund",
   "breakingNewsTag": "AKTUELL",
+  "breakingNewsEmptyState": "Keine Breaking News verfugbar.",
+  "breakingNewsDetailLoadError": "Vollstandiger Artikel konnte nicht geladen werden.",
   "deepDiveChapter": "KAPITEL {index}",
   "deepDiveNoContent": "Kein Inhalt verfügbar",
   "deepDiveNotebookDisclaimer": "Für unsere Recherche nutzen wir NotebookLM, wenn du mehr erfahren oder tiefer in das Thema einsteigen willst, gelangst du hier zum Notebook!",
