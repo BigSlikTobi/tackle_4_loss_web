@@ -14,7 +14,7 @@ class RadioHomeWidget extends StatefulWidget {
 }
 
 class _RadioHomeWidgetState extends State<RadioHomeWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late ScrollController _scrollController;
   late AnimationController _marqueeController;

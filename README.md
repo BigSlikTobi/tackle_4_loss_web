@@ -56,10 +56,10 @@ The premier content experience. Long-form, immersive reading with rich media.
 *   **Purpose**: Delivers high-quality analysis and storytelling.
 *   **Key Feature**: "Immersive Reading Mode" with scrolling animations.
 
-### [3. Breaking News 🚨](lib/micro_apps/breaking_news/README.md)
+### [3. Breaking News 🚨](flutter_app/lib/micro_apps/breaking_news/README.md)
 Real-time updates for the die-hard fan.
 *   **Purpose**: Quick, digestible news snippets.
-*   **Key Feature**: Live feed with urgent visual design.
+*   **Key Feature**: Hero + feed layout with a dedicated detail view.
 
 ### [4. Radio 📻](flutter_app/lib/micro_apps/radio/README.md)
 The hands-free audio companion.

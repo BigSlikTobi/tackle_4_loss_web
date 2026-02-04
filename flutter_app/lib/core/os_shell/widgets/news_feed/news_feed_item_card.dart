@@ -120,7 +120,7 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                 NavigationService().openApp(
                   context,
                   app,
-                  arguments: {'articleId': widget.item.id, 'autoFlip': true},
+                  arguments: {'articleId': widget.item.id},
                 );
               }
             },

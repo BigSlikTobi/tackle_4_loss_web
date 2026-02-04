@@ -206,6 +206,18 @@ abstract class AppLocalizations {
   /// **'Saved'**
   String get breakingNewsSavedLabel;
 
+  /// No description provided for @breakingNewsEmptyState.
+  ///
+  /// In en, this message translates to:
+  /// **'No breaking news available.'**
+  String get breakingNewsEmptyState;
+
+  /// No description provided for @breakingNewsDetailLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load full article content.'**
+  String get breakingNewsDetailLoadError;
+
   /// No description provided for @deepDiveChapter.
   ///
   /// In en, this message translates to:
