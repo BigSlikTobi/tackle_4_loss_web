@@ -19,6 +19,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
   const [videoReady, setVideoReady] = useState(false);
   const [isAudioReady, setIsAudioReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioInitialized, setAudioInitialized] = useState(false);
   const scrollRafId = useRef<number | null>(null);
   const lastScrollProgress = useRef<number>(-1);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -26,6 +27,11 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioListenersRef = useRef<{
+    ready: () => void;
+    ended: () => void;
+    error: () => void;
+  } | null>(null);
 
   // Track scroll progress within current section
   useEffect(() => {
@@ -72,45 +78,54 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
     };
   }, [onHeroReady]);
 
-  // Preload audio for read-aloud
-  useEffect(() => {
-    if (article.audioFile) {
-      const audio = new Audio(article.audioFile);
-      audio.crossOrigin = 'anonymous';
-      audio.preload = 'auto';
-
-      const handleReady = () => setIsAudioReady(true);
-      const handleEnded = () => setIsPlaying(false);
-      const handleError = () => {
-        setIsAudioReady(false);
-        setIsPlaying(false);
-      };
-
-      audio.addEventListener('canplaythrough', handleReady);
-      audio.addEventListener('ended', handleEnded);
-      audio.addEventListener('error', handleError);
-      audio.load();
-
-      audioRef.current = audio;
-
-      return () => {
-        audio.pause();
-        audio.removeEventListener('canplaythrough', handleReady);
-        audio.removeEventListener('ended', handleEnded);
-        audio.removeEventListener('error', handleError);
-        audioRef.current = null;
-        setIsPlaying(false);
-        setIsAudioReady(false);
-      };
+  const cleanupAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const listeners = audioListenersRef.current;
+    if (listeners) {
+      audio.removeEventListener('canplaythrough', listeners.ready);
+      audio.removeEventListener('ended', listeners.ended);
+      audio.removeEventListener('error', listeners.error);
     }
+    audio.pause();
+    audioRef.current = null;
+    audioListenersRef.current = null;
+  };
 
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      setIsPlaying(false);
+  const ensureAudio = () => {
+    if (audioRef.current || !article.audioFile) return audioRef.current;
+
+    const audio = new Audio(article.audioFile);
+    audio.crossOrigin = 'anonymous';
+    audio.preload = 'metadata';
+
+    const handleReady = () => setIsAudioReady(true);
+    const handleEnded = () => setIsPlaying(false);
+    const handleError = () => {
       setIsAudioReady(false);
+      setIsPlaying(false);
+    };
+
+    audio.addEventListener('canplaythrough', handleReady);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
+
+    audioRef.current = audio;
+    audioListenersRef.current = { ready: handleReady, ended: handleEnded, error: handleError };
+    setAudioInitialized(true);
+    setIsAudioReady(false);
+
+    return audio;
+  };
+
+  // Reset audio state on article change/unmount.
+  useEffect(() => {
+    cleanupAudio();
+    setIsPlaying(false);
+    setIsAudioReady(false);
+    setAudioInitialized(false);
+    return () => {
+      cleanupAudio();
     };
   }, [article.audioFile]);
 
@@ -132,13 +147,15 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
   };
 
   const handleToggleAudio = () => {
-    if (!audioRef.current || !article.audioFile) return;
+    if (!article.audioFile) return;
+    const audio = ensureAudio();
+    if (!audio) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current
+      audio
         .play()
         .then(() => setIsPlaying(true))
         .catch(() => {
@@ -200,7 +217,7 @@ const ArticleViewer: React.FC<ArticleViewerProps> = ({ article, onHeroReady, nex
         >
           {isPlaying ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
           {isPlaying ? 'Stop' : 'Audio'}
-          {!isAudioReady && !isPlaying && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+          {audioInitialized && !isAudioReady && !isPlaying && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
         </button>
       )}
 
