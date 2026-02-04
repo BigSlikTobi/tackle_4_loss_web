@@ -19,6 +19,9 @@ serve(async (req) => {
         )
 
         const { language_code, limit = 20, offset = 0 } = await req.json()
+        const pageSize = Math.max(Number(limit) || 0, 0)
+        const pageOffset = Math.max(Number(offset) || 0, 0)
+        const fetchCount = pageSize + pageOffset + 1
 
         // Fetch news updates from content schema
         let newsQuery = supabaseClient
@@ -26,6 +29,7 @@ serve(async (req) => {
             .from('news_updates')
             .select('id, created_at, x_post, image_file, url, headline, players, teams')
             .order('created_at', { ascending: false })
+            .limit(fetchCount)
 
         if (language_code) {
             newsQuery = newsQuery.eq('language_code', language_code)
@@ -37,6 +41,7 @@ serve(async (req) => {
             .from('deepdive_article')
             .select('id, created_at, title, subtitle, hero_image_url, author')
             .order('created_at', { ascending: false })
+            .limit(fetchCount)
 
         if (language_code) {
             deepDiveQuery = deepDiveQuery.eq('language_code', language_code)
@@ -145,8 +150,8 @@ serve(async (req) => {
         allItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
         // Apply pagination to merged results
-        const paginatedItems = allItems.slice(offset, offset + limit)
-        const hasMore = allItems.length > offset + limit
+        const paginatedItems = allItems.slice(pageOffset, pageOffset + pageSize)
+        const hasMore = allItems.length > pageOffset + pageSize
 
         return new Response(JSON.stringify({
             items: paginatedItems,
