@@ -17,8 +17,9 @@ class BreakingNewsController extends ChangeNotifier {
   final Set<String> _readArticleIds = {};
 
   String? _currentTeamFilter;
+  String? _userTeamId;
   bool _isNewestFirst = true;
-
+  
   // Persistence Keys
   static const String _keySavedIds = 'breaking_news_saved_ids';
   static const String _keyRefusedIds = 'breaking_news_refused_ids';
@@ -28,6 +29,37 @@ class BreakingNewsController extends ChangeNotifier {
   bool _isLoading = false;
 
   List<BreakingNewsArticle> get articles => List.unmodifiable(_articles);
+  
+  // Hero Article Selection Logic
+  BreakingNewsArticle? get heroArticle {
+    if (_articles.isEmpty) return null;
+    
+    // 1. If filtering by team, just take the first one (standard behavior)
+    if (_currentTeamFilter != null) return _articles.first;
+
+    // 2. If no filter, prioritize user's team
+    if (_userTeamId != null) {
+      try {
+        final teamArticle = _articles.firstWhere(
+          (a) => a.teams?.any((t) => t.teamId.toLowerCase() == _userTeamId!.toLowerCase()) ?? false,
+        );
+        return teamArticle;
+      } catch (_) {
+        // No article for user's team found
+      }
+    }
+
+    // 3. Fallback to newest (first in list)
+    return _articles.first;
+  }
+
+  // List Articles (Excluding Hero)
+  List<BreakingNewsArticle> get listArticles {
+    final hero = heroArticle;
+    if (hero == null) return [];
+    return _articles.where((a) => a.id != hero.id).toList();
+  }
+
   List<BreakingNewsArticle> get savedArticles =>
       List.unmodifiable(_savedArticles);
   List<BreakingNewsArticle> get refusedArticles =>
@@ -43,15 +75,7 @@ class BreakingNewsController extends ChangeNotifier {
     for (var article in _allAvailableArticles) {
       if (article.teams != null) {
         for (var team in article.teams!) {
-          // Changed to use Strong types
           final teamId = team.teamId;
-          // Note: team.teamId is the ID, not necessarily the name.
-          // However, previous code seemingly expected 'team_name' key.
-          // Based on usage in UI (logos/teams/$teamId.png), teamId seems to be the abbr/id.
-          // If the previous code relied on 'team_name' for display name, but now we only have teamId,
-          // we might need to rely on teamId as the key.
-          // Assuming teamId is sufficient for filtering.
-
           if (teamId.isNotEmpty) {
             final logo = team.logoUrl ?? '';
             teams[teamId] = logo;
@@ -70,16 +94,19 @@ class BreakingNewsController extends ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> loadNews({String languageCode = 'en'}) async {
+  Future<void> loadNews({
+    String languageCode = 'en',
+    String? userTeamId,
+  }) async {
+    _userTeamId = userTeamId;
     _isLoading = true;
-    // We assume the caller (Widget) is still mounting us here, but safe to check
     if (!_isDisposed) notifyListeners();
 
     try {
       final fetched = await _newsService.fetchBreakingNews(
         languageCode: languageCode,
       );
-      if (_isDisposed) return; // Exit early if disposed during fetch
+      if (_isDisposed) return;
 
       await _loadState(fetched);
     } catch (e, stackTrace) {
@@ -89,8 +116,14 @@ class BreakingNewsController extends ChangeNotifier {
     }
 
     _isLoading = false;
-    if (!_isDisposed) {
-      notifyListeners();
+    if (!_isDisposed) notifyListeners();
+  }
+
+  // Update user team dynamically if settings change
+  void updateUserTeam(String? teamId) {
+    if (_userTeamId != teamId) {
+      _userTeamId = teamId;
+      if (!_isDisposed) notifyListeners();
     }
   }
 

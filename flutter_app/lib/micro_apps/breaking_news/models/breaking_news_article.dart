@@ -47,6 +47,8 @@ class BreakingNewsArticle {
   final List<PlayerReference>? players;
   final String? url;
   final String? audioFile;
+  final String? sourceUrl;
+  final String? imageSource;
 
   BreakingNewsArticle({
     required this.id,
@@ -60,7 +62,30 @@ class BreakingNewsArticle {
     this.players,
     this.url,
     this.audioFile,
-  });
+    this.sourceUrl,
+    this.imageSource,
+    String? sourceName,
+  }) : _sourceName = sourceName;
+
+  /// Helper to get a displayable source name from the URL or return "Source"
+  String get sourceName {
+    // If we have an explicit source name from the API (joined table), use it
+    if (_sourceName != null && _sourceName.isNotEmpty) {
+      return _sourceName;
+    }
+    
+    // Fallback to parsing URL
+    if (sourceUrl == null) return 'Source';
+    try {
+      final uri = Uri.parse(sourceUrl!);
+      return uri.host.replaceFirst('www.', '');
+    } catch (_) {
+      return 'Source';
+    }
+  }
+
+  // Internal storage for source name from API
+  final String? _sourceName;
 
   factory BreakingNewsArticle.fromJson(Map<String, dynamic> json) {
     return BreakingNewsArticle(
@@ -81,6 +106,10 @@ class BreakingNewsArticle {
           .toList(),
       url: json['url'] as String?,
       audioFile: json['audioFile'] as String?,
+      sourceUrl: (json['source_url'] ?? json['sourceUrl']) as String?,
+      imageSource: (json['image_source'] ?? json['imageSource']) as String?,
+      // Pass source_name through constructor to private field
+      sourceName: (json['source_name'] ?? json['sourceName']) as String?,
     );
   }
 }

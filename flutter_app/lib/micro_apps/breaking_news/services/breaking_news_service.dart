@@ -19,4 +19,17 @@ class BreakingNewsService {
       throw Exception('Failed to load breaking news: $e');
     }
   }
+
+  Future<BreakingNewsArticle> fetchBreakingNewsDetail(String id) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'get-breaking-news-detail',
+        body: {'id': id},
+      );
+
+      return BreakingNewsArticle.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to load breaking news detail: $e');
+    }
+  }
 }

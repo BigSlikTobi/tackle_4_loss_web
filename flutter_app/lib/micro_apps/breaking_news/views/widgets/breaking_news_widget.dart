@@ -9,6 +9,7 @@ import '../../../../core/widgets/shimmer_skeleton.dart';
 
 import 'package:tackle4loss_mobile/l10n/app_localizations.dart';
 
+@Deprecated('Use BreakingNewsHero or BreakingNewsListItem instead')
 class BreakingNewsWidget extends StatelessWidget {
   final BreakingNewsController? controller;
 
