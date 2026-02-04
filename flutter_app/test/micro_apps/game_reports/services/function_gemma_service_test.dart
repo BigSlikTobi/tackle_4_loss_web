@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tackle4loss/micro_apps/game_reports/services/function_gemma_service.dart';
+import 'package:tackle4loss_mobile/micro_apps/game_reports/services/function_gemma_service.dart';
 
 void main() {
   group('FunctionGemmaService', () {

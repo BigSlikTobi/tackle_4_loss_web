@@ -16,6 +16,8 @@ class MockFunctionsClient extends Mock implements FunctionsClient {}
 
 class MockRealtimeChannel extends Mock implements RealtimeChannel {}
 
+class FakeRealtimeChannel extends Fake implements RealtimeChannel {}
+
 void main() {
   late MockSettingsService mockSettings;
   late MockSupabaseClient mockSupabaseClient;
@@ -24,6 +26,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(PostgresChangeEvent.insert);
+    registerFallbackValue(FakeRealtimeChannel());
     // Load mock env
     dotenv.testLoad(fileInput: 'SUPABASE_URL=https://mock.supabase.co');
   });
@@ -42,6 +45,8 @@ void main() {
     when(() => mockSupabaseClient.functions).thenReturn(mockFunctionsClient);
     when(() => mockSupabaseClient.channel(any()))
         .thenReturn(mockRealtimeChannel);
+    when(() => mockSupabaseClient.removeChannel(any()))
+        .thenAnswer((_) async => 'ok');
     when(() => mockRealtimeChannel.onPostgresChanges(
           event: any(named: 'event'),
           schema: any(named: 'schema'),
@@ -62,15 +67,16 @@ void main() {
 
   Widget createTestWidget({
     ScrollController? scrollController,
+    SettingsService? settingsService,
   }) {
     return MaterialApp(
       home: Scaffold(
         body: ChangeNotifierProvider<SettingsService>.value(
-          value: mockSettings,
+          value: settingsService ?? mockSettings,
           child: CustomScrollView(
             controller: scrollController,
-            slivers: const [
-              NewsFeedWidget(),
+            slivers: [
+              NewsFeedWidget(supabaseClient: mockSupabaseClient),
             ],
           ),
         ),
@@ -153,11 +159,13 @@ void main() {
 
       clearInteractions(mockFunctionsClient);
 
-      // Change language
-      when(() => mockSettings.locale).thenReturn(const Locale('de'));
+      // Change language using a new SettingsService instance to trigger dependency update
+      final newSettings = MockSettingsService();
+      when(() => newSettings.locale).thenReturn(const Locale('de'));
+      when(() => newSettings.selectedTeam).thenReturn(null);
 
       // Rebuild
-      await tester.pumpWidget(createTestWidget());
+      await tester.pumpWidget(createTestWidget(settingsService: newSettings));
       await tester.pumpAndSettle();
 
       // Should call loadInitial again with new language

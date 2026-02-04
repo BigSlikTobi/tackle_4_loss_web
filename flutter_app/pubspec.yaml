@@ -42,7 +42,7 @@ dependencies:
   cached_network_image: ^3.4.1
   lucide_icons: ^0.257.0
   video_player: ^2.9.2
-  audioplayers: ^6.0.0
+  just_audio: ^0.9.36
   flutter_dotenv: ^5.2.1
   flutter_markdown: ^0.7.7+1
   url_launcher: ^6.3.2

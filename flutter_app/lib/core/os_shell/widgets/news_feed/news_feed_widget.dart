@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../controllers/news_feed_controller.dart';
 import '../../../models/news_feed_item.dart';
 import '../../../services/settings_service.dart';
@@ -12,7 +13,9 @@ import '../../../widgets/shimmer_skeleton.dart';
 
 /// News feed widget with infinite scroll for the home screen
 class NewsFeedWidget extends StatefulWidget {
-  const NewsFeedWidget({super.key});
+  final SupabaseClient? supabaseClient;
+
+  const NewsFeedWidget({super.key, this.supabaseClient});
 
   @override
   State<NewsFeedWidget> createState() => _NewsFeedWidgetState();
@@ -31,6 +34,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   void _initializeController(SettingsService settings) {
     _controller = NewsFeedController(
       languageCode: settings.locale.languageCode,
+      client: widget.supabaseClient,
     );
     _controller.loadInitial();
   }
@@ -68,7 +72,10 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
     super.didChangeDependencies();
     final settings = Provider.of<SettingsService>(context);
     final newLanguageCode = settings.locale.languageCode;
-    _attachScrollController(PrimaryScrollController.maybeOf(context));
+    final resolvedScrollController =
+        Scrollable.maybeOf(context)?.widget.controller ??
+            PrimaryScrollController.maybeOf(context);
+    _attachScrollController(resolvedScrollController);
 
     if (!_initialized) {
       // First initialization
