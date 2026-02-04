@@ -51,13 +51,27 @@ class DeepDiveController extends ChangeNotifier {
   }
 
   @visibleForTesting
-  Future<List<DeepDiveArticle>> fetchDeepDives(String languageCode) async {
+  Future<List<DeepDiveArticle>> fetchDeepDives(String languageCode,
+      {int limit = 25, int offset = 0}) async {
     final response = await Supabase.instance.client.functions.invoke(
       'get-all-deepdives',
-      body: {'language_code': languageCode},
+      body: {
+        'language_code': languageCode,
+        'limit': limit,
+        'offset': offset,
+      },
     );
 
-    final data = response.data as List<dynamic>;
-    return data.map((json) => DeepDiveArticle.fromJson(json)).toList();
+    final payload = response.data;
+    final List<dynamic> items;
+    if (payload is Map<String, dynamic> && payload['data'] is List<dynamic>) {
+      items = payload['data'] as List<dynamic>;
+    } else if (payload is List<dynamic>) {
+      items = payload;
+    } else {
+      items = [];
+    }
+
+    return items.map((json) => DeepDiveArticle.fromJson(json)).toList();
   }
 }
