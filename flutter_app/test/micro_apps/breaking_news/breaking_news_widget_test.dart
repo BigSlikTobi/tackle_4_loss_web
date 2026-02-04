@@ -31,7 +31,16 @@ class MockBreakingNewsController extends ChangeNotifier
   }
 
   @override
-  Future<void> loadNews({String languageCode = 'en'}) async {}
+  Future<void> loadNews({String languageCode = 'en', String? userTeamId}) async {}
+  
+  @override
+  void updateUserTeam(String? teamId) {}
+
+  @override
+  BreakingNewsArticle? get heroArticle => _articles.isNotEmpty ? _articles.first : null;
+
+  @override
+  List<BreakingNewsArticle> get listArticles => _articles.length > 1 ? _articles.sublist(1) : [];
 
   @override
   void markAsRead(String id) {}
