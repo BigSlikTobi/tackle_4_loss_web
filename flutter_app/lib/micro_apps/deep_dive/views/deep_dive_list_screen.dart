@@ -20,18 +20,64 @@ class DeepDiveListScreen extends StatefulWidget {
 class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
   final DeepDiveController _controller = DeepDiveController();
   String? _currentLanguage;
+  ScrollController? _scrollController;
+  DateTime? _lastLoadMoreAt;
+
+  static const double _loadMoreThreshold = 320.0;
+  static const Duration _loadMoreThrottle = Duration(milliseconds: 600);
+
+  void _attachScrollController(ScrollController? controller) {
+    if (_scrollController == controller) return;
+    _scrollController?.removeListener(_onScroll);
+    _scrollController = controller;
+    _scrollController?.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final controller = _scrollController;
+    if (controller == null || !controller.hasClients) return;
+    final position = controller.position;
+    if (!position.isScrollingNotifier.value) return;
+    if (position.maxScrollExtent - position.pixels <= _loadMoreThreshold) {
+      _maybeLoadMore();
+    }
+  }
+
+  void _maybeLoadMore() {
+    if (_controller.isLoadingMore || !_controller.hasMore) return;
+    final now = DateTime.now();
+    if (_lastLoadMoreAt != null &&
+        now.difference(_lastLoadMoreAt!) < _loadMoreThrottle) {
+      return;
+    }
+    _lastLoadMoreAt = now;
+    if (_currentLanguage != null) {
+      _controller.loadMore(_currentLanguage!);
+    }
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final settings = Provider.of<SettingsService>(context);
     final languageCode = settings.locale.languageCode;
+    final resolvedScrollController =
+        Scrollable.maybeOf(context)?.widget.controller ??
+            PrimaryScrollController.maybeOf(context);
+    _attachScrollController(resolvedScrollController);
 
     // Reload if language changed or first load
     if (_currentLanguage != languageCode) {
       _currentLanguage = languageCode;
-      _controller.loadAllArticles(languageCode);
+      _lastLoadMoreAt = null;
+      _controller.loadAllArticles(languageCode, forceRefresh: true);
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController?.removeListener(_onScroll);
+    super.dispose();
   }
 
   @override
@@ -43,8 +89,35 @@ class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
         title: 'Deep Dives', // Pass title to scaffold
         body: Consumer<DeepDiveController>(
           builder: (context, controller, child) {
-            if (controller.isLoading) {
+            if (controller.isLoading && controller.articles.isEmpty) {
               return const Center(child: CircularProgressIndicator());
+            }
+
+            if (controller.error != null && controller.articles.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline,
+                        size: 48, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Failed to load deep dives',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () {
+                        if (_currentLanguage != null) {
+                          controller.loadAllArticles(_currentLanguage!,
+                              forceRefresh: true);
+                        }
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
             }
 
             if (controller.articles.isEmpty) {
@@ -112,6 +185,15 @@ class _DeepDiveListScreenState extends State<DeepDiveListScreen> {
                           },
                         );
                       }, childCount: controller.articles.length - 1),
+                    ),
+                  ),
+
+                // Loading More Indicator
+                if (controller.isLoadingMore)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(child: CircularProgressIndicator()),
                     ),
                   ),
 
