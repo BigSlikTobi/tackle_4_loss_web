@@ -85,7 +85,8 @@ class AudioPlayerService {
 
     // Check if initialization succeeded
     if (_audioHandler == null) {
-      debugPrint('AudioPlayerService: Cannot play - audio service initialization failed');
+      debugPrint(
+          'AudioPlayerService: Cannot play - audio service initialization failed');
       return;
     }
 
@@ -113,7 +114,8 @@ class AudioPlayerService {
 
     // Check if initialization succeeded
     if (_audioHandler == null) {
-      debugPrint('AudioPlayerService: Cannot play playlist - audio service initialization failed');
+      debugPrint(
+          'AudioPlayerService: Cannot play playlist - audio service initialization failed');
       return;
     }
 
@@ -128,7 +130,8 @@ class AudioPlayerService {
         .toList();
 
     try {
-      await _audioHandler!.addQueueItems(mediaItems, initialIndex: initialIndex);
+      await _audioHandler!
+          .addQueueItems(mediaItems, initialIndex: initialIndex);
     } catch (e, stackTrace) {
       debugPrint('AudioPlayerService: Failed to add queue items: $e');
       debugPrint('Stack trace: $stackTrace');

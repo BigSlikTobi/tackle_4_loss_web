@@ -39,10 +39,10 @@ void main() {
       // (audio_service, path_provider) which aren't available in unit tests.
       // In production, init() is called lazily on first playback.
       // This test verifies the API exists and is callable.
-      
+
       // The method exists and can be referenced
       expect(service.init, isNotNull);
-      
+
       // In a real environment, init() would be idempotent:
       // - First call initializes the handler
       // - Second call returns early (no-op)
@@ -53,20 +53,21 @@ void main() {
       // Note: In unit tests, play() will fail trying to initialize AudioService
       // because platform plugins aren't available. This test documents the
       // expected behavior rather than testing it directly.
-      
+
       // In production, calling play() when _audioHandler is null would:
       // 1. Call _ensureInitialized()
       // 2. Initialize the audio service
       // 3. Create and play the media item
-      
+
       // For unit test verification, we rely on integration tests or manual testing.
       expect(service.play, isNotNull);
     }, skip: 'Requires native platform plugins not available in unit tests');
 
-    test('playPlaylist() would trigger lazy initialization in production', () async {
+    test('playPlaylist() would trigger lazy initialization in production',
+        () async {
       // Similar to play(), playPlaylist() triggers lazy initialization
       // via _ensureInitialized() in production environments.
-      
+
       expect(service.playPlaylist, isNotNull);
     }, skip: 'Requires native platform plugins not available in unit tests');
 
@@ -122,7 +123,7 @@ void main() {
     test('testing constructor creates instance without initialization', () {
       final service = AudioPlayerService.testing();
       expect(service, isNotNull);
-      
+
       // Should have safe defaults
       expect(service.isPlaying, false);
       expect(service.currentMediaItem, null);
@@ -130,31 +131,36 @@ void main() {
   });
 
   group('AudioPlayerService Initialization Safety', () {
-    test('concurrent initialization attempts wait for first to complete', () async {
+    test('concurrent initialization attempts wait for first to complete',
+        () async {
       final service = AudioPlayerService();
 
       // Start two concurrent play calls
       // Both should call _ensureInitialized(), but only one should actually
       // run AudioService.init() - the second should wait for the first
-      
+
       // This test verifies the code structure exists to prevent race conditions
       // Actual behavior requires platform plugins and can't be tested in unit tests
       expect(service.init, isNotNull);
-    }, skip: 'Race condition prevention requires integration testing with platform plugins');
+    },
+        skip:
+            'Race condition prevention requires integration testing with platform plugins');
 
     test('initialization failure allows retry on next call', () async {
       // If _ensureInitialized() catches an exception and _audioHandler stays null,
       // the next call to play() should retry initialization
-      
+
       // This behavior can't be verified in unit tests without platform plugins,
       // but the code structure supports it:
       // 1. If init fails, _audioHandler remains null
       // 2. _initializationFuture is cleared
       // 3. Next call will retry initialization
-      
+
       final service = AudioPlayerService();
       expect(service.play, isNotNull);
-    }, skip: 'Error recovery requires integration testing with platform plugins');
+    },
+        skip:
+            'Error recovery requires integration testing with platform plugins');
   });
 }
 
