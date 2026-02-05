@@ -31,7 +31,7 @@ class BreakingNewsHero extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           color: colors.surface,
           boxShadow: [
-             BoxShadow(
+            BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
@@ -103,7 +103,7 @@ class BreakingNewsHero extends StatelessWidget {
                   Text(
                     article.headline,
                     style: const TextStyle(
-                      fontFamily: 'RussoOne', 
+                      fontFamily: 'RussoOne',
                       color: Colors.white,
                       fontSize: 22,
                       height: 1.2,
@@ -120,7 +120,8 @@ class BreakingNewsHero extends StatelessWidget {
                       // Source
                       // Source Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(4),
@@ -135,12 +136,13 @@ class BreakingNewsHero extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       if (teamId != null) ...[
                         const SizedBox(width: 8),
                         Text(
                           '•',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+                          style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7)),
                         ),
                         const SizedBox(width: 8),
                         // Team Logo
@@ -163,8 +165,9 @@ class BreakingNewsHero extends StatelessWidget {
                       ],
 
                       // Player Headshot (if available)
-                      if (article.players?.isNotEmpty == true && article.players!.first.headshotUrl != null) ...[
-                         const SizedBox(width: 8),
+                      if (article.players?.isNotEmpty == true &&
+                          article.players!.first.headshotUrl != null) ...[
+                        const SizedBox(width: 8),
                         Container(
                           width: 22,
                           height: 22,
@@ -174,7 +177,8 @@ class BreakingNewsHero extends StatelessWidget {
                           ),
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
-                            backgroundImage: NetworkImage(article.players!.first.headshotUrl!),
+                            backgroundImage: NetworkImage(
+                                article.players!.first.headshotUrl!),
                             onBackgroundImageError: (_, __) {},
                             radius: 11,
                           ),

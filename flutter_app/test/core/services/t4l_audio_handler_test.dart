@@ -121,8 +121,7 @@ void main() {
       when(() => mockPlayer.playerStateStream)
           .thenAnswer((_) => playerStateEvents.stream);
 
-      when(() => mockPlayer.processingState)
-          .thenReturn(ProcessingState.ready);
+      when(() => mockPlayer.processingState).thenReturn(ProcessingState.ready);
       when(() => mockPlayer.playing).thenReturn(false);
       when(() => mockPlayer.position).thenReturn(Duration.zero);
       when(() => mockPlayer.bufferedPosition).thenReturn(Duration.zero);

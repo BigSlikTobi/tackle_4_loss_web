@@ -97,7 +97,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pump(); // Initial build
-      
+
       // Should show loading state
       expect(find.byType(CustomScrollView), findsOneWidget);
     });

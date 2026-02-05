@@ -34,11 +34,13 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
       final locale = Localizations.localeOf(context).languageCode;
       final settings = Provider.of<SettingsService>(context, listen: false);
       _lastTeamId = settings.selectedTeam?.id;
-      
-      _controller.loadNews(
+
+      _controller
+          .loadNews(
         languageCode: locale,
         userTeamId: settings.selectedTeam?.id,
-      ).then((_) {
+      )
+          .then((_) {
         final initialId = widget.initialArticleId;
         if (!mounted || initialId == null) return;
         _controller.prioritizeArticle(initialId);
@@ -112,7 +114,8 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                   return Center(
                     child: Text(
                       l10n.breakingNewsEmptyState,
-                      style: TextStyle(color: Theme.of(context).colorScheme.outline),
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline),
                     ),
                   );
                 }
@@ -128,10 +131,10 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      // SliverOverlapInjector? T4LScaffold handles header, 
+                      // SliverOverlapInjector? T4LScaffold handles header,
                       // but we usually need padding or safe area if not transparent
                       const SliverToBoxAdapter(
-                         child: SizedBox(height: 16), // Top padding
+                        child: SizedBox(height: 16), // Top padding
                       ),
 
                       // 1. Hero Article
@@ -162,10 +165,13 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                                 // Divider (except for last item)
                                 if (index < listItems.length - 1)
                                   Divider(
-                                    height: 1, 
-                                    indent: 122, // Align with text start roughly
+                                    height: 1,
+                                    indent:
+                                        122, // Align with text start roughly
                                     endIndent: 16,
-                                    color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                                    color: Theme.of(context)
+                                        .dividerColor
+                                        .withValues(alpha: 0.1),
                                   ),
                               ],
                             );
@@ -173,7 +179,7 @@ class _BreakingNewsListScreenState extends State<BreakingNewsListScreen> {
                           childCount: listItems.length,
                         ),
                       ),
-                      
+
                       // Bottom Padding
                       const SliverToBoxAdapter(child: SizedBox(height: 100)),
                     ],

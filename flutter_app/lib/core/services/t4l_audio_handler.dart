@@ -8,8 +8,7 @@ import 'package:just_audio/just_audio.dart';
 class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
   final AudioPlayer _player;
 
-  ConcatenatingAudioSource _playlist =
-      ConcatenatingAudioSource(children: []);
+  ConcatenatingAudioSource _playlist = ConcatenatingAudioSource(children: []);
 
   /// Stream controller to signal when queue is exhausted
   /// This allows the RadioController to fetch and append more content
@@ -124,7 +123,8 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
     for (final item in items) {
       final uri = _safeUri(item.id);
       if (uri == null) {
-        debugPrint('T4LAudioHandler: Skipping invalid media item id: ${item.id}');
+        debugPrint(
+            'T4LAudioHandler: Skipping invalid media item id: ${item.id}');
         continue;
       }
       validItems.add(item);
@@ -321,8 +321,7 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
       }
 
       final currentIndex = _player.currentIndex ?? 0;
-      final insertIndex =
-          (currentIndex + 1).clamp(0, currentQueue.length);
+      final insertIndex = (currentIndex + 1).clamp(0, currentQueue.length);
 
       final uris = <Uri>[];
       final validItems = _validateItems(items, uris);

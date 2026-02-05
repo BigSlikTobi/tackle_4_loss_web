@@ -78,21 +78,22 @@ class BreakingNewsListItem extends StatelessWidget {
                   // Metadata Row
                   Row(
                     children: [
-                       // Team Logo Badge (if available)
-                       // Team Logo Badge (if available)
+                      // Team Logo Badge (if available)
+                      // Team Logo Badge (if available)
                       if (teamId != null) ...[
                         Container(
                           width: 20,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: Colors.white, // White background for contrast
+                            color:
+                                Colors.white, // White background for contrast
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: colors.border.withValues(alpha: 0.5), 
-                              width: 1
-                            ),
+                                color: colors.border.withValues(alpha: 0.5),
+                                width: 1),
                           ),
-                          padding: const EdgeInsets.all(2), // Padding inside white circle
+                          padding: const EdgeInsets.all(
+                              2), // Padding inside white circle
                           child: ClipOval(
                             child: Image.asset(
                               TeamLogoService.getLogoPath(teamId),
@@ -105,22 +106,24 @@ class BreakingNewsListItem extends StatelessWidget {
                       ],
 
                       // Player Headshot (if available)
-                      if (article.players?.isNotEmpty == true && article.players!.first.headshotUrl != null) ...[
+                      if (article.players?.isNotEmpty == true &&
+                          article.players!.first.headshotUrl != null) ...[
                         Container(
                           width: 20,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: Colors.white, // White background for contrast
+                            color:
+                                Colors.white, // White background for contrast
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: colors.border.withValues(alpha: 0.5), 
-                              width: 1
-                            ),
+                                color: colors.border.withValues(alpha: 0.5),
+                                width: 1),
                           ),
-                           // NetworkImage handles scaling differently, CircleAvatar is safer here
+                          // NetworkImage handles scaling differently, CircleAvatar is safer here
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
-                            backgroundImage: NetworkImage(article.players!.first.headshotUrl!),
+                            backgroundImage: NetworkImage(
+                                article.players!.first.headshotUrl!),
                             onBackgroundImageError: (_, __) {},
                             radius: 10,
                           ),
@@ -131,7 +134,8 @@ class BreakingNewsListItem extends StatelessWidget {
                       // Source Badge
                       Flexible(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(4),
