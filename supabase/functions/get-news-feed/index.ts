@@ -19,9 +19,11 @@ serve(async (req) => {
         )
 
         const { language_code, limit = 20, offset = 0 } = await req.json()
-        const pageSize = Math.max(Number(limit) || 0, 0)
-        const pageOffset = Math.max(Number(offset) || 0, 0)
-        const fetchCount = pageSize + pageOffset + 1
+        // Ensure pageSize is between 1-100, default 20
+        const pageSize = Math.min(Math.max(0, Number(limit) || 20), 100)
+        const pageOffset = Math.max(0, Number(offset) || 0)
+        // Fetch enough from each table to fill the page after merging, plus one for hasMore detection
+        const fetchCount = Math.ceil((pageSize + pageOffset + 1) / 2) + pageSize
 
         // Fetch news updates from content schema
         let newsQuery = supabaseClient
