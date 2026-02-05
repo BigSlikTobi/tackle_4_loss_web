@@ -27,6 +27,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   String? _currentLanguageCode;
   ScrollController? _scrollController;
   DateTime? _lastLoadMoreAt;
+  final Set<String> _precachedUrls = {};
 
   static const double _loadMoreThreshold = 320.0;
   static const Duration _loadMoreThrottle = Duration(milliseconds: 600);
@@ -36,6 +37,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
       languageCode: settings.locale.languageCode,
       client: widget.supabaseClient,
     );
+    _precachedUrls.clear();
     _controller.loadInitial();
   }
 
@@ -98,7 +100,9 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
     super.dispose();
   }
 
-  /// Pre-cache images for upcoming feed items to improve perceived loading speed
+  /// Pre-cache images for upcoming feed items to improve perceived loading speed.
+  /// Uses a URL-based set to avoid redundant precache calls across rebuilds,
+  /// and remains correct even when list indices shift (e.g. realtime inserts).
   void _precacheUpcomingImages(BuildContext context, int currentIndex) {
     const lookAhead = 3;
     for (int i = 1; i <= lookAhead; i++) {
@@ -106,9 +110,12 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
       if (nextIndex < _controller.items.length) {
         final item = _controller.items[nextIndex];
         if (item is NewsFeedItem && item.imageUrl != null) {
+          final url = item.imageUrl!;
+          if (_precachedUrls.contains(url)) continue;
+          _precachedUrls.add(url);
           precacheImage(
             CachedNetworkImageProvider(
-              item.imageUrl!,
+              url,
               maxWidth: 800,
               maxHeight: 400,
             ),
@@ -146,7 +153,10 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () => _controller.refresh(),
+                      onPressed: () {
+                        _precachedUrls.clear();
+                        _controller.refresh();
+                      },
                       child: const Text('Retry'),
                     ),
                   ],
