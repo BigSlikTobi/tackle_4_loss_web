@@ -6,17 +6,6 @@ import 'package:tackle4loss_mobile/micro_apps/deep_dive/models/deep_dive_article
 // Test helpers
 // ---------------------------------------------------------------------------
 
-DeepDiveArticle _makeArticle(String id) => DeepDiveArticle(
-      id: id,
-      title: 'Article $id',
-      summary: 'Summary $id',
-      content: 'Content $id',
-      imageUrl: 'https://example.com/$id.png',
-      publishedAt: DateTime(2026, 1, 1),
-      author: 'Author',
-      languageCode: 'en',
-    );
-
 List<Map<String, dynamic>> _makeJsonList(int count, {int startAt = 1}) =>
     List.generate(count, (i) {
       final id = startAt + i;

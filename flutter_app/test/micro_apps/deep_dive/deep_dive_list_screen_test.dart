@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tackle4loss_mobile/core/services/settings_service.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/controllers/deep_dive_controller.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/models/deep_dive_article.dart';
 import 'package:tackle4loss_mobile/core/theme/t4l_theme.dart';
