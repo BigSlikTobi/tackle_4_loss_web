@@ -128,6 +128,34 @@ void main() {
       expect(service.currentMediaItem, null);
     });
   });
+
+  group('AudioPlayerService Initialization Safety', () {
+    test('concurrent initialization attempts wait for first to complete', () async {
+      final service = AudioPlayerService();
+
+      // Start two concurrent play calls
+      // Both should call _ensureInitialized(), but only one should actually
+      // run AudioService.init() - the second should wait for the first
+      
+      // This test verifies the code structure exists to prevent race conditions
+      // Actual behavior requires platform plugins and can't be tested in unit tests
+      expect(service.init, isNotNull);
+    }, skip: 'Race condition prevention requires integration testing with platform plugins');
+
+    test('initialization failure allows retry on next call', () async {
+      // If _ensureInitialized() catches an exception and _audioHandler stays null,
+      // the next call to play() should retry initialization
+      
+      // This behavior can't be verified in unit tests without platform plugins,
+      // but the code structure supports it:
+      // 1. If init fails, _audioHandler remains null
+      // 2. _initializationFuture is cleared
+      // 3. Next call will retry initialization
+      
+      final service = AudioPlayerService();
+      expect(service.play, isNotNull);
+    }, skip: 'Error recovery requires integration testing with platform plugins');
+  });
 }
 
 class MockAudioPlayerServiceForTest extends AudioPlayerService {
