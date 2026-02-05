@@ -135,13 +135,13 @@ void main() {
             initialIndex: any(named: 'initialIndex'),
             initialPosition: any(named: 'initialPosition'),
           )).thenAnswer((_) async => null);
-      when(() => mockPlayer.play()).thenAnswer((_) async => null);
-      when(() => mockPlayer.pause()).thenAnswer((_) async => null);
-      when(() => mockPlayer.stop()).thenAnswer((_) async => null);
+      when(() => mockPlayer.play()).thenAnswer((_) async {});
+      when(() => mockPlayer.pause()).thenAnswer((_) async {});
+      when(() => mockPlayer.stop()).thenAnswer((_) async {});
       when(() => mockPlayer.seek(any(), index: any(named: 'index')))
-          .thenAnswer((_) async => null);
-      when(() => mockPlayer.seekToNext()).thenAnswer((_) async => null);
-      when(() => mockPlayer.seekToPrevious()).thenAnswer((_) async => null);
+          .thenAnswer((_) async {});
+      when(() => mockPlayer.seekToNext()).thenAnswer((_) async {});
+      when(() => mockPlayer.seekToPrevious()).thenAnswer((_) async {});
     });
 
     tearDown(() async {

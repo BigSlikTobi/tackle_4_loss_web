@@ -60,8 +60,9 @@ class _AppHubScreenState extends State<AppHubScreen> {
           // 2. Category Sections
           ...categoryOrder.map((category) {
             final apps = appsByCategory[category] ?? [];
-            if (apps.isEmpty)
+            if (apps.isEmpty) {
               return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
 
             return SliverToBoxAdapter(
               child: AppHubCategorySection(

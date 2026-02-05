@@ -159,8 +159,9 @@ class _StandingsTabState extends State<StandingsTab> {
     }
     // Sort by record
     allTeams.sort((a, b) {
-      if (a.winPercentage != b.winPercentage)
+      if (a.winPercentage != b.winPercentage) {
         return b.winPercentage.compareTo(a.winPercentage);
+      }
       return b.netPoints.compareTo(a.netPoints);
     });
 
@@ -205,8 +206,9 @@ class _StandingsTabState extends State<StandingsTab> {
                 }
                 // Sort by Conf ranking logic
                 confTeams.sort((a, b) {
-                  if (a.winPercentage != b.winPercentage)
+                  if (a.winPercentage != b.winPercentage) {
                     return b.winPercentage.compareTo(a.winPercentage);
+                  }
                   return b.netPoints.compareTo(a.netPoints);
                 });
 

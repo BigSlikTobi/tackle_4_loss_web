@@ -299,8 +299,9 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                                 itemBuilder: (context, index) {
                                   final player = fullArticle.players![index];
                                   final headshot = player.headshotUrl;
-                                  if (headshot == null)
+                                  if (headshot == null) {
                                     return const SizedBox.shrink();
+                                  }
                                   return Column(
                                     children: [
                                       Container(

@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:tackle4loss_mobile/design_tokens.dart';
@@ -484,9 +485,10 @@ class _RevealingChipState extends State<_RevealingChip>
         // Base reveal: Blur to Clear + Fade In
         final transform = Matrix4.identity();
         if (widget.isMiss) {
-          transform.translate(_shakeAnimation.value);
+          transform.translate(_shakeAnimation.value, 0.0, 0.0);
         } else if (widget.isMatch) {
-          transform.scale(_pulseAnimation.value);
+          final scale = _pulseAnimation.value;
+          transform.scale(scale, scale, scale);
         }
 
         return Transform(

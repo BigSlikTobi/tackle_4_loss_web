@@ -290,8 +290,8 @@ class T4LAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
   }
 
   @override
-  Future<void> updateQueue(List<MediaItem> newQueue) async {
-    await _setQueue(newQueue, initialIndex: 0, autoplay: false);
+  Future<void> updateQueue(List<MediaItem> queue) async {
+    await _setQueue(queue, initialIndex: 0, autoplay: false);
   }
 
   /// Custom action to play a specific URL with metadata
