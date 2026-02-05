@@ -12,26 +12,59 @@ class AudioPlayerService {
   }
 
   T4LAudioHandler? _audioHandler;
+  Future<void>? _initializationFuture;
 
   AudioPlayerService._internal();
 
   @visibleForTesting
   AudioPlayerService.testing();
 
-  /// Initialize the audio service.
-  /// This should be called once at app startup.
-  Future<void> init() async {
+  /// Lazily initialize the audio service on first use.
+  /// This avoids activating the native audio session at app startup,
+  /// which would interrupt other apps' audio (e.g. music, podcasts on iOS)
+  /// and waste resources if the user never plays audio.
+  ///
+  /// Prevents race conditions by ensuring only one initialization attempt
+  /// runs at a time. If initialization fails, subsequent calls will retry.
+  Future<void> _ensureInitialized() async {
+    // Already initialized successfully
     if (_audioHandler != null) return;
 
-    _audioHandler = await AudioService.init(
-      builder: () => T4LAudioHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.tackle4loss.channel.audio',
-        androidNotificationChannelName: 'T4L Audio',
-        androidNotificationOngoing: true,
-      ),
-    );
+    // Initialization in progress - wait for it to complete
+    if (_initializationFuture != null) {
+      await _initializationFuture;
+      return;
+    }
+
+    // Start new initialization
+    _initializationFuture = _initializeAudioService();
+    await _initializationFuture;
+    _initializationFuture = null;
   }
+
+  Future<void> _initializeAudioService() async {
+    try {
+      _audioHandler = await AudioService.init(
+        builder: () => T4LAudioHandler(),
+        config: const AudioServiceConfig(
+          androidNotificationChannelId: 'com.tackle4loss.channel.audio',
+          androidNotificationChannelName: 'T4L Audio',
+          androidNotificationOngoing: true,
+        ),
+      );
+      debugPrint('AudioPlayerService: Successfully initialized audio service');
+    } catch (e, stackTrace) {
+      debugPrint('AudioPlayerService: Failed to initialize audio service: $e');
+      debugPrint('Stack trace: $stackTrace');
+      // _audioHandler remains null, allowing retry on next playback request
+      rethrow;
+    }
+  }
+
+  /// Initialize the audio service.
+  /// Kept for backward compatibility / testing. In production the service
+  /// is lazily initialized on first playback request.
+  Future<void> init() async => await _ensureInitialized();
 
   /// Stream of the current playback state (playing, paused, buffering, etc.)
   Stream<PlaybackState> get playbackStateStream =>
@@ -48,7 +81,14 @@ class AudioPlayerService {
   /// Play a specific URL with metadata
   Future<void> play(
       String url, String title, String author, String imageUrl) async {
-    if (_audioHandler == null) return;
+    await _ensureInitialized();
+
+    // Check if initialization succeeded
+    if (_audioHandler == null) {
+      debugPrint(
+          'AudioPlayerService: Cannot play - audio service initialization failed');
+      return;
+    }
 
     final mediaItem = MediaItem(
       id: url,
@@ -58,13 +98,26 @@ class AudioPlayerService {
       artUri: Uri.parse(imageUrl),
     );
 
-    await _audioHandler!.playMediaItem(mediaItem);
+    try {
+      await _audioHandler!.playMediaItem(mediaItem);
+    } catch (e, stackTrace) {
+      debugPrint('AudioPlayerService: Failed to play media item: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Play a list of items (Playlist)
   Future<void> playPlaylist(List<Map<String, String>> items,
       {int initialIndex = 0}) async {
-    if (_audioHandler == null) return;
+    await _ensureInitialized();
+
+    // Check if initialization succeeded
+    if (_audioHandler == null) {
+      debugPrint(
+          'AudioPlayerService: Cannot play playlist - audio service initialization failed');
+      return;
+    }
 
     final mediaItems = items
         .map((item) => MediaItem(
@@ -76,7 +129,14 @@ class AudioPlayerService {
             ))
         .toList();
 
-    await _audioHandler!.addQueueItems(mediaItems, initialIndex: initialIndex);
+    try {
+      await _audioHandler!
+          .addQueueItems(mediaItems, initialIndex: initialIndex);
+    } catch (e, stackTrace) {
+      debugPrint('AudioPlayerService: Failed to add queue items: $e');
+      debugPrint('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Future<void> resume() async => await _audioHandler?.play();
