@@ -3,7 +3,6 @@ import '../../core/micro_app.dart';
 import '../../core/app_category.dart';
 import 'views/breaking_news_list_screen.dart';
 
-
 class BreakingNewsApp implements MicroApp {
   @override
   String get id => 'breaking_news';

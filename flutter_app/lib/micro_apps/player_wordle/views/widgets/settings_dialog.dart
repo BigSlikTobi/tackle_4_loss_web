@@ -4,7 +4,6 @@ import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 
-
 class PlayerWordleSettingsDialog extends StatelessWidget {
   const PlayerWordleSettingsDialog({super.key});
 
@@ -44,6 +43,4 @@ class PlayerWordleSettingsDialog extends StatelessWidget {
       ),
     );
   }
-
-
 }
