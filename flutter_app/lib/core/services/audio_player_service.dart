@@ -18,9 +18,11 @@ class AudioPlayerService {
   @visibleForTesting
   AudioPlayerService.testing();
 
-  /// Initialize the audio service.
-  /// This should be called once at app startup.
-  Future<void> init() async {
+  /// Lazily initialize the audio service on first use.
+  /// This avoids activating the native audio session at app startup,
+  /// which would interrupt other apps' audio (e.g. music, podcasts on iOS)
+  /// and waste resources if the user never plays audio.
+  Future<void> _ensureInitialized() async {
     if (_audioHandler != null) return;
 
     _audioHandler = await AudioService.init(
@@ -32,6 +34,11 @@ class AudioPlayerService {
       ),
     );
   }
+
+  /// Initialize the audio service.
+  /// Kept for backward compatibility / testing. In production the service
+  /// is lazily initialized on first playback request.
+  Future<void> init() async => await _ensureInitialized();
 
   /// Stream of the current playback state (playing, paused, buffering, etc.)
   Stream<PlaybackState> get playbackStateStream =>
@@ -48,7 +55,7 @@ class AudioPlayerService {
   /// Play a specific URL with metadata
   Future<void> play(
       String url, String title, String author, String imageUrl) async {
-    if (_audioHandler == null) return;
+    await _ensureInitialized();
 
     final mediaItem = MediaItem(
       id: url,
@@ -64,7 +71,7 @@ class AudioPlayerService {
   /// Play a list of items (Playlist)
   Future<void> playPlaylist(List<Map<String, String>> items,
       {int initialIndex = 0}) async {
-    if (_audioHandler == null) return;
+    await _ensureInitialized();
 
     final mediaItems = items
         .map((item) => MediaItem(

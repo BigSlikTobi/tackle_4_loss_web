@@ -18,7 +18,6 @@ import 'micro_apps/player_wordle/player_wordle_app.dart';
 import 'micro_apps/radio/controllers/radio_controller.dart';
 
 import 'core/services/installed_apps_service.dart';
-import 'core/services/audio_player_service.dart';
 import 'core/services/new_content_service.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -55,7 +54,7 @@ Future<void> main() async {
 
   // 3. Initialize Services
   await InstalledAppsService().init();
-  await AudioPlayerService().init(); // Initialize Audio Service
+  // AudioPlayerService is lazily initialized on first playback request
   await NewContentService().init(); // Initialize new content tracking
 
   runApp(
