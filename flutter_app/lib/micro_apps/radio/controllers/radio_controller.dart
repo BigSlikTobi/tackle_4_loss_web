@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,6 +43,7 @@ class RadioController extends ChangeNotifier {
   Timer? _newsTimer;
   Set<String> _currentPlaylistIds = {};
   StreamSubscription<void>? _queueExhaustedSub;
+  StreamSubscription<MediaItem?>? _mediaItemSub;
   String _activeLanguageCode = 'en';
 
   RadioController({String? languageCode}) {
@@ -52,6 +54,7 @@ class RadioController extends ChangeNotifier {
   void dispose() {
     _newsTimer?.cancel();
     _queueExhaustedSub?.cancel();
+    _mediaItemSub?.cancel();
     super.dispose();
   }
 
@@ -60,7 +63,7 @@ class RadioController extends ChangeNotifier {
     await loadStations(languageCode);
 
     // Listen for playback changes to mark as played
-    _audioService.mediaItemStream.listen((mediaItem) {
+    _mediaItemSub = _audioService.mediaItemStream.listen((mediaItem) {
       if (mediaItem != null) {
         _markAsPlayed(mediaItem.id);
       }
