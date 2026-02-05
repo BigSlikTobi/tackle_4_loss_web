@@ -75,8 +75,8 @@ class DeepDiveController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await fetchDeepDives(languageCode,
-          limit: _pageSize, offset: _offset);
+      final result =
+          await fetchDeepDives(languageCode, limit: _pageSize, offset: _offset);
       _articles.addAll(result.items);
       _hasMore = result.hasMore;
       _offset += result.items.length;

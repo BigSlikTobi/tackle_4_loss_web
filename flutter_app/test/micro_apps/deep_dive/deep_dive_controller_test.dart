@@ -66,10 +66,9 @@ class TestDeepDiveController extends DeepDiveController {
     // Simulate a short network delay
     await Future.delayed(const Duration(milliseconds: 10));
 
-    final articles =
-        _makeJsonList(pageItemCount, startAt: offset + 1)
-            .map((json) => DeepDiveArticle.fromJson(json))
-            .toList();
+    final articles = _makeJsonList(pageItemCount, startAt: offset + 1)
+        .map((json) => DeepDiveArticle.fromJson(json))
+        .toList();
 
     final bool hasMore;
     if (totalCount != null) {
@@ -220,19 +219,16 @@ void main() {
     });
 
     test('parses legacy list response', () async {
-      final controller =
-          _RawPayloadController(payload: _makeJsonList(3));
+      final controller = _RawPayloadController(payload: _makeJsonList(3));
 
-      final result =
-          await controller.fetchDeepDives('en', limit: 3, offset: 0);
+      final result = await controller.fetchDeepDives('en', limit: 3, offset: 0);
       expect(result.items.length, 3);
       // Legacy: got a full page worth, so assume more
       expect(result.hasMore, true);
     });
 
     test('legacy list with fewer items than limit means no more', () async {
-      final controller =
-          _RawPayloadController(payload: _makeJsonList(2));
+      final controller = _RawPayloadController(payload: _makeJsonList(2));
 
       final result =
           await controller.fetchDeepDives('en', limit: 25, offset: 0);
@@ -241,8 +237,7 @@ void main() {
     });
 
     test('throws FormatException on unexpected payload', () async {
-      final controller =
-          _RawPayloadController(payload: 'unexpected string');
+      final controller = _RawPayloadController(payload: 'unexpected string');
 
       expect(
         () => controller.fetchDeepDives('en'),
@@ -251,8 +246,8 @@ void main() {
     });
 
     test('throws FormatException on Map without data list', () async {
-      final controller = _RawPayloadController(
-          payload: {'error': 'something went wrong'});
+      final controller =
+          _RawPayloadController(payload: {'error': 'something went wrong'});
 
       expect(
         () => controller.fetchDeepDives('en'),
