@@ -1,6 +1,7 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../models/guess_result.dart';
@@ -262,7 +263,6 @@ class _GuessCardState extends State<GuessCard> {
   }
 
   Widget _buildAttributeGrid() {
-    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -485,9 +485,10 @@ class _RevealingChipState extends State<_RevealingChip>
         // Base reveal: Blur to Clear + Fade In
         final transform = Matrix4.identity();
         if (widget.isMiss) {
-          transform.translate(_shakeAnimation.value);
+          transform.translate(_shakeAnimation.value, 0.0, 0.0);
         } else if (widget.isMatch) {
-          transform.scale(_pulseAnimation.value);
+          final scale = _pulseAnimation.value;
+          transform.scale(scale, scale, scale);
         }
 
         return Transform(

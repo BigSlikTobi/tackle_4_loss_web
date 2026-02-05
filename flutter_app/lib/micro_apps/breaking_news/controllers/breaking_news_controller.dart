@@ -19,7 +19,7 @@ class BreakingNewsController extends ChangeNotifier {
   String? _currentTeamFilter;
   String? _userTeamId;
   bool _isNewestFirst = true;
-  
+
   // Persistence Keys
   static const String _keySavedIds = 'breaking_news_saved_ids';
   static const String _keyRefusedIds = 'breaking_news_refused_ids';
@@ -29,11 +29,11 @@ class BreakingNewsController extends ChangeNotifier {
   bool _isLoading = false;
 
   List<BreakingNewsArticle> get articles => List.unmodifiable(_articles);
-  
+
   // Hero Article Selection Logic
   BreakingNewsArticle? get heroArticle {
     if (_articles.isEmpty) return null;
-    
+
     // 1. If filtering by team, just take the first one (standard behavior)
     if (_currentTeamFilter != null) return _articles.first;
 
@@ -41,7 +41,10 @@ class BreakingNewsController extends ChangeNotifier {
     if (_userTeamId != null) {
       try {
         final teamArticle = _articles.firstWhere(
-          (a) => a.teams?.any((t) => t.teamId.toLowerCase() == _userTeamId!.toLowerCase()) ?? false,
+          (a) =>
+              a.teams?.any((t) =>
+                  t.teamId.toLowerCase() == _userTeamId!.toLowerCase()) ??
+              false,
         );
         return teamArticle;
       } catch (_) {

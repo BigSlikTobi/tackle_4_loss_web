@@ -3,7 +3,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 
 /// Button to reveal the mystery player's college (alma mater).
 class HintButton extends StatelessWidget {

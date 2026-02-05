@@ -40,7 +40,7 @@ class _MockHttpClientRequest implements HttpClientRequest {
   Future<HttpClientResponse> close() async {
     return _MockHttpClientResponse();
   }
-  
+
   @override
   HttpHeaders get headers => _MockHttpHeaders();
 }
@@ -53,7 +53,7 @@ class _MockHttpClientResponse implements HttpClientResponse {
 
   @override
   int get statusCode => 200;
-  
+
   @override
   int get contentLength => 0; // Empty body
 
@@ -65,14 +65,75 @@ class _MockHttpClientResponse implements HttpClientResponse {
   StreamSubscription<List<int>> listen(void Function(List<int> event)? onData,
       {Function? onError, void Function()? onDone, bool? cancelOnError}) {
     final List<int> validImage = [
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 
-      0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 
-      0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89, 0x00, 0x00, 0x00, 
-      0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00, 
-      0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 
-      0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a,
+      0x00,
+      0x00,
+      0x00,
+      0x0d,
+      0x49,
+      0x48,
+      0x44,
+      0x52,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0x00,
+      0x01,
+      0x08,
+      0x06,
+      0x00,
+      0x00,
+      0x00,
+      0x1f,
+      0x15,
+      0xc4,
+      0x89,
+      0x00,
+      0x00,
+      0x00,
+      0x0a,
+      0x49,
+      0x44,
+      0x41,
+      0x54,
+      0x78,
+      0x9c,
+      0x63,
+      0x00,
+      0x01,
+      0x00,
+      0x00,
+      0x05,
+      0x00,
+      0x01,
+      0x0d,
+      0x0a,
+      0x2d,
+      0xb4,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x49,
+      0x45,
+      0x4e,
+      0x44,
+      0xae,
+      0x42,
+      0x60,
+      0x82,
     ];
-    
+
     return Stream<List<int>>.fromIterable([validImage]).listen(onData,
         onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
@@ -83,7 +144,7 @@ class _MockHttpHeaders implements HttpHeaders {
   dynamic noSuchMethod(Invocation invocation) {
     return null;
   }
-  
+
   @override
   void set(String name, Object value, {bool preserveHeaderCase = false}) {}
 }
@@ -109,7 +170,8 @@ void main() {
   }
 
   group('BreakingNewsHero', () {
-    testWidgets('displays headline, source badge, and team logo', (tester) async {
+    testWidgets('displays headline, source badge, and team logo',
+        (tester) async {
       final article = BreakingNewsArticle(
         id: '1',
         headline: 'Hero Headline',
@@ -155,14 +217,16 @@ void main() {
         ),
       ));
 
-      // Should find CircularAvatar/Image for player (NetworkImage relies on HTTP overrides or mock, 
+      // Should find CircularAvatar/Image for player (NetworkImage relies on HTTP overrides or mock,
       // but WidgetTester flushes image loading usually. We check structurally.)
       expect(find.byType(CircleAvatar), findsOneWidget);
     });
   });
 
   group('BreakingNewsListItem', () {
-    testWidgets('displays headline, source badge, team logo, and player headshot', (tester) async {
+    testWidgets(
+        'displays headline, source badge, team logo, and player headshot',
+        (tester) async {
       final article = BreakingNewsArticle(
         id: '3',
         headline: 'List Item Headline',

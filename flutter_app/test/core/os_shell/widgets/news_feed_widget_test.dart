@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:tackle4loss_mobile/core/os_shell/controllers/news_feed_controller.dart';
 import 'package:tackle4loss_mobile/core/os_shell/widgets/news_feed/news_feed_widget.dart';
 import 'package:tackle4loss_mobile/core/services/settings_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -97,7 +96,7 @@ void main() {
         (WidgetTester tester) async {
       await tester.pumpWidget(createTestWidget());
       await tester.pump(); // Initial build
-      
+
       // Should show loading state
       expect(find.byType(CustomScrollView), findsOneWidget);
     });
@@ -126,8 +125,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // The widget should have attached to the scroll controller
-      // We can verify this by checking that listeners exist
-      expect(scrollController.hasListeners, isTrue);
+      expect(scrollController.hasClients, isTrue);
     });
 
     testWidgets('removes scroll listener on dispose',
@@ -139,7 +137,7 @@ void main() {
       ));
       await tester.pumpAndSettle();
 
-      final hadListeners = scrollController.hasListeners;
+      final hadListeners = scrollController.hasClients;
 
       // Dispose the widget
       await tester.pumpWidget(Container());
@@ -147,7 +145,7 @@ void main() {
 
       // Listeners should have been cleaned up
       expect(hadListeners, isTrue);
-      expect(scrollController.hasListeners, isFalse);
+      expect(scrollController.hasClients, isFalse);
     });
   });
 

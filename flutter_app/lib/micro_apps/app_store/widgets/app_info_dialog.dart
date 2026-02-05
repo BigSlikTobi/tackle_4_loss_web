@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../core/micro_app.dart';
-import '../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../core/utils/localization_utils.dart';
 
 class AppInfoDialog extends StatelessWidget {

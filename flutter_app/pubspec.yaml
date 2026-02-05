@@ -75,7 +75,6 @@ dev_dependencies:
 
   # Testing framework
   mocktail: ^1.0.4 # Modern mocking library for TDD
-  fake_async: ^1.3.2 # Time manipulation for async tests
 
 flutter_launcher_icons:
   android: "launcher_icon"

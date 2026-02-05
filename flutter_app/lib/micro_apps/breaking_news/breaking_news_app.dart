@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
 import '../../core/app_category.dart';
 import 'views/breaking_news_list_screen.dart';
-import 'views/widgets/breaking_news_widget.dart';
 
 class BreakingNewsApp implements MicroApp {
   @override
@@ -68,5 +67,5 @@ class BreakingNewsApp implements MicroApp {
   Size get widgetSize => const Size(2, 2);
 
   @override
-  WidgetBuilder get widgetBuilder => (context) => const BreakingNewsWidget();
+  WidgetBuilder get widgetBuilder => (context) => const SizedBox.shrink();
 }

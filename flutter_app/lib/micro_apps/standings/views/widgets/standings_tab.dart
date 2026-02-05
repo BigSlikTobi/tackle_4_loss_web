@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../controllers/standings_controller.dart';
 import '../../models/team_standing.dart';
 import 'standings_filter_header.dart';
@@ -159,8 +159,9 @@ class _StandingsTabState extends State<StandingsTab> {
     }
     // Sort by record
     allTeams.sort((a, b) {
-      if (a.winPercentage != b.winPercentage)
+      if (a.winPercentage != b.winPercentage) {
         return b.winPercentage.compareTo(a.winPercentage);
+      }
       return b.netPoints.compareTo(a.netPoints);
     });
 
@@ -205,8 +206,9 @@ class _StandingsTabState extends State<StandingsTab> {
                 }
                 // Sort by Conf ranking logic
                 confTeams.sort((a, b) {
-                  if (a.winPercentage != b.winPercentage)
+                  if (a.winPercentage != b.winPercentage) {
                     return b.winPercentage.compareTo(a.winPercentage);
+                  }
                   return b.netPoints.compareTo(a.netPoints);
                 });
 

@@ -2,7 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../models/guess_result.dart';
 import 'attribute_tile.dart';

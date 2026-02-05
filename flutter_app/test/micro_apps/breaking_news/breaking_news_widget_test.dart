@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use_from_same_package
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -31,16 +32,19 @@ class MockBreakingNewsController extends ChangeNotifier
   }
 
   @override
-  Future<void> loadNews({String languageCode = 'en', String? userTeamId}) async {}
-  
+  Future<void> loadNews(
+      {String languageCode = 'en', String? userTeamId}) async {}
+
   @override
   void updateUserTeam(String? teamId) {}
 
   @override
-  BreakingNewsArticle? get heroArticle => _articles.isNotEmpty ? _articles.first : null;
+  BreakingNewsArticle? get heroArticle =>
+      _articles.isNotEmpty ? _articles.first : null;
 
   @override
-  List<BreakingNewsArticle> get listArticles => _articles.length > 1 ? _articles.sublist(1) : [];
+  List<BreakingNewsArticle> get listArticles =>
+      _articles.length > 1 ? _articles.sublist(1) : [];
 
   @override
   void markAsRead(String id) {}

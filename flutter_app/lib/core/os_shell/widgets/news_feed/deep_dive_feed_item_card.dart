@@ -5,7 +5,7 @@ import '../../../models/news_feed_item.dart';
 import '../../../theme/t4l_theme.dart';
 import '../../../services/navigation_service.dart';
 import '../../../app_registry.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 
 /// Deep dive article card for the news feed with distinctive styling
 class DeepDiveFeedItemCard extends StatefulWidget {

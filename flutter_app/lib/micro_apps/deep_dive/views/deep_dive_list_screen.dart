@@ -6,7 +6,7 @@ import 'package:tackle4loss_mobile/core/os_shell/widgets/t4l_scaffold.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/controllers/deep_dive_controller.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/views/deep_dive_screen.dart';
 import 'package:tackle4loss_mobile/micro_apps/deep_dive/models/deep_dive_article.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 
 import '../../../../core/services/settings_service.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../core/services/navigation_service.dart';
 import '../../../../core/services/team_service.dart';
 import '../../../../core/app_registry.dart';

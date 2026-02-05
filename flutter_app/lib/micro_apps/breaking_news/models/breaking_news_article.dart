@@ -73,7 +73,7 @@ class BreakingNewsArticle {
     if (_sourceName != null && _sourceName.isNotEmpty) {
       return _sourceName;
     }
-    
+
     // Fallback to parsing URL
     if (sourceUrl == null) return 'Source';
     try {
