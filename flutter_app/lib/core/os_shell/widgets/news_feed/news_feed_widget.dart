@@ -153,7 +153,10 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () => _controller.refresh(),
+                      onPressed: () {
+                        _precachedUrls.clear();
+                        _controller.refresh();
+                      },
                       child: const Text('Retry'),
                     ),
                   ],
