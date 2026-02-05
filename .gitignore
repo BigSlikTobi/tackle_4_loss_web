@@ -53,6 +53,7 @@ flutter_app/android/app/debug
 flutter_app/android/app/profile
 flutter_app/android/app/release
 flutter_app/lib/design_tokens.dart
+!flutter_app/lib/design_tokens.dart
 
 # Android
 flutter_app/android/local.properties
