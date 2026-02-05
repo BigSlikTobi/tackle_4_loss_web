@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/team_model.dart';
 import 'team_service.dart';
-import '../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 
 class SettingsService with ChangeNotifier {
   static final SettingsService _instance = SettingsService._internal();

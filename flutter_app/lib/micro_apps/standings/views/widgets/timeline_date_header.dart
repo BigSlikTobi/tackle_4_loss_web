@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/standings_controller.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../controllers/player_wordle_controller.dart';

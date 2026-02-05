@@ -4,7 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 import '../../../core/os_shell/widgets/t4l_scaffold.dart';
-import '../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../core/theme/t4l_theme.dart';
 import 'player_wordle_screen.dart';
 import 'widgets/how_to_play_card.dart';

@@ -73,6 +73,7 @@ ToDos/
 
 # Logos
 flutter_app/assets/logos/
+!flutter_app/assets/logos/nfl_logo.png
 supabase/.temp/project-ref
 supabase/.temp/pooler-url
 assets/creative_logos/

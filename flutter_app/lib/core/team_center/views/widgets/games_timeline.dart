@@ -96,7 +96,6 @@ class GamesTimeline extends StatelessWidget {
   }) _getGameDisplayInfo(Game game) {
     final normalizedTeamId = teamId.toUpperCase();
     final homeTeam = game.homeTeam.toUpperCase();
-    final awayTeam = game.awayTeam.toUpperCase();
 
     final isHomeGame = homeTeam == normalizedTeamId;
     final opponent = isHomeGame ? game.awayTeam : game.homeTeam;

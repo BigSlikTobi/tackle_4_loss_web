@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 
 import 'package:video_player/video_player.dart';
 

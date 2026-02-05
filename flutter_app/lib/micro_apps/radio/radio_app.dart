@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/micro_app.dart';
 import '../../core/app_category.dart';
-import '../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import 'views/radio_screen.dart';
 import 'views/widgets/radio_home_widget.dart'; // Will be created next
 

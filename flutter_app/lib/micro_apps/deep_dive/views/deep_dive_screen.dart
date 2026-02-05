@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:audio_service/audio_service.dart'; // New import
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../core/os_shell/widgets/t4l_scaffold.dart';
 import '../../../core/services/audio_player_service.dart';
 import '../../../core/adk/widgets/t4l_hero_header.dart';

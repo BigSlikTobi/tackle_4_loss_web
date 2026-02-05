@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import '../../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../models/guess_result.dart';
@@ -262,7 +262,6 @@ class _GuessCardState extends State<GuessCard> {
   }
 
   Widget _buildAttributeGrid() {
-    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

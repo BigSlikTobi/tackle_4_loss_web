@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/t4l_theme.dart';
 import '../../../core/services/team_logo_service.dart';
 import '../../../core/services/settings_service.dart';
-import '../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/breaking_news_article.dart';

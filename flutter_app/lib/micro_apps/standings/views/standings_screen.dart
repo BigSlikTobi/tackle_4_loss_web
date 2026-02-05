@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/os_shell/widgets/t4l_scaffold.dart';
-import '../../../design_tokens.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../core/services/settings_service.dart';
 
 import '../controllers/standings_controller.dart';
