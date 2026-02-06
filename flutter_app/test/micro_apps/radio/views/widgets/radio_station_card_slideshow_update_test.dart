@@ -13,12 +13,12 @@ void main() {
       (WidgetTester tester) async {
     const key = ValueKey('radio-card');
 
-    final stationWithManyImages = RadioStation(
+    const stationWithManyImages = RadioStation(
       id: 's1',
       title: 'Station',
       description: 'Desc',
       imageUrl: 'https://example.com/fallback.png',
-      slideshowImages: const [
+      slideshowImages: [
         'https://example.com/1.png',
         'https://example.com/2.png',
         'https://example.com/3.png',
@@ -26,12 +26,12 @@ void main() {
       categoryId: 'all',
     );
 
-    final stationWithSingleImage = RadioStation(
+    const stationWithSingleImage = RadioStation(
       id: 's1',
       title: 'Station',
       description: 'Desc',
       imageUrl: 'https://example.com/fallback.png',
-      slideshowImages: const [
+      slideshowImages: [
         'https://example.com/only.png',
       ],
       categoryId: 'all',
