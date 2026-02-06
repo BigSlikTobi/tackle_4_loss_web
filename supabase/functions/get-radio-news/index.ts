@@ -18,7 +18,17 @@ serve(async (req) => {
             { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
         )
 
-        const body = await req.json().catch(() => ({}))
+        const rawBody = await req.text()
+        let body: any = {}
+
+        if (rawBody.trim().length > 0) {
+            try {
+                body = JSON.parse(rawBody)
+            } catch (_e) {
+                // Propagate a SyntaxError so the outer catch can return a 400 response
+                throw new SyntaxError('Invalid JSON in request body')
+            }
+        }
         const language_code = body?.language_code
         const since_created_at = body?.since_created_at ?? body?.sinceCreatedAt
 
