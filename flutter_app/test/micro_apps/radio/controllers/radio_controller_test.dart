@@ -40,7 +40,11 @@ class TestRadioController extends RadioController {
   }
 
   @override
-  Future<List<Map<String, String>>> fetchNewsTracks(String languageCode) async {
+  Future<List<Map<String, String>>> fetchNewsTracks(
+    String languageCode, {
+    String? sinceCreatedAt,
+    int? limit,
+  }) async {
     return tracks;
   }
 }

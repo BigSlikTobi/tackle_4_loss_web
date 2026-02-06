@@ -52,6 +52,7 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
   bool _isDailyBriefingMode = false;
   bool _isAppForeground = true;
   bool _isPlaying = false;
+  DateTime? _latestNewsCreatedAt;
 
   @visibleForTesting
   bool get isNewsPollingActive => _newsTimer != null;
@@ -95,6 +96,19 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
 
   bool _shouldPollNews() {
     return _isDailyBriefingMode && _isAppForeground && _isPlaying;
+  }
+
+  void _updateLatestNewsCreatedAt(Iterable<Map<String, String>> tracks) {
+    for (final track in tracks) {
+      final raw = track['createdAt'];
+      if (raw == null || raw.isEmpty) continue;
+      final parsed = DateTime.tryParse(raw);
+      if (parsed == null) continue;
+
+      if (_latestNewsCreatedAt == null || parsed.isAfter(_latestNewsCreatedAt!)) {
+        _latestNewsCreatedAt = parsed;
+      }
+    }
   }
 
   void _startNewsPolling() {
@@ -308,6 +322,7 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
               initialIndex: initialIndex);
           _isDailyBriefingMode = true;
           _pollingLanguageCode = pollingLanguageCode;
+          _updateLatestNewsCreatedAt(playlist);
           _evaluateNewsPolling();
         }
         return; // Return early since we handled playback
@@ -362,7 +377,11 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> _checkForNewNews(String languageCode) async {
     try {
       if (!_shouldPollNews()) return;
-      final latestNews = await fetchNewsTracks(languageCode);
+      final latestNews = await fetchNewsTracks(
+        languageCode,
+        sinceCreatedAt: _latestNewsCreatedAt?.toUtc().toIso8601String(),
+        limit: 10,
+      );
 
       // Filter for tracks that are NOT in the current playlist
       // We assume track['url'] is the unique identifier
@@ -379,6 +398,7 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
 
         // Update local awareness of what's in the playlist
         _currentPlaylistIds.addAll(newTracks.map((e) => e['url']!));
+        _updateLatestNewsCreatedAt(newTracks);
       }
     } catch (e) {
       debugPrint("RadioController: Error checking for new news: $e");
@@ -394,11 +414,23 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
     await _audioService.playPlaylist([track]);
   }
 
-  Future<List<Map<String, String>>> fetchNewsTracks(String languageCode) async {
+  Future<List<Map<String, String>>> fetchNewsTracks(
+    String languageCode, {
+    String? sinceCreatedAt,
+    int? limit,
+  }) async {
     try {
+      final body = <String, dynamic>{'language_code': languageCode};
+      if (sinceCreatedAt != null && sinceCreatedAt.isNotEmpty) {
+        body['since_created_at'] = sinceCreatedAt;
+      }
+      if (limit != null) {
+        body['limit'] = limit;
+      }
+
       final response = await Supabase.instance.client.functions.invoke(
         'get-radio-news',
-        body: {'language_code': languageCode},
+        body: body,
       );
 
       if (response.data == null) return [];
@@ -411,6 +443,10 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
               'id': item['id']?.toString() ?? '',
               'url': item['audioUrl'] ?? '',
               'title': item['title'] ?? 'News Update',
+              'createdAt':
+                  item['createdAt']?.toString() ??
+                  item['created_at']?.toString() ??
+                  '',
               'author':
                   team != null ? team['team_name'] ?? 'T4L News' : 'T4L News',
               'imageUrl':
