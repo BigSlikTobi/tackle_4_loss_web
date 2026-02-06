@@ -18,17 +18,44 @@ serve(async (req) => {
             { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
         )
 
-        const { language_code } = await req.json()
+        const rawBody = await req.text()
+        let body: any = {}
+
+        if (rawBody.trim().length > 0) {
+            try {
+                body = JSON.parse(rawBody)
+            } catch (_e) {
+                // Propagate a SyntaxError so the outer catch can return a 400 response
+                throw new SyntaxError('Invalid JSON in request body')
+            }
+        }
+        const language_code = body?.language_code
+        const since_created_at = body?.since_created_at ?? body?.sinceCreatedAt
+
+        const rawLimit = body?.limit
+        const limit =
+            typeof rawLimit === 'number' && Number.isFinite(rawLimit)
+                ? Math.max(1, Math.min(100, Math.floor(rawLimit)))
+                : undefined
 
         let query = supabaseClient
             .schema('content')
             .from('news_updates')
             .select('id, created_at, headline, image_file, teams, tts_file')
             .order('created_at', { ascending: false })
-            .limit(30)
 
         if (language_code) {
             query = query.eq('language_code', language_code)
+        }
+
+        // Backwards compatible:
+        // - Default returns the latest 30 (used for initial playlist fetch).
+        // - If `since_created_at` is provided, return only newer rows (small polling payload).
+        if (since_created_at) {
+            query = query.gt('created_at', since_created_at)
+            query = query.limit(limit ?? 10)
+        } else {
+            query = query.limit(limit ?? 30)
         }
 
         const { data, error } = await query
