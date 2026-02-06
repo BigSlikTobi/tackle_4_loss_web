@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tackle4loss_mobile/core/theme/t4l_theme.dart';
 import '../../models/radio_station.dart';
 import 'package:tackle4loss_mobile/l10n/app_localizations.dart';
@@ -31,9 +32,49 @@ class _RadioStationCardState extends State<RadioStationCard> {
   }
 
   @override
+  void didUpdateWidget(covariant RadioStationCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final oldImages = oldWidget.station.slideshowImages;
+    final newImages = widget.station.slideshowImages;
+
+    final stationChanged = oldWidget.station.id != widget.station.id;
+    final imagesChanged = !listEquals(oldImages, newImages);
+
+    if (stationChanged || imagesChanged) {
+      // Reset to a safe index whenever the content driving the slideshow changes.
+      _currentImageIndex = 0;
+      _restartSlideshow();
+    } else {
+      // Even if the list content didn't change, lengths can still shift if the list
+      // is mutated upstream (shouldn't happen, but guard anyway).
+      _clampIndexToImages();
+    }
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  void _restartSlideshow() {
+    _timer?.cancel();
+    _timer = null;
+    _clampIndexToImages();
+    _startSlideshow();
+  }
+
+  void _clampIndexToImages() {
+    final images = widget.station.slideshowImages;
+    if (images == null || images.isEmpty) {
+      _currentImageIndex = 0;
+      return;
+    }
+
+    if (_currentImageIndex >= images.length || _currentImageIndex < 0) {
+      _currentImageIndex = 0;
+    }
   }
 
   void _startSlideshow() {
@@ -42,7 +83,13 @@ class _RadioStationCardState extends State<RadioStationCard> {
       _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
         if (mounted) {
           setState(() {
-            _currentImageIndex = (_currentImageIndex + 1) % images.length;
+            final currentImages = widget.station.slideshowImages;
+            if (currentImages == null || currentImages.length <= 1) {
+              _currentImageIndex = 0;
+              return;
+            }
+            _currentImageIndex =
+                (_currentImageIndex + 1) % currentImages.length;
           });
         }
       });
@@ -58,7 +105,11 @@ class _RadioStationCardState extends State<RadioStationCard> {
     // Determine current image URL
     String currentImageUrl = widget.station.imageUrl;
     if (hasSlideshow) {
-      currentImageUrl = images[_currentImageIndex];
+      final safeIndex =
+          (_currentImageIndex >= 0 && _currentImageIndex < images.length)
+              ? _currentImageIndex
+              : 0;
+      currentImageUrl = images[safeIndex];
     }
 
     return Container(

@@ -122,6 +122,7 @@ class _RadioScreenState extends State<RadioScreen> {
                       itemBuilder: (context, index) {
                         final station = _controller.stations[index];
                         return RadioStationCard(
+                          key: ValueKey(station.id),
                           station: station,
                           onTap: () {
                             if (station.id == 'news') {
