@@ -105,7 +105,8 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
       final parsed = DateTime.tryParse(raw);
       if (parsed == null) continue;
 
-      if (_latestNewsCreatedAt == null || parsed.isAfter(_latestNewsCreatedAt!)) {
+      if (_latestNewsCreatedAt == null ||
+          parsed.isAfter(_latestNewsCreatedAt!)) {
         _latestNewsCreatedAt = parsed;
       }
     }
@@ -443,8 +444,7 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
               'id': item['id']?.toString() ?? '',
               'url': item['audioUrl'] ?? '',
               'title': item['title'] ?? 'News Update',
-              'createdAt':
-                  item['createdAt']?.toString() ??
+              'createdAt': item['createdAt']?.toString() ??
                   item['created_at']?.toString() ??
                   '',
               'author':

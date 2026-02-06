@@ -82,7 +82,8 @@ void main() {
   setUpAll(() async {
     // Register fallback values if needed
     registerFallbackValue(Uri());
-    registerFallbackValue(http.Request('GET', Uri.parse('https://example.com')));
+    registerFallbackValue(
+        http.Request('GET', Uri.parse('https://example.com')));
     SharedPreferences.setMockInitialValues({});
 
     final mockHttpClient = MockHttpClient();
@@ -246,7 +247,8 @@ void main() {
     );
 
     test('starts polling only while playing and stops on pause/stop', () async {
-      final playbackStateController = StreamController<PlaybackState>.broadcast();
+      final playbackStateController =
+          StreamController<PlaybackState>.broadcast();
       final mediaItemController = StreamController<MediaItem?>.broadcast();
 
       final audioService = PollingAudioPlayerService(
