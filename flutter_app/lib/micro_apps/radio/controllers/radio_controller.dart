@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/radio_station.dart';
@@ -8,8 +9,8 @@ import '../models/radio_category.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class RadioController extends ChangeNotifier {
-  final AudioPlayerService _audioService = AudioPlayerService();
+class RadioController extends ChangeNotifier with WidgetsBindingObserver {
+  final AudioPlayerService _audioService;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -44,18 +45,86 @@ class RadioController extends ChangeNotifier {
   Set<String> _currentPlaylistIds = {};
   StreamSubscription<void>? _queueExhaustedSub;
   StreamSubscription<MediaItem?>? _mediaItemSub;
+  StreamSubscription<PlaybackState>? _playbackStateSub;
   String _activeLanguageCode = 'en';
+  String _pollingLanguageCode = 'en';
 
-  RadioController({String? languageCode}) {
+  bool _isDailyBriefingMode = false;
+  bool _isAppForeground = true;
+  bool _isPlaying = false;
+  DateTime? _latestNewsCreatedAt;
+
+  @visibleForTesting
+  bool get isNewsPollingActive => _newsTimer != null;
+
+  RadioController({String? languageCode, AudioPlayerService? audioService})
+      : _audioService = audioService ?? AudioPlayerService() {
+    WidgetsBinding.instance.addObserver(this);
     _initAndLoad(languageCode ?? 'en');
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _newsTimer?.cancel();
     _queueExhaustedSub?.cancel();
     _mediaItemSub?.cancel();
+    _playbackStateSub?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final isForeground = state == AppLifecycleState.resumed;
+    _isAppForeground = isForeground;
+
+    if (!_isAppForeground) {
+      _stopNewsPolling();
+      return;
+    }
+
+    _evaluateNewsPolling();
+  }
+
+  void _evaluateNewsPolling() {
+    if (_shouldPollNews()) {
+      _startNewsPolling();
+    } else {
+      _stopNewsPolling();
+    }
+  }
+
+  bool _shouldPollNews() {
+    return _isDailyBriefingMode && _isAppForeground && _isPlaying;
+  }
+
+  void _updateLatestNewsCreatedAt(Iterable<Map<String, String>> tracks) {
+    for (final track in tracks) {
+      final raw = track['createdAt'];
+      if (raw == null || raw.isEmpty) continue;
+      final parsed = DateTime.tryParse(raw);
+      if (parsed == null) continue;
+
+      if (_latestNewsCreatedAt == null ||
+          parsed.isAfter(_latestNewsCreatedAt!)) {
+        _latestNewsCreatedAt = parsed;
+      }
+    }
+  }
+
+  void _startNewsPolling() {
+    if (_newsTimer != null) return;
+
+    // Poll for new news every 30 seconds while Daily Briefing is actively playing.
+    _newsTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!_shouldPollNews()) return;
+      _checkForNewNews(_pollingLanguageCode);
+    });
+  }
+
+  void _stopNewsPolling() {
+    _newsTimer?.cancel();
+    _newsTimer = null;
   }
 
   void _initAndLoad(String languageCode) async {
@@ -64,9 +133,25 @@ class RadioController extends ChangeNotifier {
 
     // Listen for playback changes to mark as played
     _mediaItemSub = _audioService.mediaItemStream.listen((mediaItem) {
-      if (mediaItem != null) {
-        _markAsPlayed(mediaItem.id);
+      if (mediaItem == null) {
+        _isPlaying = false;
+        _evaluateNewsPolling();
+        return;
       }
+
+      // If something else starts playing (not part of the current news playlist),
+      // ensure we don't keep polling in the background.
+      if (_isDailyBriefingMode && !_currentPlaylistIds.contains(mediaItem.id)) {
+        _isDailyBriefingMode = false;
+        _evaluateNewsPolling();
+      }
+
+      _markAsPlayed(mediaItem.id);
+    });
+
+    _playbackStateSub = _audioService.playbackStateStream.listen((state) {
+      _isPlaying = state.playing;
+      _evaluateNewsPolling();
     });
 
     // Listen for queue exhaustion to auto-fetch more content for continuous playback
@@ -77,6 +162,7 @@ class RadioController extends ChangeNotifier {
 
   /// Called when the audio queue is exhausted - fetches more unplayed content
   Future<void> _onQueueExhausted() async {
+    if (!_isDailyBriefingMode) return;
     try {
       final allNews = await fetchNewsTracks(_activeLanguageCode);
 
@@ -204,11 +290,12 @@ class RadioController extends ChangeNotifier {
   Future<void> playStation(RadioStation station, {String? languageCode}) async {
     _activeLanguageCode =
         languageCode ?? 'en'; // Store for queue exhaustion handler
-    _newsTimer?.cancel(); // Cancel any existing polling
+    _stopNewsPolling();
     List<Map<String, String>> playlist = [];
 
     if (station.id == 'news_briefing') {
       try {
+        final pollingLanguageCode = languageCode ?? 'en';
         final allNews = await fetchNewsTracks(languageCode ?? 'en');
         // SMART PLAYBACK LOGIC:
         // 1. We keep ALL news in the playlist (so user can go back to history).
@@ -234,22 +321,26 @@ class RadioController extends ChangeNotifier {
         if (playlist.isNotEmpty) {
           await _audioService.playPlaylist(playlist,
               initialIndex: initialIndex);
-
-          // Start polling for new news every 30 seconds
-          _newsTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-            _checkForNewNews(languageCode ?? 'en');
-          });
+          _isDailyBriefingMode = true;
+          _pollingLanguageCode = pollingLanguageCode;
+          _updateLatestNewsCreatedAt(playlist);
+          _evaluateNewsPolling();
         }
         return; // Return early since we handled playback
       } catch (e) {
+        _isDailyBriefingMode = false;
         debugPrint('Error fetching news tracks: $e');
         return;
       }
     } else if (station.id == 'news_collection') {
       // Logic handled by UI (navigation), but if played directly, maybe play all?
       // Let's defer to UI for navigation.
+      _isDailyBriefingMode = false;
+      _currentPlaylistIds = {};
       return;
     } else if (station.id.startsWith('dd_') && station.streamUrl != null) {
+      _isDailyBriefingMode = false;
+      _currentPlaylistIds = {};
       // Dynamic Deep Dive Playback
       playlist = [
         {
@@ -261,6 +352,8 @@ class RadioController extends ChangeNotifier {
       ];
       await _audioService.playPlaylist(playlist);
     } else {
+      _isDailyBriefingMode = false;
+      _currentPlaylistIds = {};
       // Manual/Legacy Stations
       playlist = [
         {
@@ -284,7 +377,12 @@ class RadioController extends ChangeNotifier {
 
   Future<void> _checkForNewNews(String languageCode) async {
     try {
-      final latestNews = await fetchNewsTracks(languageCode);
+      if (!_shouldPollNews()) return;
+      final latestNews = await fetchNewsTracks(
+        languageCode,
+        sinceCreatedAt: _latestNewsCreatedAt?.toUtc().toIso8601String(),
+        limit: 10,
+      );
 
       // Filter for tracks that are NOT in the current playlist
       // We assume track['url'] is the unique identifier
@@ -301,6 +399,7 @@ class RadioController extends ChangeNotifier {
 
         // Update local awareness of what's in the playlist
         _currentPlaylistIds.addAll(newTracks.map((e) => e['url']!));
+        _updateLatestNewsCreatedAt(newTracks);
       }
     } catch (e) {
       debugPrint("RadioController: Error checking for new news: $e");
@@ -308,17 +407,31 @@ class RadioController extends ChangeNotifier {
   }
 
   Future<void> playTrack(Map<String, String> track) async {
-    _newsTimer?.cancel();
+    _isDailyBriefingMode = false;
+    _currentPlaylistIds = {};
+    _stopNewsPolling();
     // Determine if it's already playing?
     // For simplicity, just replace playlist with this single track
     await _audioService.playPlaylist([track]);
   }
 
-  Future<List<Map<String, String>>> fetchNewsTracks(String languageCode) async {
+  Future<List<Map<String, String>>> fetchNewsTracks(
+    String languageCode, {
+    String? sinceCreatedAt,
+    int? limit,
+  }) async {
     try {
+      final body = <String, dynamic>{'language_code': languageCode};
+      if (sinceCreatedAt != null && sinceCreatedAt.isNotEmpty) {
+        body['since_created_at'] = sinceCreatedAt;
+      }
+      if (limit != null) {
+        body['limit'] = limit;
+      }
+
       final response = await Supabase.instance.client.functions.invoke(
         'get-radio-news',
-        body: {'language_code': languageCode},
+        body: body,
       );
 
       if (response.data == null) return [];
@@ -331,6 +444,9 @@ class RadioController extends ChangeNotifier {
               'id': item['id']?.toString() ?? '',
               'url': item['audioUrl'] ?? '',
               'title': item['title'] ?? 'News Update',
+              'createdAt': item['createdAt']?.toString() ??
+                  item['created_at']?.toString() ??
+                  '',
               'author':
                   team != null ? team['team_name'] ?? 'T4L News' : 'T4L News',
               'imageUrl':

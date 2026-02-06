@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tackle4loss_mobile/micro_apps/radio/controllers/radio_controller.dart';
@@ -25,7 +29,8 @@ class MockAudioPlayerService extends AudioPlayerService {
 class MockHttpClient extends Mock implements http.Client {}
 
 class TestRadioController extends RadioController {
-  TestRadioController(this.tracks) : super(languageCode: 'en');
+  TestRadioController(this.tracks, {AudioPlayerService? audioService})
+      : super(languageCode: 'en', audioService: audioService);
 
   final List<Map<String, String>> tracks;
 
@@ -35,8 +40,39 @@ class TestRadioController extends RadioController {
   }
 
   @override
-  Future<List<Map<String, String>>> fetchNewsTracks(String languageCode) async {
+  Future<List<Map<String, String>>> fetchNewsTracks(
+    String languageCode, {
+    String? sinceCreatedAt,
+    int? limit,
+  }) async {
     return tracks;
+  }
+}
+
+class PollingAudioPlayerService extends AudioPlayerService {
+  PollingAudioPlayerService({
+    required StreamController<PlaybackState> playbackStateController,
+    required StreamController<MediaItem?> mediaItemController,
+  })  : _playbackStateController = playbackStateController,
+        _mediaItemController = mediaItemController,
+        super.testing();
+
+  final StreamController<PlaybackState> _playbackStateController;
+  final StreamController<MediaItem?> _mediaItemController;
+
+  List<Map<String, String>>? lastPlaylist;
+
+  @override
+  Stream<PlaybackState> get playbackStateStream =>
+      _playbackStateController.stream;
+
+  @override
+  Stream<MediaItem?> get mediaItemStream => _mediaItemController.stream;
+
+  @override
+  Future<void> playPlaylist(List<Map<String, String>> items,
+      {int initialIndex = 0}) async {
+    lastPlaylist = items;
   }
 }
 
@@ -46,6 +82,8 @@ void main() {
   setUpAll(() async {
     // Register fallback values if needed
     registerFallbackValue(Uri());
+    registerFallbackValue(
+        http.Request('GET', Uri.parse('https://example.com')));
     SharedPreferences.setMockInitialValues({});
 
     final mockHttpClient = MockHttpClient();
@@ -54,6 +92,15 @@ void main() {
     when(() => mockHttpClient.post(any(),
             headers: any(named: 'headers'), body: any(named: 'body')))
         .thenAnswer((_) async => http.Response('[]', 200));
+
+    // Supabase may use `send()` internally; default mock returns `null` and
+    // causes type errors.
+    when(() => mockHttpClient.send(any())).thenAnswer(
+      (_) async => http.StreamedResponse(
+        Stream<List<int>>.value(utf8.encode('[]')),
+        200,
+      ),
+    );
 
     // Initialize Supabase with mock client
     // Check if already initialized to avoid errors
@@ -74,7 +121,7 @@ void main() {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
       AudioPlayerService.setInstanceForTesting(MockAudioPlayerService());
-      controller = RadioController();
+      controller = TestRadioController(const []);
     });
 
     test('initial state is correct', () {
@@ -186,6 +233,62 @@ void main() {
       expect(audioService.lastPlaylist?.length, 3);
       expect(audioService.lastInitialIndex, 0);
 
+      controller.dispose();
+    });
+  });
+
+  group('RadioController daily briefing polling lifecycle', () {
+    const briefingStation = RadioStation(
+      id: 'news_briefing',
+      title: 'Daily Briefing',
+      description: 'News updates',
+      imageUrl: 'https://example.com/image.png',
+      categoryId: 'news',
+    );
+
+    test('starts polling only while playing and stops on pause/stop', () async {
+      final playbackStateController =
+          StreamController<PlaybackState>.broadcast();
+      final mediaItemController = StreamController<MediaItem?>.broadcast();
+
+      final audioService = PollingAudioPlayerService(
+        playbackStateController: playbackStateController,
+        mediaItemController: mediaItemController,
+      );
+
+      final controller = TestRadioController(
+        [
+          {
+            'url': 'url1',
+            'title': 'News 1',
+            'author': 'T4L',
+            'imageUrl': 'https://example.com/1.png',
+          },
+        ],
+        audioService: audioService,
+      );
+
+      // Wait for async initialization that attaches stream listeners.
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      expect(controller.isNewsPollingActive, false);
+
+      await controller.playStation(briefingStation);
+      await Future.delayed(Duration.zero);
+
+      // Not playing yet: should not start polling.
+      expect(controller.isNewsPollingActive, false);
+
+      playbackStateController.add(PlaybackState(playing: true));
+      await Future.delayed(Duration.zero);
+      expect(controller.isNewsPollingActive, true);
+
+      playbackStateController.add(PlaybackState(playing: false));
+      await Future.delayed(Duration.zero);
+      expect(controller.isNewsPollingActive, false);
+
+      await playbackStateController.close();
+      await mediaItemController.close();
       controller.dispose();
     });
   });
