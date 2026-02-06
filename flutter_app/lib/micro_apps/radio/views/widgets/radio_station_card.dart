@@ -105,10 +105,10 @@ class _RadioStationCardState extends State<RadioStationCard> {
     // Determine current image URL
     String currentImageUrl = widget.station.imageUrl;
     if (hasSlideshow) {
-      final safeIndex = (_currentImageIndex >= 0 &&
-              _currentImageIndex < images.length)
-          ? _currentImageIndex
-          : 0;
+      final safeIndex =
+          (_currentImageIndex >= 0 && _currentImageIndex < images.length)
+              ? _currentImageIndex
+              : 0;
       currentImageUrl = images[safeIndex];
     }
 
