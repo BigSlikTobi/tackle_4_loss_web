@@ -70,6 +70,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Failed to load full article content.';
 
   @override
+  String get breakingNewsUpdateTag => 'UPDATE';
+
+  @override
+  String get breakingNewsRelatedStories => 'Story Timeline';
+
+  @override
+  String get breakingNewsOriginalStory => 'Original Story';
+
+  @override
+  String get breakingNewsUpdateStory => 'Update';
+
+  @override
   String deepDiveChapter(int index) {
     return 'CHAPTER $index';
   }

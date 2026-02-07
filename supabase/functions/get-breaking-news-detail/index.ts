@@ -66,10 +66,13 @@ serve(async (req: Request) => {
       data.image_source ??
       (Array.isArray(data.article_images) ? data.article_images[0]?.source : data.article_images?.source)
 
+    const status = data.status as string | undefined
+
     // Build response object and strip undefined values
     const mappedData = stripUndefined({
       id: data.id,
       headline: data.headline,
+      status,
       created_at: createdAt,
       content: data.content,
       introduction,

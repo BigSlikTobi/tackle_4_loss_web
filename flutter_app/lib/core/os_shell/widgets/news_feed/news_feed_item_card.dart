@@ -7,6 +7,7 @@ import '../../../theme/t4l_theme.dart';
 import '../../../services/navigation_service.dart';
 import '../../../app_registry.dart';
 import '../../../services/team_logo_service.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 
 /// Individual news feed item with subtle ambient animations
 class NewsFeedItemCard extends StatefulWidget {
@@ -183,6 +184,42 @@ class _NewsFeedItemCardState extends State<NewsFeedItemCard>
                                 SizedBox(width: 4),
                                 Text(
                                   'YOUR TEAM',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                      // UPDATE badge for stories with status == 'update'
+                      if (widget.item.isUpdate)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.breakingNewsRed,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.update,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'UPDATE',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
