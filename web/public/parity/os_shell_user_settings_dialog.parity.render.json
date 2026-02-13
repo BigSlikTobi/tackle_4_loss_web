@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "v1",
+  "surfaceId": "os_shell/user_settings_dialog",
+  "states": [
+    "default",
+    "team_selected"
+  ],
+  "roots": [
+    {
+      "id": "settings_dialog_root",
+      "type": "container",
+      "component": "div",
+      "props": {
+        "shape": "dialog",
+        "borderRadius": 20,
+        "padding": 24
+      },
+      "children": [
+        {
+          "id": "close_action",
+          "type": "button",
+          "component": "button",
+          "props": {
+            "alignment": "end",
+            "role": "close_dialog"
+          },
+          "children": []
+        },
+        {
+          "id": "settings_sections",
+          "type": "column",
+          "component": "div",
+          "props": {
+            "sectionGap": 24,
+            "subsectionGap": 12
+          },
+          "children": [
+            {
+              "id": "appearance_section",
+              "type": "container",
+              "component": "div",
+              "props": {
+                "sectionTitle": "APPEARANCE",
+                "control": "dark_mode_switch",
+                "paddingX": 16,
+                "paddingY": 8,
+                "radius": 16
+              },
+              "children": []
+            },
+            {
+              "id": "language_section",
+              "type": "container",
+              "component": "div",
+              "props": {
+                "sectionTitle": "settingsLanguage",
+                "sectionTitleFontSize": 14,
+                "sectionTitleLetterSpacing": 1.2,
+                "optionPaddingX": 16,
+                "optionPaddingY": 12,
+                "optionRadius": 12,
+                "checkIconSize": 20
+              },
+              "children": []
+            },
+            {
+              "id": "team_section",
+              "type": "container",
+              "component": "div",
+              "props": {
+                "sectionTitle": "YOUR TEAM",
+                "cardPadding": 12,
+                "cardRadius": 16,
+                "logoWidth": 48,
+                "logoHeight": 48,
+                "logoPadding": 8,
+                "logoFallbackAsset": "assets/logos/nfl_logo.png",
+                "logoRadius": 12,
+                "rowGap": 16
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "settings_title",
+          "type": "text",
+          "component": "span",
+          "props": {
+            "role": "dialog_title",
+            "fontSize": 24,
+            "fontWeight": "bold"
+          },
+          "children": []
+        }
+      ]
+    }
+  ]
+}

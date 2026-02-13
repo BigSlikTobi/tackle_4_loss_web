@@ -113,8 +113,7 @@ function AppShell() {
         } else {
           setArticles(MOCK_SUPABASE_DATA.filter((article) => article.language_code === selectedLanguage));
         }
-      } catch (error) {
-        console.error('Failed to fetch deep dive articles:', error);
+      } catch {
         setArticles(MOCK_SUPABASE_DATA.filter((article) => article.language_code === selectedLanguage));
       } finally {
         setLoading(false);
@@ -139,8 +138,7 @@ function AppShell() {
       const fullArticle = data as SupabaseArticle;
       setSelectedArticle(parseArticle(fullArticle));
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error('Failed to fetch full article data:', error);
+    } catch {
       setSelectedArticle(parseArticle(rawArticle));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -159,8 +157,7 @@ function AppShell() {
       const fullArticle = data as SupabaseArticle;
       setSelectedArticle(parseArticle(fullArticle));
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
-      console.error('Failed to fetch article by ID:', error);
+    } catch {
       const fallback = filteredArticles.find((article) => article.id === articleId);
       if (fallback) {
         setSelectedArticle(parseArticle(fallback));

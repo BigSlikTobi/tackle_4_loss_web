@@ -1,0 +1,57 @@
+{
+  "generatedAt": "2026-02-13T21:47:59.684Z",
+  "surfaces": [
+    {
+      "surfaceId": "os_shell/floating_nav",
+      "file": "tooling/parity-engine/contracts/generated/os_shell_floating_nav.parity.json",
+      "renderPlan": "tooling/parity-engine/contracts/generated/rendered/os_shell_floating_nav.parity.render.json",
+      "scaffoldTs": "web/lib/parity/generated/os_shell_floating_nav.parity.scaffold.ts",
+      "scaffoldCss": "web/lib/parity/generated/os_shell_floating_nav.parity.scaffold.css",
+      "intentIds": [
+        "home_button",
+        "game_center_button",
+        "history_button",
+        "settings_button",
+        "center_team_button"
+      ],
+      "flutterSpecificWarnings": [
+        {
+          "id": "animation_controller",
+          "label": "AnimationController",
+          "flutterFile": "flutter_app/lib/core/os_shell/widgets/t4l_floating_nav_bar.dart",
+          "message": "AnimationController detected. Web parity may require manual animation logic or adapter overrides."
+        },
+        {
+          "id": "animated_builder",
+          "label": "AnimatedBuilder",
+          "flutterFile": "flutter_app/lib/core/os_shell/widgets/t4l_floating_nav_bar.dart",
+          "message": "AnimatedBuilder detected. Web parity may require manual animation wiring in React."
+        }
+      ],
+      "requiresManualAdapter": true
+    },
+    {
+      "surfaceId": "os_shell/header",
+      "file": "tooling/parity-engine/contracts/generated/os_shell_header.parity.json",
+      "renderPlan": "tooling/parity-engine/contracts/generated/rendered/os_shell_header.parity.render.json",
+      "scaffoldTs": "web/lib/parity/generated/os_shell_header.parity.scaffold.ts",
+      "scaffoldCss": "web/lib/parity/generated/os_shell_header.parity.scaffold.css",
+      "intentIds": [],
+      "flutterSpecificWarnings": [],
+      "requiresManualAdapter": false
+    },
+    {
+      "surfaceId": "os_shell/user_settings_dialog",
+      "file": "tooling/parity-engine/contracts/generated/os_shell_user_settings_dialog.parity.json",
+      "renderPlan": "tooling/parity-engine/contracts/generated/rendered/os_shell_user_settings_dialog.parity.render.json",
+      "scaffoldTs": "web/lib/parity/generated/os_shell_user_settings_dialog.parity.scaffold.ts",
+      "scaffoldCss": "web/lib/parity/generated/os_shell_user_settings_dialog.parity.scaffold.css",
+      "intentIds": [
+        "dark_mode_switch",
+        "close_dialog"
+      ],
+      "flutterSpecificWarnings": [],
+      "requiresManualAdapter": true
+    }
+  ]
+}

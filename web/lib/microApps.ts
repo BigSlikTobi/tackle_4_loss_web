@@ -204,7 +204,6 @@ export interface DailyPlayerResponse {
 async function invokeOrThrow<T>(fn: string, body?: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke(fn, body ? { body } : undefined);
   if (error) {
-    console.error(`Supabase function '${fn}' failed:`, error);
     throw error;
   }
   return data as T;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import BreakingNewsModal from '../BreakingNewsModal';
 import {
   DeepDiveFeedItemModel,
@@ -76,7 +76,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
     [items],
   );
 
-  const loadMore = useCallback(async () => {
+  const loadMore = async () => {
     if (loadingMore || loading || !hasMore) return;
     setLoadingMore(true);
     try {
@@ -88,7 +88,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
     } finally {
       setLoadingMore(false);
     }
-  }, [loadingMore, loading, hasMore, items.length, languageCode]);
+  };
 
   useEffect(() => {
     if (!sentinelRef.current || !hasMore) return;
@@ -103,7 +103,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMore, loadMore]);
+  }, [hasMore, loadingMore, loading, items.length, languageCode]);
 
   return (
     <section className="t4l-os-home">
@@ -206,7 +206,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
                         <div className="t4l-news-context-row">
                           {item.teams?.length ? (
                             <div className="t4l-news-team-stack">
-                              {item.teams.slice(0, 3).map((team: any, index) => (
+                              {item.teams.slice(0, 3).map((team, index) => (
                                 <span key={`${team.team_id || team.team_name || 'team'}-${index}`} className="t4l-news-team-dot">
                                   {team.logo_url ? (
                                     <img src={team.logo_url} alt={team.team_name || team.team_id || 'Team'} />
@@ -220,7 +220,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
 
                           {item.players?.length ? (
                             <div className="t4l-news-player-stack">
-                              {item.players.slice(0, 8).map((player: any, index) => (
+                              {item.players.slice(0, 8).map((player, index) => (
                                 <span key={`${player.player_id || 'player'}-${index}`} className="t4l-news-player-dot">
                                   {player.headshot_url ? <img src={player.headshot_url} alt="" /> : null}
                                 </span>
