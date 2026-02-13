@@ -180,7 +180,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
                 const isUpdate = item.status?.toLowerCase() === 'update';
                 const isTeamMatch =
                   normalize(currentTeam?.team_name) !== '' &&
-                  (item.teams ?? []).some((team: any) => normalize(team?.team_name) === normalize(currentTeam?.team_name));
+                  (item.teams ?? []).some((team) => normalize(team?.team_name) === normalize(currentTeam?.team_name));
 
                 return (
                   <React.Fragment key={item.id}>
@@ -206,7 +206,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
                         <div className="t4l-news-context-row">
                           {item.teams?.length ? (
                             <div className="t4l-news-team-stack">
-                              {item.teams.slice(0, 3).map((team: any, index) => (
+                              {item.teams.slice(0, 3).map((team, index) => (
                                 <span key={`${team.team_id || team.team_name || 'team'}-${index}`} className="t4l-news-team-dot">
                                   {team.logo_url ? (
                                     <img src={team.logo_url} alt={team.team_name || team.team_id || 'Team'} />
@@ -220,7 +220,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
 
                           {item.players?.length ? (
                             <div className="t4l-news-player-stack">
-                              {item.players.slice(0, 8).map((player: any, index) => (
+                              {item.players.slice(0, 8).map((player, index) => (
                                 <span key={`${player.player_id || 'player'}-${index}`} className="t4l-news-player-dot">
                                   {player.headshot_url ? <img src={player.headshot_url} alt="" /> : null}
                                 </span>

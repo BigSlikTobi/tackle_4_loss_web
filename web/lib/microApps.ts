@@ -262,14 +262,14 @@ export async function fetchRadioDeepDiveTracks(languageCode: string): Promise<Ra
 export async function fetchAllDeepDives(
   languageCode: string,
   opts?: { limit?: number; offset?: number },
-): Promise<{ data: any[]; count: number | null }> {
+): Promise<{ data: unknown[]; count: number | null }> {
   const payload = {
     language_code: languageCode,
     limit: opts?.limit ?? 25,
     offset: opts?.offset ?? 0,
   };
 
-  const response = await invokeOrThrow<{ data?: any[]; count?: number } | any[]>('get-all-deepdives', payload);
+  const response = await invokeOrThrow<{ data?: unknown[]; count?: number } | unknown[]>('get-all-deepdives', payload);
   if (Array.isArray(response)) {
     return { data: response, count: null };
   }
