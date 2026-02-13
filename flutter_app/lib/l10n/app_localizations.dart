@@ -218,6 +218,30 @@ abstract class AppLocalizations {
   /// **'Failed to load full article content.'**
   String get breakingNewsDetailLoadError;
 
+  /// No description provided for @breakingNewsUpdateTag.
+  ///
+  /// In en, this message translates to:
+  /// **'UPDATE'**
+  String get breakingNewsUpdateTag;
+
+  /// No description provided for @breakingNewsRelatedStories.
+  ///
+  /// In en, this message translates to:
+  /// **'Story Timeline'**
+  String get breakingNewsRelatedStories;
+
+  /// No description provided for @breakingNewsOriginalStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Original Story'**
+  String get breakingNewsOriginalStory;
+
+  /// No description provided for @breakingNewsUpdateStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get breakingNewsUpdateStory;
+
   /// No description provided for @deepDiveChapter.
   ///
   /// In en, this message translates to:

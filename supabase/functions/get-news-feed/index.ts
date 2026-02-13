@@ -29,7 +29,7 @@ serve(async (req) => {
         let newsQuery = supabaseClient
             .schema('content')
             .from('news_updates')
-            .select('id, created_at, x_post, image_file, url, headline, players, teams')
+            .select('id, created_at, x_post, image_file, url, headline, players, teams, status')
             .order('created_at', { ascending: false })
             .limit(fetchCount)
 
@@ -61,8 +61,50 @@ serve(async (req) => {
         const newsData = newsResult.data ?? []
         const deepDiveData = deepDiveResult.data ?? []
 
+        // --- Filter out older stories from the same story group ---
+        // Only show the latest story per group; older related stories
+        // are accessible via the detail screen's "Related Stories" section.
+        const newsIds = newsData.map((item: any) => item.id as string)
+        let filteredNewsData = newsData as any[]
+
+        if (newsIds.length > 0) {
+            const { data: groupData } = await supabaseClient
+                .from("news_update_story_groups")
+                .select("news_update_id, group_id")
+                .in("news_update_id", newsIds)
+
+            if (groupData && groupData.length > 0) {
+                const groupMap = new Map<string, string[]>()
+                for (const row of groupData) {
+                    const existing = groupMap.get(row.group_id) ?? []
+                    existing.push(row.news_update_id)
+                    groupMap.set(row.group_id, existing)
+                }
+
+                const idsToRemove = new Set<string>()
+                for (const [, memberIds] of groupMap) {
+                    if (memberIds.length <= 1) continue
+                    // newsData is sorted desc by created_at, first match = newest
+                    let foundNewest = false
+                    for (const item of newsData) {
+                        if (memberIds.includes(item.id)) {
+                            if (!foundNewest) {
+                                foundNewest = true
+                            } else {
+                                idsToRemove.add(item.id)
+                            }
+                        }
+                    }
+                }
+
+                filteredNewsData = newsData.filter(
+                    (item: any) => !idsToRemove.has(item.id)
+                )
+            }
+        }
+
         // Get unique URLs to fetch sources from news_urls table (public schema)
-        const urls = [...new Set(newsData.map((item: any) => item.url).filter(Boolean))]
+        const urls = [...new Set(filteredNewsData.map((item: any) => item.url).filter(Boolean))]
 
         let urlSourceMap = new Map<string, string>()
         if (urls.length > 0) {
@@ -78,7 +120,7 @@ serve(async (req) => {
 
         // Extract all player IDs to fetch headshots in one go
         const playerIds = new Set<string>()
-        newsData.forEach((item: any) => {
+        filteredNewsData.forEach((item: any) => {
             if (item.players && Array.isArray(item.players)) {
                 item.players.forEach((p: any) => {
                     if (p.player_id) playerIds.add(p.player_id)
@@ -100,7 +142,7 @@ serve(async (req) => {
         }
 
         // Map news items with type discriminator
-        const mappedNewsData = newsData.map((item: any) => {
+        const mappedNewsData = filteredNewsData.map((item: any) => {
             const playersArray = Array.isArray(item.players) ? item.players : []
             const enrichedPlayers = playersArray.map((p: any) => {
                 const details = playersMap.get(p.player_id)
@@ -121,6 +163,7 @@ serve(async (req) => {
                 xPost: item.x_post,
                 imageUrl: imageUrl,
                 source: urlSourceMap.get(item.url) || null,
+                status: item.status || null,
                 createdAt: item.created_at,
                 headline: item.headline,
                 players: enrichedPlayers,

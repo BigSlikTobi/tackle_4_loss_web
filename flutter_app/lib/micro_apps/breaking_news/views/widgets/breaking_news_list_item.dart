@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../../../core/services/team_logo_service.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../models/breaking_news_article.dart';
 
 class BreakingNewsListItem extends StatelessWidget {
@@ -32,25 +33,58 @@ class BreakingNewsListItem extends StatelessWidget {
             // Thumbnail Image
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Container(
+              child: SizedBox(
                 width: 90,
                 height: 90,
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: article.imageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: article.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) => Icon(
-                          Icons.broken_image,
-                          color: colors.textSecondary.withValues(alpha: 0.3),
-                          size: 32,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: article.imageUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: article.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => Icon(
+                                Icons.broken_image,
+                                color:
+                                    colors.textSecondary.withValues(alpha: 0.3),
+                                size: 32,
+                              ),
+                            )
+                          : Icon(
+                              Icons.newspaper,
+                              color:
+                                  colors.textSecondary.withValues(alpha: 0.3),
+                              size: 32,
+                            ),
+                    ),
+                    // UPDATE tag overlay
+                    if (article.isUpdate)
+                      Positioned(
+                        top: 4,
+                        left: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.breakingNewsRed,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: const Text(
+                            'UPDATE',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
-                      )
-                    : Icon(
-                        Icons.newspaper,
-                        color: colors.textSecondary.withValues(alpha: 0.3),
-                        size: 32,
                       ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 16),

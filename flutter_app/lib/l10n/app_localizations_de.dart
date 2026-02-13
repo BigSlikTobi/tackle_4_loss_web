@@ -70,6 +70,18 @@ class AppLocalizationsDe extends AppLocalizations {
       'Vollstandiger Artikel konnte nicht geladen werden.';
 
   @override
+  String get breakingNewsUpdateTag => 'UPDATE';
+
+  @override
+  String get breakingNewsRelatedStories => 'Story-Verlauf';
+
+  @override
+  String get breakingNewsOriginalStory => 'Ursprüngliche Meldung';
+
+  @override
+  String get breakingNewsUpdateStory => 'Aktualisierung';
+
+  @override
   String deepDiveChapter(int index) {
     return 'KAPITEL $index';
   }

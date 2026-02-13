@@ -122,6 +122,7 @@ class NewsFeedController extends ChangeNotifier {
       source:
           null, // Not available in realtime payload, will be enriched on refresh
       headline: record['headline'] as String?,
+      status: record['status'] as String?,
       players: record['players'] as List<dynamic>?,
       teams: record['teams'] as List<dynamic>?,
       createdAt: DateTime.parse(createdAt),

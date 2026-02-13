@@ -32,4 +32,30 @@ class BreakingNewsService {
       throw Exception('Failed to load breaking news detail: $e');
     }
   }
+
+  /// Fetches stories related to [newsUpdateId] via story groups.
+  ///
+  /// Returns an empty list when the story has no group membership or
+  /// if the request fails.
+  Future<List<RelatedStory>> fetchRelatedStories(
+    String newsUpdateId, {
+    String? languageCode,
+  }) async {
+    try {
+      final body = <String, dynamic>{'news_update_id': newsUpdateId};
+      if (languageCode != null) body['language_code'] = languageCode;
+
+      final response = await _supabase.functions.invoke(
+        'get-related-stories',
+        body: body,
+      );
+
+      final List<dynamic> data = response.data ?? [];
+      return data
+          .map((json) => RelatedStory.fromJson(Map<String, dynamic>.from(json)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
 }

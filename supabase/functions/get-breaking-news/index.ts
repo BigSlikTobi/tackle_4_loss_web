@@ -56,9 +56,55 @@ serve(async (req) => {
 
         if (error) throw error
 
+        // --- Filter out older stories from the same story group ---
+        // Only show the latest story per group; older related stories
+        // are accessible via the detail screen's "Related Stories" section.
+        const articleIds = data.map((item: Record<string, unknown>) => item.id as string)
+
+        let filteredData = data as Record<string, unknown>[]
+        if (articleIds.length > 0) {
+            const { data: groupData } = await supabaseClient
+                .from("news_update_story_groups")
+                .select("news_update_id, group_id")
+                .in("news_update_id", articleIds)
+
+            if (groupData && groupData.length > 0) {
+                // Build a map: group_id -> list of news_update_ids in this batch
+                const groupMap = new Map<string, string[]>()
+                for (const row of groupData) {
+                    const existing = groupMap.get(row.group_id) ?? []
+                    existing.push(row.news_update_id)
+                    groupMap.set(row.group_id, existing)
+                }
+
+                // For each group, find the newest article (first in our desc-sorted list)
+                // and mark the rest for removal
+                const idsToRemove = new Set<string>()
+
+                for (const [, memberIds] of groupMap) {
+                    if (memberIds.length <= 1) continue
+                    // data is already sorted desc by created_at, so first match = newest
+                    let foundNewest = false
+                    for (const item of data as Record<string, unknown>[]) {
+                        if (memberIds.includes(item.id as string)) {
+                            if (!foundNewest) {
+                                foundNewest = true // keep this one
+                            } else {
+                                idsToRemove.add(item.id as string)
+                            }
+                        }
+                    }
+                }
+
+                filteredData = data.filter(
+                    (item: Record<string, unknown>) => !idsToRemove.has(item.id as string)
+                )
+            }
+        }
+
         // Extract all player IDs to fetch headshots in one go
         const playerIds = new Set<string>()
-        data.forEach((item: Record<string, unknown>) => {
+        filteredData.forEach((item: Record<string, unknown>) => {
             const players = item.players as PlayerData[] | undefined
             if (players && Array.isArray(players)) {
                 players.forEach((p: PlayerData) => {
@@ -82,7 +128,7 @@ serve(async (req) => {
             }
         }
 
-        const mappedData = data.map((item: Record<string, unknown>) => {
+        const mappedData = filteredData.map((item: Record<string, unknown>) => {
             const imageRaw =
                 (item.image_url as string | undefined) ??
                 (item.image_file as string | undefined) ??
@@ -117,6 +163,7 @@ serve(async (req) => {
             return stripUndefined({
                 id: item.id as string,
                 headline: item.headline as string,
+                status: item.status as string | undefined,
                 created_at: createdAt,
                 image_url: imageUrl,
                 x_post: xPost,

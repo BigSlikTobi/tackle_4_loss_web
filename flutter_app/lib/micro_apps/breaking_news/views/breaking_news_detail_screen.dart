@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/breaking_news_article.dart';
 import '../services/breaking_news_service.dart';
+import 'widgets/related_stories_section.dart';
 
 class BreakingNewsDetailScreen extends StatefulWidget {
   final BreakingNewsArticle summary;
@@ -27,11 +28,26 @@ class BreakingNewsDetailScreen extends StatefulWidget {
 class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
   final _service = BreakingNewsService();
   late Future<BreakingNewsArticle> _detailFuture;
+  late Future<List<RelatedStory>> _relatedFuture;
 
   @override
   void initState() {
     super.initState();
     _detailFuture = _service.fetchBreakingNewsDetail(widget.summary.id);
+    // language_code will be set in didChangeDependencies when context is available
+    _relatedFuture = Future.value([]);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final languageCode = Provider.of<SettingsService>(context, listen: false)
+        .locale
+        .languageCode;
+    _relatedFuture = _service.fetchRelatedStories(
+      widget.summary.id,
+      languageCode: languageCode,
+    );
   }
 
   @override
@@ -96,6 +112,30 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                         ),
                       ),
                     ),
+
+                    // UPDATE badge (bottom-right of hero image)
+                    if (article.isUpdate)
+                      Positioned(
+                        bottom: 12,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppColors.breakingNewsRed,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            AppLocalizations.of(context)!.breakingNewsUpdateTag,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -347,6 +387,32 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                                 height: 1.6,
                               ),
                             ),
+
+                          const SizedBox(height: 32),
+
+                          // Related Stories (Story Timeline)
+                          FutureBuilder<List<RelatedStory>>(
+                            future: _relatedFuture,
+                            builder: (context, relatedSnapshot) {
+                              final related = relatedSnapshot.data ?? [];
+                              if (related.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return RelatedStoriesSection(
+                                relatedStories: related,
+                                currentArticle: fullArticle,
+                                onStoryTap: (story) {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => BreakingNewsDetailScreen(
+                                        summary: story.toArticle(),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
 
                           const SizedBox(height: 40),
                         ],

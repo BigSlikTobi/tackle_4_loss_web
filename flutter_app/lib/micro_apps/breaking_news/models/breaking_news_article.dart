@@ -35,9 +35,69 @@ class PlayerReference {
   }
 }
 
+/// Lightweight model for related stories shown in the detail screen.
+class RelatedStory {
+  final String id;
+  final String headline;
+  final String? status;
+  final String? imageUrl;
+  final DateTime createdAt;
+  final String? subHeader;
+  final String? introductionParagraph;
+  final List<TeamReference>? teams;
+  final String? sourceUrl;
+
+  RelatedStory({
+    required this.id,
+    required this.headline,
+    this.status,
+    this.imageUrl,
+    required this.createdAt,
+    this.subHeader,
+    this.introductionParagraph,
+    this.teams,
+    this.sourceUrl,
+  });
+
+  factory RelatedStory.fromJson(Map<String, dynamic> json) {
+    return RelatedStory(
+      id: json['id'].toString(),
+      headline: json['headline'] as String,
+      status: json['status'] as String?,
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
+      createdAt: DateTime.parse(
+        (json['createdAt'] ?? json['created_at']) as String,
+      ),
+      subHeader: json['subHeader'] as String?,
+      introductionParagraph: json['introductionParagraph'] as String?,
+      teams: (json['teams'] as List<dynamic>?)
+          ?.whereType<Map>()
+          .map((e) => TeamReference.fromJson(Map<String, dynamic>.from(e)))
+          .toList(),
+      sourceUrl: (json['source_url'] ?? json['sourceUrl']) as String?,
+    );
+  }
+
+  /// Convert a RelatedStory to a BreakingNewsArticle for navigation.
+  BreakingNewsArticle toArticle() {
+    return BreakingNewsArticle(
+      id: id,
+      headline: headline,
+      status: status,
+      imageUrl: imageUrl,
+      createdAt: createdAt,
+      subHeader: subHeader,
+      introductionParagraph: introductionParagraph,
+      teams: teams,
+      sourceUrl: sourceUrl,
+    );
+  }
+}
+
 class BreakingNewsArticle {
   final String id;
   final String headline;
+  final String? status;
   final String? subHeader;
   final String? introductionParagraph;
   final String? content;
@@ -53,6 +113,7 @@ class BreakingNewsArticle {
   BreakingNewsArticle({
     required this.id,
     required this.headline,
+    this.status,
     this.subHeader,
     this.introductionParagraph,
     this.content,
@@ -89,10 +150,14 @@ class BreakingNewsArticle {
   // Internal storage for source name from API
   final String? _sourceName;
 
+  /// Whether this story is an update to a previous story.
+  bool get isUpdate => status?.toLowerCase() == 'update';
+
   factory BreakingNewsArticle.fromJson(Map<String, dynamic> json) {
     return BreakingNewsArticle(
       id: json['id'].toString(), // Safely handle int or String Ids
       headline: json['headline'] as String,
+      status: json['status'] as String?,
       subHeader: json['subHeader'] as String?,
       introductionParagraph: json['introductionParagraph'] as String?,
       content: json['content'] as String?,

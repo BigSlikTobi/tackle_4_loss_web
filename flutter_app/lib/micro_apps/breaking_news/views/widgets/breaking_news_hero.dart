@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../../../core/services/team_logo_service.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../models/breaking_news_article.dart';
 
 class BreakingNewsHero extends StatelessWidget {
@@ -82,10 +83,14 @@ class BreakingNewsHero extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Meta Row (Breaking Tag + Time)
+                  // Top Meta Row (Breaking Tag + Update Tag + Time)
                   Row(
                     children: [
                       _buildBreakingTag(colors),
+                      if (article.isUpdate) ...[
+                        const SizedBox(width: 6),
+                        _buildUpdateTag(),
+                      ],
                       const SizedBox(width: 8),
                       Text(
                         _formatTime(article.createdAt),
@@ -216,6 +221,32 @@ class BreakingNewsHero extends StatelessWidget {
           SizedBox(width: 4),
           Text(
             'BREAKING',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpdateTag() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.breakingNewsRed.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.update, color: Colors.white, size: 10),
+          SizedBox(width: 4),
+          Text(
+            'UPDATE',
             style: TextStyle(
               color: Colors.white,
               fontSize: 10,

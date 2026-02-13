@@ -41,8 +41,12 @@ class NewsFeedItem extends FeedItem {
   final String? imageUrl;
   final String? source;
   final String? headline;
+  final String? status;
   final List<dynamic>? players; // List of player objects with headshot_url
   final List<dynamic>? teams; // List of team objects with team_id
+
+  /// Whether this story is an update to a previous story.
+  bool get isUpdate => status?.toLowerCase() == 'update';
 
   NewsFeedItem({
     required super.id,
@@ -50,6 +54,7 @@ class NewsFeedItem extends FeedItem {
     this.imageUrl,
     this.source,
     this.headline,
+    this.status,
     this.players,
     this.teams,
     required super.createdAt,
@@ -62,6 +67,7 @@ class NewsFeedItem extends FeedItem {
       imageUrl: json['imageUrl'] as String?,
       source: json['source'] as String?,
       headline: json['headline'] as String?,
+      status: json['status'] as String?,
       players: json['players'] as List<dynamic>?,
       teams: json['teams'] as List<dynamic>?,
       createdAt: DateTime.parse(json['createdAt'] as String),
