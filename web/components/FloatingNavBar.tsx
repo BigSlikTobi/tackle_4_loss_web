@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import TeamSelector from './TeamSelector';
 import { Team } from '../types';
+import { DEFAULT_FLOATING_NAV_LAYOUT, loadFloatingNavLayout } from '../lib/parity/floatingNavParityAdapter';
 
 interface FloatingNavBarProps {
   onHome: () => void;
@@ -24,6 +25,7 @@ export default function FloatingNavBar({
 }: FloatingNavBarProps) {
   const [favoriteTeam, setFavoriteTeam] = useState<Team | null>(null);
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+  const [layout, setLayout] = useState(DEFAULT_FLOATING_NAV_LAYOUT);
 
   useEffect(() => {
     const hydrateTeam = () => {
@@ -50,6 +52,14 @@ export default function FloatingNavBar({
     };
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    loadFloatingNavLayout(controller.signal).then((nextLayout) => {
+      setLayout(nextLayout);
+    });
+    return () => controller.abort();
+  }, []);
+
   const handleTeamSelect = (team: Team) => {
     setFavoriteTeam(team);
     localStorage.setItem('favorite_team', JSON.stringify(team));
@@ -59,7 +69,25 @@ export default function FloatingNavBar({
 
   return (
     <>
-      <nav className="t4l-dock" aria-label="Primary">
+      <nav
+        className="t4l-dock"
+        aria-label="Primary"
+        style={
+          {
+            '--t4l-dock-height': `${layout.navHeight}px`,
+            '--t4l-dock-margin-x': `${layout.navMarginX}px`,
+            '--t4l-dock-margin-y': `${layout.navMarginY}px`,
+            '--t4l-dock-btn-size': `${layout.navButtonSize}px`,
+            '--t4l-dock-icon-size': `${layout.navIconSize}px`,
+            '--t4l-dock-center-spacer-width': `${layout.centerSpacerWidth}px`,
+            '--t4l-dock-team-top': `${layout.centerButtonTop}px`,
+            '--t4l-dock-team-width': `${layout.centerButtonWidth}px`,
+            '--t4l-dock-team-height': `${layout.centerButtonHeight}px`,
+            '--t4l-dock-team-padding': `${layout.centerButtonPadding}px`,
+            '--t4l-dock-team-border-width': `${layout.centerButtonBorderWidth}px`,
+          } as React.CSSProperties
+        }
+      >
         <button type="button" className="t4l-dock-button" onClick={onHome} title={NAV_ITEMS[0].label}>
           <img src={NAV_ITEMS[0].icon} alt="" aria-hidden="true" />
         </button>

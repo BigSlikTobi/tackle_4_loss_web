@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "v1",
+  "surfaceId": "os_shell/floating_nav",
+  "states": [
+    "default",
+    "team_selected"
+  ],
+  "roots": [
+    {
+      "id": "floating_nav_root",
+      "type": "container",
+      "component": "div",
+      "props": {
+        "height": 64,
+        "marginX": 24,
+        "marginY": 24
+      },
+      "children": [
+        {
+          "id": "center_team_button",
+          "type": "button",
+          "component": "button",
+          "props": {
+            "topOffset": -24,
+            "width": 64,
+            "height": 64,
+            "padding": 4,
+            "borderWidth": 3,
+            "pulsingWhenUnset": true
+          },
+          "children": [
+            {
+              "id": "center_team_logo",
+              "type": "image",
+              "component": "img",
+              "props": {
+                "fallbackAsset": "assets/logos/nfl_logo.png",
+                "fit": "contain"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "dock_background",
+          "type": "container",
+          "component": "div",
+          "props": {
+            "radius": 20,
+            "blurSigmaX": 20,
+            "blurSigmaY": 20,
+            "glassMorphism": true
+          },
+          "children": []
+        },
+        {
+          "id": "nav_actions_row",
+          "type": "row",
+          "component": "div",
+          "props": {
+            "mainAxisAlignment": "spaceAround"
+          },
+          "children": [
+            {
+              "id": "center_spacer",
+              "type": "spacer",
+              "component": "div",
+              "props": {
+                "width": 60
+              },
+              "children": []
+            },
+            {
+              "id": "game_center_button",
+              "type": "button",
+              "component": "button",
+              "props": {
+                "iconAsset": "assets/icons/schedule.svg",
+                "size": 48,
+                "iconSize": 24,
+                "badgeSupported": true
+              },
+              "children": []
+            },
+            {
+              "id": "history_button",
+              "type": "button",
+              "component": "button",
+              "props": {
+                "iconAsset": "assets/icons/back.svg",
+                "size": 48,
+                "iconSize": 24
+              },
+              "children": []
+            },
+            {
+              "id": "home_button",
+              "type": "button",
+              "component": "button",
+              "props": {
+                "iconAsset": "assets/icons/home.svg",
+                "size": 48,
+                "iconSize": 24
+              },
+              "children": []
+            },
+            {
+              "id": "settings_button",
+              "type": "button",
+              "component": "button",
+              "props": {
+                "iconAsset": "assets/icons/settings.svg",
+                "size": 48,
+                "iconSize": 24
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
