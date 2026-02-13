@@ -35,7 +35,7 @@ type ShellView =
   | 'game_reports'
   | 'player_wordle';
 
-const RADIO_STREAM_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+const RADIO_STREAM_URL =\n  (typeof process !== 'undefined' &&\n    process.env &&\n    (process.env.REACT_APP_T4L_RADIO_STREAM_URL ||\n      process.env.NEXT_PUBLIC_T4L_RADIO_STREAM_URL ||\n      process.env.VITE_T4L_RADIO_STREAM_URL)) ||\n  'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
 function parseArticle(supabaseArticle: SupabaseArticle): Article {
   const sections: ArticleSection[] = Object.entries(supabaseArticle.sections || {})
