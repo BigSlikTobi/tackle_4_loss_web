@@ -1,44 +1,59 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import TransparentHeader from './components/TransparentHeader';
 import Hero from './components/Hero';
 import ArticleViewer from './components/ArticleViewer';
 import ArticleFeed from './components/ArticleFeed';
-import { MOCK_SUPABASE_DATA } from './constants';
-import { Article, ArticleSection, SupabaseArticle } from './types';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { supabase } from './lib/supabase';
-import { AudioProvider } from './context/AudioContext';
 import BreakingNewsOverviewModal from './components/BreakingNewsOverviewModal';
-import { useBreakingNews } from './hooks/useBreakingNews';
 import FloatingNavBar from './components/FloatingNavBar';
-import { useTeamTheme } from './hooks/useTeamTheme';
-import OSAppGrid from './components/OSAppGrid';
+import AppStrip from './components/AppStrip';
 import AppStore from './components/AppStore';
 import Settings from './components/Settings';
-import { designTokens } from './design-tokens';
+import MiniPlayerBar from './components/MiniPlayerBar';
+import BreakingNewsApp from './components/apps/BreakingNewsApp';
+import RadioApp from './components/apps/RadioApp';
+import StandingsApp from './components/apps/StandingsApp';
+import GameReportsApp from './components/apps/GameReportsApp';
+import PlayerWordleApp from './components/apps/PlayerWordleApp';
+import OSShellHome from './components/apps/OSShellHome';
+import { MOCK_SUPABASE_DATA } from './constants';
+import { Article, ArticleSection, SupabaseArticle } from './types';
+import { supabase } from './lib/supabase';
+import { AudioProvider, useAudio } from './context/AudioContext';
+import { useBreakingNews } from './hooks/useBreakingNews';
+import { HOME_STRIP_DEFAULT_APPS, ShellAppId } from './constants/apps';
+import { fetchAllDeepDives } from './lib/microApps';
 
-// --- Helper: Parse Supabase Section Format ---
+type ShellView =
+  | 'home'
+  | 'deep_dive'
+  | 'app_store'
+  | 'settings'
+  | 'breaking_news'
+  | 'radio'
+  | 'standings'
+  | 'game_reports'
+  | 'player_wordle';
+
+const RADIO_STREAM_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+
 function parseArticle(supabaseArticle: SupabaseArticle): Article {
   const sections: ArticleSection[] = Object.entries(supabaseArticle.sections || {})
     .sort(([keyA], [keyB]) => keyA.localeCompare(keyB, undefined, { numeric: true }))
     .map(([key, rawText]) => {
-      // Raw text format: "## Headline\n### Subheader\n\nContent..."
       const lines = rawText.split('\n');
-
-      // 1. Extract Headline (Starts with ## )
-      const headlineLine = lines.find(line => line.startsWith('## '));
+      const headlineLine = lines.find((line) => line.startsWith('## '));
       const headline = headlineLine ? headlineLine.replace('## ', '').trim() : 'Section';
 
-      // 2. Extract Content (Everything else, remove ### lines if preferred, or clean them)
       const content = lines
-        .filter(line => !line.startsWith('## ')) // Remove headline line
-        .map(line => line.startsWith('### ') ? line.replace('### ', '').trim() : line) // Clean subheaders to just text
-        .filter(line => line.trim().length > 0); // Remove empty lines
+        .filter((line) => !line.startsWith('## '))
+        .map((line) => (line.startsWith('### ') ? line.replace('### ', '').trim() : line))
+        .filter((line) => line.trim().length > 0);
 
       return {
         id: key,
         headline,
-        content
+        content,
       };
     });
 
@@ -47,18 +62,23 @@ function parseArticle(supabaseArticle: SupabaseArticle): Article {
     title: supabaseArticle.title,
     subtitle: supabaseArticle.subtitle,
     author: supabaseArticle.author,
-    date: new Date(supabaseArticle.published_at).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }),
+    date: new Date(supabaseArticle.published_at).toLocaleDateString('de-DE', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }),
     heroImage: supabaseArticle.hero_image_url,
     languageCode: supabaseArticle.language_code,
     audioFile: supabaseArticle.audio_file,
     videoFile: supabaseArticle.video_file,
-    sections
+    sections,
   };
 }
 
-export default function App() {
+function AppShell() {
   const [articles, setArticles] = useState<SupabaseArticle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<'de' | 'en'>(() => {
     if (typeof window !== 'undefined' && navigator.language) {
       return navigator.language.startsWith('de') ? 'de' : 'en';
@@ -66,241 +86,295 @@ export default function App() {
     return 'de';
   });
 
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-
-  // Initialize Team Theme
-  useTeamTheme();
-
-  // Breaking News Logic
-  const { news: breakingNews, hasUnread: hasBreakingNewsUnread, markAsRead: markBreakingNewsRead } = useBreakingNews(selectedLanguage);
+  const [view, setView] = useState<ShellView>('home');
+  const [lastAppId, setLastAppId] = useState<ShellAppId>('deep_dive');
+  const [installedApps, setInstalledApps] = useState<ShellAppId[]>([...HOME_STRIP_DEFAULT_APPS]);
   const [isBreakingNewsOpen, setIsBreakingNewsOpen] = useState(false);
+
+  const { play } = useAudio();
+  const { news: breakingNews, markAsRead: markBreakingNewsRead } = useBreakingNews(selectedLanguage);
 
   useEffect(() => {
     const fetchArticles = async () => {
-      setLoading(true); // Ensure loading state is true when refetching
+      setLoading(true);
       try {
-        const { data, error } = await supabase.functions.invoke('get-latest-deepdive', {
-          body: { language_code: selectedLanguage }
+        const deepDives = await fetchAllDeepDives(selectedLanguage, {
+          limit: 25,
+          offset: 0,
         });
-
-        if (error) {
-          console.error('Supabase function error:', error);
-          throw error;
+        if (deepDives.data.length > 0) {
+          setArticles(deepDives.data as SupabaseArticle[]);
+        } else {
+          setArticles(MOCK_SUPABASE_DATA.filter((article) => article.language_code === selectedLanguage));
         }
-
-        if (data) {
-          setArticles([data] as SupabaseArticle[]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch articles:', error);
-        setArticles(MOCK_SUPABASE_DATA);
+      } catch {
+        setArticles(MOCK_SUPABASE_DATA.filter((article) => article.language_code === selectedLanguage));
       } finally {
         setLoading(false);
       }
     };
 
     fetchArticles();
-  }, [selectedLanguage]); // Add selectedLanguage dependency
+  }, [selectedLanguage]);
 
-  const [view, setView] = useState<'home' | 'app_store' | 'settings'>('home');
-  const [lastAppId, setLastAppId] = useState<string>('deep_dives'); // Default to Deep Dives
-
-  // No longer need client-side filtering since we filter on the server
-  const filteredArticles = articles;
+  const filteredArticles = useMemo(() => articles, [articles]);
 
   const handleSelectArticle = async (rawArticle: SupabaseArticle) => {
     try {
-      // Fetch full details including sections
       const { data, error } = await supabase.functions.invoke('get-article-viewer-data', {
-        body: { article_id: rawArticle.id }
+        body: { article_id: rawArticle.id },
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const fullArticle = data as SupabaseArticle;
-      const parsed = parseArticle(fullArticle);
-      setSelectedArticle(parsed);
+      setSelectedArticle(parseArticle(fullArticle));
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-      console.error("Error fetching article details", e);
+    } catch {
+      setSelectedArticle(parseArticle(rawArticle));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
-  const handleBackToFeed = () => {
-    setSelectedArticle(null);
+  const handleSelectArticleById = async (articleId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-article-viewer-data', {
+        body: { article_id: articleId },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const fullArticle = data as SupabaseArticle;
+      setSelectedArticle(parseArticle(fullArticle));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch {
+      const fallback = filteredArticles.find((article) => article.id === articleId);
+      if (fallback) {
+        setSelectedArticle(parseArticle(fallback));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
   };
 
-  // Navigation Handlers
-  const goHome = () => {
-    setSelectedArticle(null);
-    setView('home');
-  };
+  const openApp = (appId: ShellAppId) => {
+    if (appId !== 'deep_dive' && !installedApps.includes(appId)) {
+      setView('app_store');
+      return;
+    }
 
-  const goAppStore = () => {
-    setSelectedArticle(null);
-    setView('app_store');
-  };
-
-  const goSettings = () => {
-    setSelectedArticle(null);
-    setView('settings');
-  };
-
-  const customOpenApp = (appId: string) => {
     setLastAppId(appId);
-    if (appId === 'breaking_news') {
-      setIsBreakingNewsOpen(true);
-      markBreakingNewsRead();
-      // Stay on current view or go Home? Let's stay.
-    } else if (appId === 'radio') {
-      // Logic to play radio? For now just log or basic alert
-      // Or maybe just ensure audio context is active.
-      // But we don't have a specific radio screen yet, so just go Home and play?
-      // The prompt says "when selecting the last apps, the last app the user had open opens."
-      // If it's radio, maybe it just plays.
-      goHome(); // Radio is usually overlay/background.
-    } else if (appId === 'deep_dives') {
-      goHome(); // Deep dives is basically the home screen hero + list
+    setSelectedArticle(null);
+
+    switch (appId) {
+      case 'deep_dive':
+        setView('deep_dive');
+        return;
+      case 'breaking_news':
+        setView('breaking_news');
+        markBreakingNewsRead();
+        return;
+      case 'radio':
+        setView('radio');
+        play(RADIO_STREAM_URL, 'T4L Radio');
+        return;
+      case 'standings':
+        setView('standings');
+        return;
+      case 'game_reports':
+        setView('game_reports');
+        return;
+      case 'player_wordle':
+        setView('player_wordle');
+        return;
     }
   };
 
   const goHistory = () => {
-    customOpenApp(lastAppId);
+    if (lastAppId !== 'deep_dive' && !installedApps.includes(lastAppId)) {
+      setView('app_store');
+      return;
+    }
+    openApp(lastAppId);
   };
 
-  // App Installation State
-  const [installedApps, setInstalledApps] = useState<string[]>(['deep_dives', 'breaking_news', 'radio']);
-
-  const toggleInstallApp = (appId: string) => {
-    setInstalledApps(prev => {
+  const toggleInstallApp = (appId: ShellAppId) => {
+    setInstalledApps((prev) => {
       if (prev.includes(appId)) {
-        return prev.filter(id => id !== appId);
-      } else {
-        return [...prev, appId];
+        const nextApps = prev.filter((id) => id !== appId);
+        if (nextApps.length === 0) {
+          return ['deep_dive'];
+        }
+        return nextApps;
       }
+      return [...prev, appId];
     });
   };
 
+  const headerTitle = selectedArticle
+    ? selectedArticle.title
+    : view === 'app_store'
+    ? 'App Hub'
+    : view === 'settings'
+    ? 'Settings'
+    : view === 'deep_dive'
+    ? 'Deep Dive'
+    : view === 'breaking_news'
+    ? 'Breaking News'
+    : view === 'radio'
+    ? 'Radio'
+    : view === 'standings'
+    ? 'Standings'
+    : view === 'game_reports'
+    ? 'Game Reports'
+    : view === 'player_wordle'
+    ? 'Player Wordle'
+    : undefined;
 
   return (
-    <AudioProvider>
-      <div
-        className="min-h-screen flex flex-col transition-colors duration-500 ease-in-out"
-        style={{ backgroundColor: 'var(--app-bg)' }}
-      >
-        <TransparentHeader />
+    <div className="t4l-shell">
+      <TransparentHeader
+        title={headerTitle}
+      />
 
-        {/* Watermark - Focused on lower area */}
-        <div
-          className="fixed bottom-0 left-0 right-0 h-[60vh] pointer-events-none z-0 bg-no-repeat bg-center bg-contain opacity-40 transition-all duration-1000 transform translate-y-12"
-          style={{ backgroundImage: 'var(--team-logo-url)' }}
-        />
+      <BreakingNewsOverviewModal
+        isOpen={isBreakingNewsOpen}
+        onClose={() => setIsBreakingNewsOpen(false)}
+        news={breakingNews}
+        languageCode={selectedLanguage}
+      />
 
-        <BreakingNewsOverviewModal
-          isOpen={isBreakingNewsOpen}
-          onClose={() => setIsBreakingNewsOpen(false)}
-          news={breakingNews}
-          languageCode={selectedLanguage}
-        />
-
-        {/* Route Content */}
-        {/* 1. Article Viewer (Highest Priority if selected) */}
+      <main className="t4l-main">
         {selectedArticle ? (
-          <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 z-10">
-            <button
-              onClick={handleBackToFeed}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-zinc-600 hover:text-zinc-900 haptic-light px-2 py-1 rounded-md border border-transparent mt-20"
-            >
-              <ArrowLeft size={14} /> Back
+          <section className="t4l-page t4l-page-article">
+            <button type="button" className="t4l-back-button" onClick={() => setSelectedArticle(null)}>
+              <ArrowLeft size={15} /> Back
             </button>
-            <div className="mt-4">
-              <ArticleViewer
-                article={selectedArticle}
-                nextArticle={(() => {
-                  const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-                  if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) return null;
-                  const next = filteredArticles[currentIndex + 1];
-                  return { id: next.id, headline: next.title, image: next.hero_image_url };
-                })()}
-                previousArticle={(() => {
-                  const currentIndex = filteredArticles.findIndex(a => a.id === selectedArticle.id);
-                  if (currentIndex <= 0) return null;
-                  const prev = filteredArticles[currentIndex - 1];
-                  return { id: prev.id, headline: prev.title, image: prev.hero_image_url };
-                })()}
-                onNavigate={(id) => {
-                  const article = filteredArticles.find(a => a.id === id);
-                  if (article) handleSelectArticle(article);
-                }}
-              />
-            </div>
-          </main>
-        ) : (
-          <>
-            {/* 2. App Store */}
-            {view === 'app_store' && (
-              <AppStore
-                onOpenApp={customOpenApp}
-                installedApps={installedApps}
-                onToggleInstall={toggleInstallApp}
-              />
-            )}
+            <ArticleViewer
+              article={selectedArticle}
+              nextArticle={(() => {
+                const currentIndex = filteredArticles.findIndex((article) => article.id === selectedArticle.id);
+                if (currentIndex === -1 || currentIndex === filteredArticles.length - 1) {
+                  return null;
+                }
+                const next = filteredArticles[currentIndex + 1];
+                return { id: next.id, headline: next.title, image: next.hero_image_url };
+              })()}
+              previousArticle={(() => {
+                const currentIndex = filteredArticles.findIndex((article) => article.id === selectedArticle.id);
+                if (currentIndex <= 0) {
+                  return null;
+                }
+                const previous = filteredArticles[currentIndex - 1];
+                return { id: previous.id, headline: previous.title, image: previous.hero_image_url };
+              })()}
+              onNavigate={(id) => {
+                const nextArticle = filteredArticles.find((article) => article.id === id);
+                if (nextArticle) {
+                  handleSelectArticle(nextArticle);
+                }
+              }}
+            />
+          </section>
+        ) : null}
 
-            {/* 3. Settings */}
-            {view === 'settings' && (
-              <Settings
-                selectedLanguage={selectedLanguage}
-                onChangeLanguage={setSelectedLanguage}
-              />
-            )}
+        {!selectedArticle && view === 'app_store' ? (
+          <AppStore onOpenApp={openApp} installedApps={installedApps} onToggleInstall={toggleInstallApp} />
+        ) : null}
 
-            {/* 4. Home (Hero + Grid) */}
-            {view === 'home' && (
-              <div className="w-full md:max-w-7xl md:mx-auto md:px-8 md:pt-24 z-0 flex flex-col items-center animate-fade-in">
-                {!loading && filteredArticles[0] && (
-                  <>
-                    <Hero article={filteredArticles[0]} onSelect={handleSelectArticle} tag="Deep Dive" />
+        {!selectedArticle && view === 'settings' ? (
+          <Settings selectedLanguage={selectedLanguage} onChangeLanguage={setSelectedLanguage} />
+        ) : null}
 
-                    {/* iOS App Grid placed naturally below Hero */}
-                    <div className="w-full max-w-md mt-1 z-10">
-                      <OSAppGrid
-                        onOpenNews={() => {
-                          setIsBreakingNewsOpen(true);
-                          markBreakingNewsRead();
-                          setLastAppId('breaking_news');
-                        }}
-                        hasUnreadNews={hasBreakingNewsUnread}
-                        installedApps={installedApps}
-                      />
-                    </div>
-                  </>
-                )}
+        {!selectedArticle && view === 'home' ? (
+          <OSShellHome
+            languageCode={selectedLanguage}
+            onOpenDeepDiveArticle={handleSelectArticleById}
+            onOpenRadioApp={() => openApp('radio')}
+          />
+        ) : null}
+
+        {!selectedArticle && view === 'deep_dive' ? (
+          <section className="t4l-page">
+            <article className="t4l-radio-card">
+              <div>
+                <p className="t4l-page-eyebrow">Radio</p>
+                <h2>Live Team Audio</h2>
+                <p>Tap to start T4L Radio stream.</p>
+              </div>
+              <button type="button" className="t4l-install-button" onClick={() => openApp('radio')}>
+                Play
+              </button>
+            </article>
+
+            {!loading && filteredArticles[0] ? (
+              <>
+                <Hero article={filteredArticles[0]} onSelect={handleSelectArticle} tag="Deep Dive" />
+                <ArticleFeed
+                  articles={filteredArticles.length > 1 ? filteredArticles.slice(1) : []}
+                  onSelect={handleSelectArticle}
+                  selectedLanguage={selectedLanguage}
+                />
+              </>
+            ) : (
+              <div className="t4l-feed-skeleton-list" aria-hidden="true">
+                <div className="t4l-feed-skeleton" />
+                <div className="t4l-feed-skeleton" />
               </div>
             )}
-          </>
-        )}
+          </section>
+        ) : null}
 
+        {!selectedArticle && view === 'breaking_news' ? (
+          <BreakingNewsApp languageCode={selectedLanguage} />
+        ) : null}
 
+        {!selectedArticle && view === 'radio' ? <RadioApp languageCode={selectedLanguage} /> : null}
+
+        {!selectedArticle && view === 'standings' ? <StandingsApp /> : null}
+
+        {!selectedArticle && view === 'game_reports' ? <GameReportsApp /> : null}
+
+        {!selectedArticle && view === 'player_wordle' ? <PlayerWordleApp /> : null}
+      </main>
+
+      <div className="t4l-bottom-stack">
+        <MiniPlayerBar />
+        <AppStrip
+          installedApps={HOME_STRIP_DEFAULT_APPS.filter((appId) => installedApps.includes(appId))}
+          onOpenApp={openApp}
+        />
         <FloatingNavBar
-          onOpenBreakingNews={() => {
-            setIsBreakingNewsOpen(true);
-            markBreakingNewsRead();
+          onHome={() => {
+            setSelectedArticle(null);
+            setView('home');
           }}
-          hasUnread={hasBreakingNewsUnread}
-          onHome={goHome}
-          onAppStore={goAppStore}
+          onGameCenter={() => {
+            setSelectedArticle(null);
+            if (installedApps.includes('standings')) {
+              openApp('standings');
+            } else {
+              setView('app_store');
+            }
+          }}
           onHistory={goHistory}
-          onSettings={goSettings}
+          onSettings={() => {
+            setSelectedArticle(null);
+            setView('settings');
+          }}
         />
       </div>
-    </AudioProvider>
+    </div>
   );
 }
 
-// Import new components at top (I can't edit top in this chunk, so I must rely on auto-imports or do a separate add. 
-// Wait, I can't do auto imports. I must add imports at top first. 
-// I will split this into two calls or ensure imports are added. 
-// Actually I can just add imports at the top of this file using a replace on top lines first? 
-// No, I'll assume I can edit the whole file or do top lines separately. 
-// I'll do imports first.)
-
+export default function App() {
+  return (
+    <AudioProvider>
+      <AppShell />
+    </AudioProvider>
+  );
+}

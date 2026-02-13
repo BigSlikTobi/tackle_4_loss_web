@@ -1,128 +1,114 @@
-import React, { useState, useEffect } from 'react';
-import { Home, LayoutGrid, Trophy, User, History } from 'lucide-react';
-import { Team } from '../types';
+import React, { useEffect, useState } from 'react';
 import TeamSelector from './TeamSelector';
+import { Team } from '../types';
 
 interface FloatingNavBarProps {
-    onOpenBreakingNews?: () => void;
-    hasUnread?: boolean;
-    onHome: () => void;
-    onAppStore: () => void;
-    onHistory: () => void;
-    onSettings: () => void;
+  onHome: () => void;
+  onGameCenter: () => void;
+  onHistory: () => void;
+  onSettings: () => void;
 }
 
-const NFL_LOGO_URL = "https://upload.wikimedia.org/wikipedia/en/a/a2/National_Football_League_logo.svg";
+const NAV_ITEMS = [
+  { key: 'home', icon: '/icons/home.svg', label: 'Home' },
+  { key: 'game_center', icon: '/icons/schedule.svg', label: 'Game Center' },
+  { key: 'history', icon: '/icons/back.svg', label: 'History' },
+  { key: 'settings', icon: '/icons/settings.svg', label: 'Settings' },
+] as const;
 
-const FloatingNavBar: React.FC<FloatingNavBarProps> = ({
-    onOpenBreakingNews,
-    hasUnread,
-    onHome,
-    onAppStore,
-    onHistory,
-    onSettings
-}) => {
-    const [favoriteTeam, setFavoriteTeam] = useState<Team | null>(null);
-    const [isSelectorOpen, setIsSelectorOpen] = useState(false);
+export default function FloatingNavBar({
+  onHome,
+  onGameCenter,
+  onHistory,
+  onSettings,
+}: FloatingNavBarProps) {
+  const [favoriteTeam, setFavoriteTeam] = useState<Team | null>(null);
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
 
-    useEffect(() => {
-        const storedTeam = localStorage.getItem('favorite_team');
-        if (storedTeam) {
-            try {
-                setFavoriteTeam(JSON.parse(storedTeam));
-            } catch (e) {
-                console.error("Failed to parse favorite team", e);
-            }
-        }
-    }, []);
+  useEffect(() => {
+    const hydrateTeam = () => {
+      const storedTeam = localStorage.getItem('favorite_team');
+      if (!storedTeam) {
+        setFavoriteTeam(null);
+        return;
+      }
 
-    const handleTeamSelect = (team: Team) => {
-        setFavoriteTeam(team);
-        localStorage.setItem('favorite_team', JSON.stringify(team));
-        setIsSelectorOpen(false);
-        window.dispatchEvent(new CustomEvent('teamSelected'));
+      try {
+        setFavoriteTeam(JSON.parse(storedTeam) as Team);
+      } catch {
+        setFavoriteTeam(null);
+      }
     };
 
+    hydrateTeam();
+    window.addEventListener('teamSelected', hydrateTeam);
+    window.addEventListener('storage', hydrateTeam);
 
-    return (
-        <>
-            <nav
-                className="fixed bottom-6 left-6 right-6 h-16 backdrop-blur-xl border border-white/40 dark:border-white/10 rounded-2xl shadow-2xl z-[200] flex justify-around items-center px-2 transition-colors duration-500"
-                style={{ backgroundColor: 'var(--nav-bg)' }}
-            >
-                {/* Slot 1: Home (H) */}
-                <button
-                    onClick={onHome}
-                    className="flex flex-col items-center justify-center w-12 h-12 rounded-xl text-primary dark:text-secondary group transition-all duration-300"
-                >
-                    <span className="font-['Anton'] text-2xl font-bold group-hover:scale-110 transition-transform">H</span>
-                    <div className="w-1 h-1 bg-primary dark:bg-secondary rounded-full mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                </button>
+    return () => {
+      window.removeEventListener('teamSelected', hydrateTeam);
+      window.removeEventListener('storage', hydrateTeam);
+    };
+  }, []);
 
-                {/* Slot 2: App Store */}
-                <button
-                    onClick={onAppStore}
-                    className="flex flex-col items-center justify-center w-12 h-12 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-secondary transition-all group"
-                >
-                    <LayoutGrid size={24} className="group-hover:scale-110 transition-transform" />
-                </button>
+  const handleTeamSelect = (team: Team) => {
+    setFavoriteTeam(team);
+    localStorage.setItem('favorite_team', JSON.stringify(team));
+    setIsSelectorOpen(false);
+    window.dispatchEvent(new CustomEvent('teamSelected'));
+  };
 
-                {/* Slot 3: Team Logo (Center) */}
-                <button
-                    onClick={() => setIsSelectorOpen(true)}
-                    className={`relative -top-6 h-14 w-14 bg-white dark:bg-zinc-900 rounded-2xl shadow-lg flex items-center justify-center transform hover:scale-105 active:scale-95 transition-all duration-200 border-4 ${favoriteTeam ? 'border-primary dark:border-primary' : 'border-red-500 animate-pulse ring-4 ring-red-500/20'
-                        }`}
-                >
-                    {favoriteTeam ? (
-                        <div className="w-full h-full p-2">
-                            <img
-                                src={favoriteTeam.logo_url}
-                                alt={favoriteTeam.team_name}
-                                className="w-full h-full object-contain"
-                            />
-                        </div>
-                    ) : (
-                        <div className="w-full h-full p-2 flex items-center justify-center">
-                            <img
-                                src={NFL_LOGO_URL}
-                                onError={(e) => {
-                                    e.currentTarget.style.display = 'none';
-                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                                }}
-                                alt="NFL"
-                                className="w-full h-full object-contain opacity-80"
-                            />
-                            <Trophy size={28} className="text-red-500 hidden" fill="currentColor" />
-                        </div>
-                    )}
-                </button>
+  return (
+    <>
+      <nav className="t4l-dock" aria-label="Primary">
+        <button type="button" className="t4l-dock-button" onClick={onHome} title={NAV_ITEMS[0].label}>
+          <img src={NAV_ITEMS[0].icon} alt="" aria-hidden="true" />
+        </button>
 
-                {/* Slot 4: Last App Placeholder */}
-                <button
-                    onClick={onHistory}
-                    className="flex flex-col items-center justify-center w-12 h-12 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-secondary transition-all group"
-                >
-                    <History size={24} className="group-hover:scale-110 transition-transform opacity-60" />
-                </button>
+        <button
+          type="button"
+          className="t4l-dock-button"
+          onClick={onGameCenter}
+          title={NAV_ITEMS[1].label}
+        >
+          <img src={NAV_ITEMS[1].icon} alt="" aria-hidden="true" />
+        </button>
 
-                {/* Slot 5: Personal Side (User) */}
-                <button
-                    onClick={onSettings}
-                    className="flex flex-col items-center justify-center w-12 h-12 rounded-xl text-zinc-500 dark:text-zinc-400 hover:text-primary dark:hover:text-secondary transition-all group"
-                >
-                    <User size={24} className="group-hover:scale-110 transition-transform" />
-                </button>
-            </nav>
+        <div className="t4l-dock-center-spacer" />
 
-            {isSelectorOpen && (
-                <TeamSelector
-                    onSelect={handleTeamSelect}
-                    onClose={() => setIsSelectorOpen(false)}
-                />
-            )}
-        </>
-    );
-};
+        <button
+          type="button"
+          className="t4l-dock-button"
+          onClick={onHistory}
+          title={NAV_ITEMS[2].label}
+        >
+          <img src={NAV_ITEMS[2].icon} alt="" aria-hidden="true" />
+        </button>
 
-export default FloatingNavBar;
+        <button
+          type="button"
+          className="t4l-dock-button"
+          onClick={onSettings}
+          title={NAV_ITEMS[3].label}
+        >
+          <img src={NAV_ITEMS[3].icon} alt="" aria-hidden="true" />
+        </button>
 
+        <button
+          type="button"
+          onClick={() => setIsSelectorOpen(true)}
+          className={`t4l-dock-team-button ${favoriteTeam ? '' : 'is-unset'}`}
+          title={favoriteTeam ? favoriteTeam.team_name : 'Select team'}
+        >
+          <img
+            src={favoriteTeam?.logo_url || '/icons/nfl_logo.png'}
+            alt={favoriteTeam?.team_name || 'NFL'}
+          />
+        </button>
+      </nav>
+
+      {isSelectorOpen ? (
+        <TeamSelector onSelect={handleTeamSelect} onClose={() => setIsSelectorOpen(false)} />
+      ) : null}
+    </>
+  );
+}
