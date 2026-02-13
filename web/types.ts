@@ -48,8 +48,11 @@ export interface BreakingNewsDetail extends BreakingNews {
 }
 
 export interface Team {
+  team_abbr?: string;
   team_name: string;
   team_conference: string;
   team_division: string;
   logo_url: string;
+  primary_color?: string;
+  secondary_color?: string;
 }
