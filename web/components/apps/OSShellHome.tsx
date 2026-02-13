@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import BreakingNewsModal from '../BreakingNewsModal';
 import {
   DeepDiveFeedItemModel,
@@ -76,7 +76,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
     [items],
   );
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (loadingMore || loading || !hasMore) return;
     setLoadingMore(true);
     try {
@@ -88,7 +88,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, loading, hasMore, items.length, languageCode]);
 
   useEffect(() => {
     if (!sentinelRef.current || !hasMore) return;
@@ -103,7 +103,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMore, loadingMore, loading, items.length, languageCode]);
+  }, [hasMore, loadMore]);
 
   return (
     <section className="t4l-os-home">
@@ -180,7 +180,7 @@ export default function OSShellHome({ languageCode, onOpenDeepDiveArticle, onOpe
                 const isUpdate = item.status?.toLowerCase() === 'update';
                 const isTeamMatch =
                   normalize(currentTeam?.team_name) !== '' &&
-                  (item.teams ?? []).some((team: any) => normalize(team?.team_name) === normalize(currentTeam?.team_name));
+                  (item.teams ?? []).some((team) => normalize(team?.team_name) === normalize(currentTeam?.team_name));
 
                 return (
                   <React.Fragment key={item.id}>

@@ -60,7 +60,7 @@ export default function FloatingNavBar({
   return (
     <>
       <nav className="t4l-dock" aria-label="Primary">
-        <button type="button" className="t4l-dock-button" onClick={onHome} title={NAV_ITEMS[0].label}>
+        <button type="button" className="t4l-dock-button" onClick={onHome} title={NAV_ITEMS[0].label} aria-label={NAV_ITEMS[0].label}>
           <img src={NAV_ITEMS[0].icon} alt="" aria-hidden="true" />
         </button>
 
@@ -69,6 +69,7 @@ export default function FloatingNavBar({
           className="t4l-dock-button"
           onClick={onGameCenter}
           title={NAV_ITEMS[1].label}
+          aria-label={NAV_ITEMS[1].label}
         >
           <img src={NAV_ITEMS[1].icon} alt="" aria-hidden="true" />
         </button>
@@ -80,6 +81,7 @@ export default function FloatingNavBar({
           className="t4l-dock-button"
           onClick={onHistory}
           title={NAV_ITEMS[2].label}
+          aria-label={NAV_ITEMS[2].label}
         >
           <img src={NAV_ITEMS[2].icon} alt="" aria-hidden="true" />
         </button>
@@ -89,6 +91,7 @@ export default function FloatingNavBar({
           className="t4l-dock-button"
           onClick={onSettings}
           title={NAV_ITEMS[3].label}
+          aria-label={NAV_ITEMS[3].label}
         >
           <img src={NAV_ITEMS[3].icon} alt="" aria-hidden="true" />
         </button>
