@@ -7,13 +7,11 @@ import '../../widgets/notification_badge.dart';
 class T4LFloatingNavBar extends StatefulWidget {
   final VoidCallback onHome;
   final VoidCallback onGameCenter;
-  final VoidCallback onHistory;
   final VoidCallback onSettings;
   final VoidCallback onTeamLogo;
   final String? favoriteTeamLogoUrl;
   final String? homeTooltip;
   final String? gameCenterTooltip;
-  final String? historyTooltip;
   final String? settingsTooltip;
   final bool showGameCenterBadge;
 
@@ -21,13 +19,11 @@ class T4LFloatingNavBar extends StatefulWidget {
     super.key,
     required this.onHome,
     required this.onGameCenter,
-    required this.onHistory,
     required this.onSettings,
     required this.onTeamLogo,
     this.favoriteTeamLogoUrl,
     this.homeTooltip,
     this.gameCenterTooltip,
-    this.historyTooltip,
     this.settingsTooltip,
     this.showGameCenterBadge = false,
   });
@@ -140,17 +136,10 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
                 ],
               ),
 
-              // Slot 3: Spacer for the Center Button
+              // Slot 3: Spacer for the Center Button (Team Logo / Team Center)
               const SizedBox(width: 60),
 
-              // Slot 4: History
-              _NavBarButton(
-                onTap: widget.onHistory,
-                tooltip: widget.historyTooltip,
-                svgAsset: 'assets/icons/back.svg',
-              ),
-
-              // Slot 5: Settings
+              // Slot 4: Settings
               _NavBarButton(
                 onTap: widget.onSettings,
                 tooltip: widget.settingsTooltip,

@@ -106,7 +106,6 @@ class _OSShellViewState extends State<OSShellView>
                   homeTooltip: AppLocalizations.of(context)!.navHome,
                   gameCenterTooltip:
                       AppLocalizations.of(context)!.navGameCenter,
-                  historyTooltip: AppLocalizations.of(context)!.navHistory,
                   settingsTooltip: AppLocalizations.of(context)!.navSettings,
                   favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
                   showGameCenterBadge: false, // No badge for Game Center
@@ -114,7 +113,6 @@ class _OSShellViewState extends State<OSShellView>
                   onGameCenter: () {
                     NavigationService().openGameCenter(context);
                   },
-                  onHistory: () => NavigationService().reopenLastApp(context),
                   onSettings: () {
                     NavigationService().openSettings(
                       context,
