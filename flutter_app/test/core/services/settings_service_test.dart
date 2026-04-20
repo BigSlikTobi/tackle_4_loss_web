@@ -133,6 +133,44 @@ void main() {
       });
     });
 
+    group('onboarding', () {
+      test('onboardingComplete defaults to false', () {
+        expect(service.onboardingComplete, isFalse);
+      });
+
+      test('isLoaded defaults to false on testing constructor', () {
+        expect(service.isLoaded, isFalse);
+      });
+
+      test('markOnboardingComplete flips flag and notifies', () async {
+        bool notified = false;
+        service.addListener(() => notified = true);
+
+        await service.markOnboardingComplete();
+
+        expect(service.onboardingComplete, isTrue);
+        expect(notified, isTrue);
+      });
+
+      test('markOnboardingComplete is idempotent', () async {
+        await service.markOnboardingComplete();
+
+        bool notified = false;
+        service.addListener(() => notified = true);
+        await service.markOnboardingComplete();
+
+        expect(notified, isFalse,
+            reason: 'second call should be a no-op');
+      });
+
+      test('markOnboardingComplete persists to SharedPreferences', () async {
+        await service.markOnboardingComplete();
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('onboarding_complete_v1'), isTrue);
+      });
+    });
+
     group('backgroundGradient', () {
       test('returns default gradient when no team selected (light mode)', () {
         final gradient = service.backgroundGradient;

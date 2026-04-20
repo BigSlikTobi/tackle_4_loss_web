@@ -6,6 +6,7 @@ import 'package:flutter_gemma/flutter_gemma.dart';
 import 'l10n/app_localizations.dart';
 import 'core/theme/t4l_theme.dart'; // New Theme
 import 'core/os_shell/views/os_shell_view.dart';
+import 'core/onboarding/views/first_launch_flow.dart';
 import 'core/app_registry.dart';
 import 'core/services/settings_service.dart';
 import 'micro_apps/breaking_news/breaking_news_app.dart';
@@ -94,9 +95,32 @@ class Tackle4LossApp extends StatelessWidget {
           builder: (context, child) {
             return child!; // Application content
           },
-          home: const OSShellView(),
+          home: _RootGate(settings: settings),
         );
       },
     );
+  }
+}
+
+/// Decides whether to show a splash, the forced first-launch flow, or the
+/// OS Shell. SettingsService loads its persisted prefs asynchronously; we
+/// must not render the home screen before that completes, otherwise the
+/// onboarding flag is unknown.
+class _RootGate extends StatelessWidget {
+  final SettingsService settings;
+
+  const _RootGate({required this.settings});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!settings.isLoaded) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (!settings.onboardingComplete) {
+      return const FirstLaunchFlow();
+    }
+    return const OSShellView();
   }
 }
