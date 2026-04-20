@@ -24,7 +24,10 @@ void main() {
     registry.register(AppHubApp());
   });
 
-  test('Service initializes with default apps', skip: 'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns', () async {
+  test('Service initializes with default apps',
+      skip:
+          'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns',
+      () async {
     final service = InstalledAppsService();
     service.resetDefaults();
 
@@ -38,7 +41,10 @@ void main() {
     expect(service.isInstalled('app_hub'), false);
   });
 
-  test('Install app adds to the end of the list', skip: 'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns', () async {
+  test('Install app adds to the end of the list',
+      skip:
+          'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns',
+      () async {
     final service = InstalledAppsService();
     service.resetDefaults();
 
@@ -52,7 +58,10 @@ void main() {
     expect(service.getItemAt(service.rawItems.length - 1), 'app_hub');
   });
 
-  test('Uninstall app removes it from the list', skip: 'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns', () async {
+  test('Uninstall app removes it from the list',
+      skip:
+          'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns',
+      () async {
     final service = InstalledAppsService();
     service.resetDefaults();
 
@@ -63,7 +72,10 @@ void main() {
     expect(service.isInstalled('breaking_news'), false);
   });
 
-  test('Move app reorders the list correctly', skip: 'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns', () async {
+  test('Move app reorders the list correctly',
+      skip:
+          'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns',
+      () async {
     final service = InstalledAppsService();
     service.resetDefaults();
 
@@ -86,7 +98,10 @@ void main() {
     // but effectively we moved item at index 0 to index 1.
   });
 
-  test('Move app to start', skip: 'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns', () async {
+  test('Move app to start',
+      skip:
+          'MVP: reorder/install logic deprecated; will be revisited when AppStrip returns',
+      () async {
     final service = InstalledAppsService();
     service.resetDefaults();
 

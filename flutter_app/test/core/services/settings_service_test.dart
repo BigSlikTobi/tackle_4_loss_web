@@ -159,8 +159,7 @@ void main() {
         service.addListener(() => notified = true);
         await service.markOnboardingComplete();
 
-        expect(notified, isFalse,
-            reason: 'second call should be a no-op');
+        expect(notified, isFalse, reason: 'second call should be a no-op');
       });
 
       test('markOnboardingComplete persists to SharedPreferences', () async {

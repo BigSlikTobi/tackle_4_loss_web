@@ -11,7 +11,10 @@ import 'package:tackle4loss_mobile/micro_apps/player_wordle/player_wordle_app.da
 import 'package:tackle4loss_mobile/micro_apps/game_reports/game_reports_app.dart';
 
 void main() {
-  group('InstalledAppsService', skip: 'MVP: install/reorder logic deprecated; will be revisited when AppStrip returns', () {
+  group('InstalledAppsService',
+      skip:
+          'MVP: install/reorder logic deprecated; will be revisited when AppStrip returns',
+      () {
     late InstalledAppsService service;
 
     setUp(() async {

@@ -62,8 +62,8 @@ class _FirstLaunchFlowState extends State<FirstLaunchFlow> {
                     onSelect: (team) => setState(() => _pendingTeam = team),
                     onContinue: _pendingTeam == null
                         ? null
-                        : () => setState(
-                            () => _step = _OnboardingStep.language),
+                        : () =>
+                            setState(() => _step = _OnboardingStep.language),
                   )
                 : _LanguageStep(
                     selected: _pendingLocale ?? const Locale('en'),
@@ -272,8 +272,8 @@ class _LanguageStep extends StatelessWidget {
               onPressed: onFinish,
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
