@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/team_model.dart';
 import '../controllers/team_center_controller.dart';
-import 'widgets/games_timeline.dart';
 import 'widgets/daily_update_card.dart';
 import 'widgets/team_menu_button.dart';
 import '../../os_shell/widgets/mini_player.dart';
@@ -115,40 +114,14 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                               child: CircularProgressIndicator());
                         }
 
-                        // Prepare games for timeline
-                        // We need past, last, next.
-                        // Controller provides allTeamGames, lastGame, nextGame.
-                        // Logic: 'Last' is played. 'Next' is upcoming. 'Past' is 'Last - 1'.
-                        // For now, simpler logic based on available props to not over-engineer before backend fix.
-
-                        // Hacky "Past Game" find for UI demo
-                        final games = controller.allTeamGames;
-                        final lastGame = controller.lastGame;
-                        var pastGameIndex = -1;
-                        if (lastGame != null) {
-                          pastGameIndex = games.indexOf(lastGame) - 1;
-                        }
-                        final pastGame =
-                            (pastGameIndex >= 0 && pastGameIndex < games.length)
-                                ? games[pastGameIndex]
-                                : null;
-
                         return SingleChildScrollView(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Column(
                             children: [
                               const SizedBox(height: 10),
 
-                              // Timeline
-                              GamesTimeline(
-                                pastGame: pastGame,
-                                lastGame: controller.lastGame,
-                                nextGame: controller.nextGame,
-                                teamColor: widget.team.primaryColor,
-                                teamId: widget.team.id,
-                              ),
-
-                              const SizedBox(height: 30),
+                              // MVP: Games Timeline removed from Team Center.
+                              // Roster, Depth Chart, and Injuries remain.
 
                               // Daily Update
                               DailyUpdateCard(
