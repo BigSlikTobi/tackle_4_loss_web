@@ -94,13 +94,9 @@ flutter:
     - assets/T4L_app_logo.png
     - assets/logos/nfl_logo.png
     - .env
-    - lib/micro_apps/deep_dive/store_assets/
     - lib/micro_apps/app_store/store_assets/
     - lib/micro_apps/breaking_news/store_assets/
-    - lib/micro_apps/radio/store_assets/
     - lib/micro_apps/standings/store_assets/
-    - lib/micro_apps/game_reports/store_assets/
-    - lib/micro_apps/player_wordle/store_assets/
 
     - assets/creative_logos/
     - assets/icons/

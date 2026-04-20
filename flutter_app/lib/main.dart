@@ -8,14 +8,8 @@ import 'core/theme/t4l_theme.dart'; // New Theme
 import 'core/os_shell/views/os_shell_view.dart';
 import 'core/app_registry.dart';
 import 'core/services/settings_service.dart';
-import 'micro_apps/app_store/app_store_app.dart';
-import 'micro_apps/deep_dive/deep_dive_app.dart';
 import 'micro_apps/breaking_news/breaking_news_app.dart';
-import 'micro_apps/radio/radio_app.dart';
 import 'micro_apps/standings/standings_app.dart';
-import 'micro_apps/game_reports/game_reports_app.dart';
-import 'micro_apps/player_wordle/player_wordle_app.dart';
-import 'micro_apps/radio/controllers/radio_controller.dart';
 
 import 'core/services/installed_apps_service.dart';
 import 'core/services/new_content_service.dart';
@@ -42,15 +36,10 @@ Future<void> main() async {
   );
 
   // 2. Register MicroApps
-  // In a real app we might load these dynamically or via reflection,
-  // but for now we register them manually on boot.
-  AppRegistry().register(AppHubApp());
-  AppRegistry().register(DeepDiveApp());
+  // MVP scope: only Breaking News (data layer for home feed) and Standings.
+  // Other MicroApps remain in repo but are not registered or initialized.
   AppRegistry().register(BreakingNewsApp());
-  AppRegistry().register(RadioApp());
   AppRegistry().register(StandingsApp());
-  AppRegistry().register(GameReportsApp());
-  AppRegistry().register(PlayerWordleApp());
 
   // 3. Initialize Services
   await InstalledAppsService().init();
@@ -62,16 +51,6 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => SettingsService()),
         ChangeNotifierProvider.value(value: InstalledAppsService()),
-        ChangeNotifierProxyProvider<SettingsService, RadioController>(
-          create: (context) => RadioController(
-            languageCode: Provider.of<SettingsService>(context, listen: false)
-                .locale
-                .languageCode,
-          ),
-          update: (context, settings, controller) {
-            return controller!..loadStations(settings.locale.languageCode);
-          },
-        ),
       ],
       child: const Tackle4LossApp(),
     ),

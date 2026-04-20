@@ -10,16 +10,17 @@ void main() {
     });
 
     group('isEnabled', () {
-      test('returns true for enabled core apps', () {
-        expect(service.isEnabled('app_hub'), isTrue);
+      test('returns true for MVP-enabled apps', () {
         expect(service.isEnabled('breaking_news'), isTrue);
-        expect(service.isEnabled('deep_dive'), isTrue);
-        expect(service.isEnabled('radio'), isTrue);
         expect(service.isEnabled('standings'), isTrue);
       });
 
-      test('returns false for game_reports (in development)', () {
+      test('returns false for apps deferred from MVP', () {
+        expect(service.isEnabled('app_hub'), isFalse);
+        expect(service.isEnabled('deep_dive'), isFalse);
+        expect(service.isEnabled('radio'), isFalse);
         expect(service.isEnabled('game_reports'), isFalse);
+        expect(service.isEnabled('player_wordle'), isFalse);
       });
 
       test('returns false for unknown feature keys', () {
