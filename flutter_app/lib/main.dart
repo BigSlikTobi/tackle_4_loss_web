@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gemma/flutter_gemma.dart';
 import 'l10n/app_localizations.dart';
 import 'core/theme/t4l_theme.dart'; // New Theme
 import 'core/os_shell/views/os_shell_view.dart';
@@ -31,10 +30,9 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
-  // Initialize FlutterGemma plugin
-  FlutterGemma.initialize(
-    maxDownloadRetries: 5,
-  );
+  // MVP: FlutterGemma is not initialized — Game Reports MicroApp (its only
+  // consumer) is flag-off. The flutter_gemma package is removed from pubspec
+  // to drop the TensorFlowLiteSelectTfOps iOS dependency from the binary.
 
   // 2. Register MicroApps
   // MVP scope: only Breaking News (data layer for home feed) and Standings.
