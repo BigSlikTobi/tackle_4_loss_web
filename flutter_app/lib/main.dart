@@ -42,7 +42,8 @@ Future<void> main() async {
   AppRegistry().register(StandingsApp());
 
   // 3. Initialize Services
-  await InstalledAppsService().init();
+  // MVP: InstalledAppsService is not initialized — no AppStrip consumes it.
+  // Will be re-enabled when more MicroApps return to the visible surface.
   // AudioPlayerService is lazily initialized on first playback request
   await NewContentService().init(); // Initialize new content tracking
 

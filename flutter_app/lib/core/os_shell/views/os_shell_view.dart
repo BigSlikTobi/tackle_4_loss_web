@@ -13,8 +13,6 @@ import '../../team_center/views/team_center_overlay.dart';
 import '../widgets/user_settings_dialog.dart';
 import '../widgets/team_selector_dialog.dart';
 import '../../widgets/shimmer_skeleton.dart';
-import '../widgets/app_strip.dart';
-import '../../../micro_apps/radio/views/widgets/radio_home_widget.dart';
 
 class OSShellView extends StatefulWidget {
   const OSShellView({super.key});
@@ -95,10 +93,7 @@ class _OSShellViewState extends State<OSShellView>
         bottomNavBarOverride: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 1. App Strip (Horizontal browse)
-            const AppStrip(),
-
-            // 2. Persistent Dock
+            // MVP: App Strip removed; Dock is the only bottom nav surface.
             ListenableBuilder(
               listenable: NewContentService(),
               builder: (context, child) {
@@ -152,34 +147,18 @@ class _OSShellViewState extends State<OSShellView>
                     return const OSShellSkeleton();
                   }
 
-                  return CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                  return const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      // Header Clearance
                       // Header Clearance (Handled by T4LScaffold)
-                      const SliverToBoxAdapter(child: SizedBox(height: 0)),
+                      SliverToBoxAdapter(child: SizedBox(height: 0)),
 
-                      // Pinned Rich Widgets at the top of the feed
+                      // News Feed (MVP home content)
+                      NewsFeedWidget(),
+
+                      // Bottom Clearance for the Dock
                       SliverPadding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 16),
-                        sliver: SliverList(
-                          delegate: SliverChildListDelegate([
-                            // Radio Widget (Compact)
-                            const SizedBox(
-                              height: 74,
-                              child: RadioHomeWidget(),
-                            ),
-                          ]),
-                        ),
-                      ),
-
-                      // News Feed
-                      const NewsFeedWidget(),
-
-                      // Bottom Clearance for AppStrip + Dock
-                      const SliverPadding(
-                        padding: EdgeInsets.only(bottom: 220),
+                        padding: EdgeInsets.only(bottom: 140),
                       ),
                     ],
                   );
