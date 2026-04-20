@@ -28,8 +28,7 @@ class GameReportTools {
         ),
         GameReportsTool(
           name: 'get_mvp_analysis',
-          description:
-              'Determine and explain who was the MVP of the game.',
+          description: 'Determine and explain who was the MVP of the game.',
         ),
       ];
 }
