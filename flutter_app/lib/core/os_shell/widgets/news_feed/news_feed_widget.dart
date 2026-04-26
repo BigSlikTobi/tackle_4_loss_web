@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../controllers/news_feed_controller.dart';
 import '../../../models/news_feed_item.dart';
+import '../../../services/articles_service.dart';
 import '../../../services/settings_service.dart';
 import 'news_feed_item_card.dart';
 import 'video_feed_item_card.dart';
 import 'personalized_feed_item_card.dart';
 import 'deep_dive_feed_item_card.dart';
+import 'breaking_featured_card.dart';
+import 'breaking_list_item_card.dart';
 import '../../../widgets/shimmer_skeleton.dart';
 
 /// News feed widget with infinite scroll for the home screen
 class NewsFeedWidget extends StatefulWidget {
-  final SupabaseClient? supabaseClient;
+  /// Optional override (used by tests) for the articles backend.
+  final ArticlesService? articlesService;
 
-  const NewsFeedWidget({super.key, this.supabaseClient});
+  const NewsFeedWidget({super.key, this.articlesService});
 
   @override
   State<NewsFeedWidget> createState() => _NewsFeedWidgetState();
@@ -35,7 +38,7 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
   void _initializeController(SettingsService settings) {
     _controller = NewsFeedController(
       languageCode: settings.locale.languageCode,
-      client: widget.supabaseClient,
+      articlesService: widget.articlesService,
     );
     _precachedUrls.clear();
     _controller.loadInitial();
@@ -175,35 +178,18 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
           );
         }
 
+        // Index of the first NewsFeedItem (used as the featured hero card).
+        final featuredIndex =
+            _controller.items.indexWhere((it) => it is NewsFeedItem);
+        final lastIndex = _controller.items.length - 1;
+
         return SliverMainAxisGroup(
           slivers: [
-            // Team Logo Watermark Section - No Text
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 100,
-                child: settings.selectedTeam != null
-                    ? Center(
-                        child: Opacity(
-                          opacity: 0.15,
-                          child: Image.asset(
-                            settings.selectedTeam!.logoUrl,
-                            width: 180,
-                            height: 180,
-                            fit: BoxFit.contain,
-                            errorBuilder: (c, e, s) => const SizedBox(),
-                          ),
-                        ),
-                      )
-                    : const SizedBox(),
-              ),
-            ),
-
-            // Feed Items
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   if (index >= _controller.items.length) {
-                    // Loading indicator at the end
                     if (_controller.hasMore) {
                       return const NewsFeedItemSkeleton();
                     }
@@ -211,19 +197,27 @@ class _NewsFeedWidgetState extends State<NewsFeedWidget> {
                   }
 
                   final item = _controller.items[index];
-
-                  // Pre-cache images for upcoming items (look-ahead of 3)
                   _precacheUpcomingImages(context, index);
 
-                  // Handle different feed item types
+                  if (item is NewsFeedItem) {
+                    if (index == featuredIndex) {
+                      return BreakingFeaturedCard(item: item);
+                    }
+                    return BreakingListItemCard(
+                      item: item,
+                      isLast: index == lastIndex && !_controller.hasMore,
+                    );
+                  }
+
+                  // Fallback rendering for other content types (kept for
+                  // forward-compat; gated micro-apps don't surface in MVP).
                   return switch (item) {
                     NewsFeedItem newsItem => NewsFeedItemCard(
                         item: newsItem,
                         userTeamId: userTeamId,
                       ),
-                    VideoFeedItem videoItem => VideoFeedItemCard(
-                        item: videoItem,
-                      ),
+                    VideoFeedItem videoItem =>
+                      VideoFeedItemCard(item: videoItem),
                     PersonalizedFeedItem personalizedItem =>
                       PersonalizedFeedItemCard(item: personalizedItem),
                     DeepDiveFeedItem deepDiveItem =>

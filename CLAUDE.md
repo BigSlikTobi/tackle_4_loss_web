@@ -25,7 +25,7 @@ flutter test test/path/to/file_test.dart   # single file
 flutter test --plain-name "test name"      # single test
 flutter test --coverage
 ```
-A `.env` file with `SUPABASE_URL` and `SUPABASE_ANON_KEY` is required at `flutter_app/.env` (CI writes placeholders).
+A `.env` file with `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ARTICLES_SUPABASE_URL`, and `ARTICLES_SUPABASE_ANON_KEY` is required at `flutter_app/.env` (CI writes placeholders; `.env` is gitignored).
 
 ### Web (`web/`)
 ```bash
@@ -55,7 +55,7 @@ The Flutter app is structured as a **mini operating system**, not a traditional 
 
 The web side mirrors this concept (`web/components/OSAppGrid.tsx`, `AppStrip.tsx`, `FloatingNavBar.tsx`, `web/components/apps/`).
 
-### MVP Slim State (as of 2026-04-20, branch `feature/flutter-mvp-slim`)
+### MVP Slim State (as of 2026-04-26, branch `feature/flutter-mvp-slim`)
 
 The app has been slimmed to an App Store MVP. Key runtime differences from the full architecture above:
 
@@ -66,6 +66,10 @@ The app has been slimmed to an App Store MVP. Key runtime differences from the f
 - **Flag-off MicroApps (code in repo, hidden at runtime):** `app_store`, `deep_dive`, `game_reports`, `player_wordle`, `radio`.
 - **Games Timeline removed** from Team Center overlay. Team Center shows: Roster / Depth / Injuries.
 - **`flutter_gemma` / TensorFlow Lite dropped** from `pubspec.yaml` (no MVP consumer; was blocking iOS device builds). `FunctionGemmaService` and `GameReportTools` are stubbed.
+- **Dock is now a floating glass pill** (3 buttons: Home / Schedule / Settings + dividers). Team badge floats above the pill with a 3px brand-green ring. Active tab gets a tinted pill. Extracted into `AppDock` widget (`lib/core/os_shell/widgets/app_dock.dart`); `T4LFloatingNavBar` public API preserved.
+- **Home feed V3**: two card types — `BreakingFeaturedCard` (full-bleed hero) and `BreakingListItemCard` (compact row). Old watermark and section header removed. Cards navigate directly to `BreakingNewsDetailScreen` via `feed_navigation.dart`.
+- **Article detail V3**: `BreakingNewsDetailScreen` has parallax hero, reading-progress bar, byline bar, team chips, player headshots, body text. `AppDock` rendered in `bottomNavigationBar` with `extendBody: true`. Accepts optional `detailFetcher`/`relatedFetcher` typedefs for dependency injection.
+- **Articles backend**: `ArticlesService` (`lib/core/services/articles_service.dart`) targets a new Supabase project (`ARTICLES_SUPABASE_URL`). Uses cursor pagination. Language codes `en`/`de` mapped to BCP-47 `en-US`/`de-DE`. `NewsFeedController` now uses `ArticlesService`; realtime subscription removed.
 
 Full phase-by-phase breakdown: `/Users/tobiaslatta/.claude/plans/snoopy-beaming-swing.md`
 
