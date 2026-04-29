@@ -4,59 +4,59 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../widgets/notification_badge.dart';
 
+/// Floating dock — V3 design (segmented pill with badge floating above).
+///
+/// Three labelled buttons (Home / Schedule / Settings) inside a glass pill,
+/// with the team badge resting above the dock and overlapping its top edge
+/// by 10px. Inspired by `components-floating-dock.html` V3.
 class T4LFloatingNavBar extends StatefulWidget {
   final VoidCallback onHome;
   final VoidCallback onGameCenter;
-  final VoidCallback onHistory;
   final VoidCallback onSettings;
   final VoidCallback onTeamLogo;
   final String? favoriteTeamLogoUrl;
   final String? homeTooltip;
   final String? gameCenterTooltip;
-  final String? historyTooltip;
   final String? settingsTooltip;
   final bool showGameCenterBadge;
+
+  /// Which dock tab is currently active. Defaults to home.
+  final T4LNavTab activeTab;
 
   const T4LFloatingNavBar({
     super.key,
     required this.onHome,
     required this.onGameCenter,
-    required this.onHistory,
     required this.onSettings,
     required this.onTeamLogo,
     this.favoriteTeamLogoUrl,
     this.homeTooltip,
     this.gameCenterTooltip,
-    this.historyTooltip,
     this.settingsTooltip,
     this.showGameCenterBadge = false,
+    this.activeTab = T4LNavTab.home,
   });
 
   @override
   State<T4LFloatingNavBar> createState() => _T4LFloatingNavBarState();
 }
 
+enum T4LNavTab { home, schedule, settings }
+
 class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late final AnimationController _pulseController = AnimationController(
+    duration: const Duration(seconds: 2),
+    vsync: this,
+  )..repeat(reverse: true);
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-    _animation = Tween<double>(
-      begin: 1.0,
-      end: 1.25,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
+  static const double _badgeSize = 54;
+  static const double _badgeOverlap = 10;
+  static const double _dockHeight = 58;
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -64,208 +64,251 @@ class _T4LFloatingNavBarState extends State<T4LFloatingNavBar>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Adaptive glass colors
+    final activeColor = isDark ? const Color(0xFF4ADE80) : AppColors.brandBase;
+    final inactiveIcon =
+        isDark ? const Color(0xFFA1A1AA) : const Color(0xFF555555);
+    final inactiveLabel =
+        isDark ? const Color(0xFF71717A) : const Color(0xFF888888);
+
     final glassColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.white.withValues(alpha: 0.6);
-
+        ? const Color(0xFF1A1C1C).withValues(alpha: 0.82)
+        : Colors.white.withValues(alpha: 0.72);
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : Colors.white.withValues(alpha: 0.4);
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.9);
+    final dividerColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.08);
+    final activeBg = isDark
+        ? const Color(0xFF4ADE80).withValues(alpha: 0.12)
+        : AppColors.brandBase.withValues(alpha: 0.10);
 
-    final shadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.3)
-        : Colors.black.withValues(alpha: 0.1);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      height: 64,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // 1. Bar Background with Glassmorphism
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: glassColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: borderColor,
-                      width: 1,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: SizedBox(
+        // Pill height + badge protrusion above the pill.
+        height: _dockHeight + (_badgeSize - _badgeOverlap),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.bottomCenter,
+          children: [
+            // ─── Pill dock ──────────────────────────────────────────
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: _dockHeight,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(9999),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: glassColor,
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(color: borderColor, width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.35 : 0.13),
+                          blurRadius: 28,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: Colors.black
+                              .withValues(alpha: isDark ? 0.2 : 0.07),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: shadowColor,
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _NavButton(
+                            tooltip: widget.homeTooltip,
+                            label: 'Home',
+                            svgAsset: 'assets/icons/home.svg',
+                            onTap: widget.onHome,
+                            active: widget.activeTab == T4LNavTab.home,
+                            activeColor: activeColor,
+                            inactiveIcon: inactiveIcon,
+                            inactiveLabel: inactiveLabel,
+                            activeBg: activeBg,
+                          ),
+                        ),
+                        _Divider(color: dividerColor),
+                        Expanded(
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            fit: StackFit.expand,
+                            alignment: Alignment.center,
+                            children: [
+                              _NavButton(
+                                tooltip: widget.gameCenterTooltip,
+                                label: 'Schedule',
+                                svgAsset: 'assets/icons/schedule.svg',
+                                onTap: widget.onGameCenter,
+                                active: widget.activeTab == T4LNavTab.schedule,
+                                activeColor: activeColor,
+                                inactiveIcon: inactiveIcon,
+                                inactiveLabel: inactiveLabel,
+                                activeBg: activeBg,
+                              ),
+                              if (widget.showGameCenterBadge)
+                                Positioned(
+                                  top: 4,
+                                  right: 8,
+                                  child: NotificationBadge(
+                                      show: widget.showGameCenterBadge),
+                                ),
+                            ],
+                          ),
+                        ),
+                        _Divider(color: dividerColor),
+                        Expanded(
+                          child: _NavButton(
+                            tooltip: widget.settingsTooltip,
+                            label: 'Settings',
+                            svgAsset: 'assets/icons/settings.svg',
+                            onTap: widget.onSettings,
+                            active: widget.activeTab == T4LNavTab.settings,
+                            activeColor: activeColor,
+                            inactiveIcon: inactiveIcon,
+                            inactiveLabel: inactiveLabel,
+                            activeBg: activeBg,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // 2. Navigation Items
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Slot 1: Home (H)
-              _NavBarButton(
-                onTap: widget.onHome,
-                tooltip: widget.homeTooltip,
-                svgAsset: 'assets/icons/home.svg',
-              ),
-
-              // Slot 2: Game Center with optional badge
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  _NavBarButton(
-                    onTap: widget.onGameCenter,
-                    tooltip: widget.gameCenterTooltip,
-                    svgAsset: 'assets/icons/schedule.svg',
-                  ),
-                  if (widget.showGameCenterBadge)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child:
-                          NotificationBadge(show: widget.showGameCenterBadge),
-                    ),
-                ],
-              ),
-
-              // Slot 3: Spacer for the Center Button
-              const SizedBox(width: 60),
-
-              // Slot 4: History
-              _NavBarButton(
-                onTap: widget.onHistory,
-                tooltip: widget.historyTooltip,
-                svgAsset: 'assets/icons/back.svg',
-              ),
-
-              // Slot 5: Settings
-              _NavBarButton(
-                onTap: widget.onSettings,
-                tooltip: widget.settingsTooltip,
-                svgAsset: 'assets/icons/settings.svg',
-              ),
-            ],
-          ),
-
-          // 3. Center Pop-out Button
-          Positioned(
-            top: -24,
-            left: 0,
-            right: 0,
-            child: Center(
+            // ─── Team badge floating above ──────────────────────────
+            Positioned(
+              top: 0,
               child: GestureDetector(
                 onTap: widget.onTeamLogo,
+                behavior: HitTestBehavior.opaque,
                 child: AnimatedBuilder(
-                  animation: _animation,
+                  animation: _pulseController,
                   builder: (context, child) {
                     final scale = widget.favoriteTeamLogoUrl == null
-                        ? _animation.value
+                        ? 1.0 + 0.06 * _pulseController.value
                         : 1.0;
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: 64,
-                        height: 64,
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: widget.favoriteTeamLogoUrl != null
-                                ? AppColors.primary
-                                : Colors.white24,
-                            width: 3,
-                          ),
-                          boxShadow: [
-                            if (widget.favoriteTeamLogoUrl == null)
-                              BoxShadow(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.3 * (_controller.value),
-                                ),
-                                blurRadius: 15,
-                                spreadRadius: 5 * (_controller.value),
-                              ),
-                            ...AppShadows.md,
-                          ],
-                        ),
-                        child: child,
-                      ),
-                    );
+                    return Transform.scale(scale: scale, child: child);
                   },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: widget.favoriteTeamLogoUrl != null
-                          ? Image.asset(
-                              widget.favoriteTeamLogoUrl!,
-                              fit: BoxFit.contain,
-                            )
-                          : Image.asset(
-                              'assets/logos/nfl_logo.png',
-                              fit: BoxFit.contain,
-                            ),
+                  child: Container(
+                    width: _badgeSize,
+                    height: _badgeSize,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(color: activeColor, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark
+                              ? Colors.black.withValues(alpha: 0.5)
+                              : AppColors.brandBase.withValues(alpha: 0.30),
+                          blurRadius: 28,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(5),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      widget.favoriteTeamLogoUrl ?? 'assets/logos/nfl_logo.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _NavBarButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final String? svgAsset;
+class _NavButton extends StatelessWidget {
   final String? tooltip;
+  final String label;
+  final String svgAsset;
+  final VoidCallback onTap;
+  final bool active;
+  final Color activeColor;
+  final Color inactiveIcon;
+  final Color inactiveLabel;
+  final Color activeBg;
 
-  const _NavBarButton({
+  const _NavButton({
+    required this.tooltip,
+    required this.label,
+    required this.svgAsset,
     required this.onTap,
-    this.svgAsset,
-    this.tooltip,
+    required this.active,
+    required this.activeColor,
+    required this.inactiveIcon,
+    required this.inactiveLabel,
+    required this.activeBg,
   });
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = active ? activeColor : inactiveIcon;
+    final labelColor = active ? activeColor : inactiveLabel;
+
     return Tooltip(
-      message: tooltip ?? '',
+      message: tooltip ?? label,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          child: svgAsset != null
-              ? SvgPicture.asset(
-                  svgAsset!,
-                  width: 24,
-                  height: 24,
-                  colorFilter: Theme.of(context).brightness == Brightness.dark
-                      ? ColorFilter.mode(
-                          Colors.white.withValues(alpha: 0.9),
-                          BlendMode.srcIn,
-                        )
-                      : null,
-                )
-              : const SizedBox.shrink(),
+          height: 44,
+          margin: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+          decoration: BoxDecoration(
+            color: active ? activeBg : Colors.transparent,
+            borderRadius: BorderRadius.circular(9999),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                svgAsset,
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.27,
+                  color: labelColor,
+                  height: 1.0,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  final Color color;
+  const _Divider({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 1, height: 28, color: color);
   }
 }

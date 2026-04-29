@@ -9,14 +9,15 @@ class FeatureFlagService {
   /// Key: Feature ID (usually matching app ID)
   /// Value: Enabled status
   final Map<String, bool> _flags = {
-    // Core apps
-    'app_hub': true,
+    // MVP scope: only breaking_news (home feed data) and standings are visible.
+    // Other apps remain in the repo but are flag-off for first App Store release.
+    'app_hub': false,
     'breaking_news': true,
-    'deep_dive': true,
-    'radio': true,
+    'deep_dive': false,
+    'radio': false,
     'standings': true,
-    'game_reports': false, // in development
-    'player_wordle': true, // Ready for testing
+    'game_reports': false,
+    'player_wordle': false,
   };
 
   /// Returns true if the feature/app is enabled.

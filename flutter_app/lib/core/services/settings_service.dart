@@ -10,8 +10,7 @@ class SettingsService with ChangeNotifier {
   factory SettingsService() => _instance;
   SettingsService._internal() {
     _initLocale();
-    _loadPersistedTeam();
-    _loadPersistedTheme();
+    _bootstrap();
   }
 
   @visibleForTesting
@@ -20,14 +19,42 @@ class SettingsService with ChangeNotifier {
   Locale _locale = const Locale('en');
   Team? _selectedTeam;
   ThemeMode _themeMode = ThemeMode.light;
+  bool _onboardingComplete = false;
+  bool _isLoaded = false;
 
   static const String _teamKey = 'selected_team_id';
   static const String _themeKey = 'theme_mode';
+  static const String _onboardingKey = 'onboarding_complete_v1';
 
   Locale get locale => _locale;
   Team? get selectedTeam => _selectedTeam;
   ThemeMode get themeMode => _themeMode;
   bool get isDarkMode => _themeMode == ThemeMode.dark;
+
+  /// True once persisted preferences have been loaded from disk.
+  /// While false, callers should render a splash, not the home screen.
+  bool get isLoaded => _isLoaded;
+
+  /// True if the user has completed the forced first-launch onboarding
+  /// (team + language confirmation). Persists across launches.
+  bool get onboardingComplete => _onboardingComplete;
+
+  Future<void> _bootstrap() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _loadPersistedTeam(prefs);
+    await _loadPersistedTheme(prefs);
+    _onboardingComplete = prefs.getBool(_onboardingKey) ?? false;
+    _isLoaded = true;
+    notifyListeners();
+  }
+
+  Future<void> markOnboardingComplete() async {
+    if (_onboardingComplete) return;
+    _onboardingComplete = true;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingKey, true);
+  }
 
   // Immersive Background Logic
   LinearGradient get backgroundGradient {
@@ -99,8 +126,7 @@ class SettingsService with ChangeNotifier {
     }
   }
 
-  Future<void> _loadPersistedTeam() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _loadPersistedTeam(SharedPreferences prefs) async {
     final teamId = prefs.getString(_teamKey);
     if (teamId != null) {
       final teams = TeamService().getTeams();
@@ -109,7 +135,6 @@ class SettingsService with ChangeNotifier {
         orElse: () => teams.first,
       );
       _selectedTeam = team;
-      notifyListeners();
     }
   }
 
@@ -123,12 +148,10 @@ class SettingsService with ChangeNotifier {
     }
   }
 
-  Future<void> _loadPersistedTheme() async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _loadPersistedTheme(SharedPreferences prefs) async {
     final themeIndex = prefs.getInt(_themeKey);
     if (themeIndex != null) {
       _themeMode = ThemeMode.values[themeIndex];
-      notifyListeners();
     }
   }
 

@@ -123,8 +123,6 @@ class T4LScaffold extends StatelessWidget {
                           homeTooltip: AppLocalizations.of(context)!.navHome,
                           gameCenterTooltip:
                               AppLocalizations.of(context)!.navGameCenter,
-                          historyTooltip:
-                              AppLocalizations.of(context)!.navHistory,
                           settingsTooltip:
                               AppLocalizations.of(context)!.navSettings,
                           favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
@@ -133,8 +131,6 @@ class T4LScaffold extends StatelessWidget {
                           onGameCenter: () {
                             NavigationService().openGameCenter(context);
                           },
-                          onHistory: () =>
-                              NavigationService().reopenLastApp(context),
                           onSettings: () {
                             NavigationService().openSettings(
                               context,

@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../services/new_content_service.dart';
 import '../controllers/os_shell_controller.dart';
-import '../../services/navigation_service.dart';
-import '../widgets/t4l_floating_nav_bar.dart';
+import '../widgets/app_dock.dart';
 import '../widgets/t4l_scaffold.dart';
 import 'package:provider/provider.dart';
 import '../../services/settings_service.dart';
 import '../widgets/news_feed/news_feed_widget.dart';
-import '../../../l10n/app_localizations.dart';
 
-import '../../team_center/views/team_center_overlay.dart';
-import '../widgets/user_settings_dialog.dart';
-import '../widgets/team_selector_dialog.dart';
 import '../../widgets/shimmer_skeleton.dart';
-import '../widgets/app_strip.dart';
-import '../../../micro_apps/radio/views/widgets/radio_home_widget.dart';
 
 class OSShellView extends StatefulWidget {
   const OSShellView({super.key});
@@ -75,8 +67,6 @@ class _OSShellViewState extends State<OSShellView>
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<SettingsService>(context);
-
     // Re-initialize animations on hot reload if needed
     _rotationController ??= AnimationController(
       duration: const Duration(seconds: 6),
@@ -92,54 +82,7 @@ class _OSShellViewState extends State<OSShellView>
       value: _controller,
       child: T4LScaffold(
         showCloseButton: false, // Shell is the root
-        bottomNavBarOverride: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 1. App Strip (Horizontal browse)
-            const AppStrip(),
-
-            // 2. Persistent Dock
-            ListenableBuilder(
-              listenable: NewContentService(),
-              builder: (context, child) {
-                return T4LFloatingNavBar(
-                  homeTooltip: AppLocalizations.of(context)!.navHome,
-                  gameCenterTooltip:
-                      AppLocalizations.of(context)!.navGameCenter,
-                  historyTooltip: AppLocalizations.of(context)!.navHistory,
-                  settingsTooltip: AppLocalizations.of(context)!.navSettings,
-                  favoriteTeamLogoUrl: settings.selectedTeam?.logoUrl,
-                  showGameCenterBadge: false, // No badge for Game Center
-                  onHome: () => NavigationService().goHome(context),
-                  onGameCenter: () {
-                    NavigationService().openGameCenter(context);
-                  },
-                  onHistory: () => NavigationService().reopenLastApp(context),
-                  onSettings: () {
-                    NavigationService().openSettings(
-                      context,
-                      (context) => const UserSettingsDialog(),
-                    );
-                  },
-                  onTeamLogo: () {
-                    if (settings.selectedTeam == null) {
-                      NavigationService().openTeamSelector(
-                        context,
-                        (context) => const TeamSelectorDialog(),
-                      );
-                    } else {
-                      NavigationService().openTeamCenter(
-                        context,
-                        () => TeamCenterOverlay.show(
-                            context, settings.selectedTeam!),
-                      );
-                    }
-                  },
-                );
-              },
-            ),
-          ],
-        ),
+        bottomNavBarOverride: const AppDock(),
         body: SafeArea(
           child: Stack(
             children: [
@@ -154,34 +97,18 @@ class _OSShellViewState extends State<OSShellView>
                     return const OSShellSkeleton();
                   }
 
-                  return CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
+                  return const CustomScrollView(
+                    physics: AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      // Header Clearance
                       // Header Clearance (Handled by T4LScaffold)
-                      const SliverToBoxAdapter(child: SizedBox(height: 0)),
+                      SliverToBoxAdapter(child: SizedBox(height: 0)),
 
-                      // Pinned Rich Widgets at the top of the feed
+                      // News Feed (MVP home content)
+                      NewsFeedWidget(),
+
+                      // Bottom Clearance for the Dock
                       SliverPadding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 16),
-                        sliver: SliverList(
-                          delegate: SliverChildListDelegate([
-                            // Radio Widget (Compact)
-                            const SizedBox(
-                              height: 74,
-                              child: RadioHomeWidget(),
-                            ),
-                          ]),
-                        ),
-                      ),
-
-                      // News Feed
-                      const NewsFeedWidget(),
-
-                      // Bottom Clearance for AppStrip + Dock
-                      const SliverPadding(
-                        padding: EdgeInsets.only(bottom: 220),
+                        padding: EdgeInsets.only(bottom: 140),
                       ),
                     ],
                   );
