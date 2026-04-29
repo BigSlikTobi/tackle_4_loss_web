@@ -174,6 +174,7 @@ class ArticlesService {
       players: mentioned.isEmpty ? null : mentioned,
       sourceUrl: firstSource?['url'] as String?,
       sourceName: firstSource?['name'] as String?,
+      author: json['author'] as String?,
     );
   }
 }
