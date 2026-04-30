@@ -2,14 +2,15 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../design_tokens.dart';
 import '../../models/team_model.dart';
+import '../../services/settings_service.dart';
+import '../../theme/t4l_theme.dart';
 import '../models/roster_player.dart';
 import '../controllers/team_center_controller.dart';
 
-const Color _kSheetBgSurface = Color(0xF20E1410); // 0.95
-const Color _kBorderSoft = Color(0x12FFFFFF);
-const Color _kChipActive = Color(0xFF0F3D2E);
-const Color _kAccentBadge = Color(0xFF0F3D2E);
+// Brand-green accent shared by chips/tabs (sourced from design tokens).
+const Color _kAccent = AppColors.brandBase;
 
 class TeamRosterScreen extends StatefulWidget {
   final Team team;
@@ -33,6 +34,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
   String _query = '';
   final TextEditingController _searchCtl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
+
+  late _RosterPalette _p;
 
   @override
   void initState() {
@@ -82,56 +85,47 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.extension<T4LThemeColors>()!;
+    final isDark = theme.brightness == Brightness.dark;
+    final settings = Provider.of<SettingsService>(context);
+    _p = _RosterPalette.from(colors, isDark);
+
     return ChangeNotifierProvider.value(
       value: widget.controller,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(color: Colors.transparent),
-              ),
-            ),
-            const Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment(-0.4, -0.2),
-                    radius: 1.1,
-                    colors: [Color(0xFF1A4A32), Color(0xFF0B1810)],
-                    stops: [0.0, 0.7],
-                  ),
+        body: Container(
+          decoration: BoxDecoration(gradient: settings.backgroundGradient),
+          child: Stack(
+            children: [
+              // Subtle scrim so chrome stays readable on bright team gradients
+              // without hiding the team color.
+              Positioned.fill(child: Container(color: _p.scrim)),
+              SafeArea(
+                child: Consumer<TeamCenterController>(
+                  builder: (context, controller, _) {
+                    final players = _unitRoster(controller);
+                    final positions = _orderedPositions(players);
+                    final filtered = _filter(players);
+
+                    return Column(
+                      children: [
+                        _buildHeader(),
+                        _buildUnitTabs(),
+                        _buildSearchRow(),
+                        _buildChipsRow(positions),
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: _buildBody(controller, filtered),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            ),
-            Positioned.fill(
-              child: Container(color: _kSheetBgSurface),
-            ),
-            SafeArea(
-              child: Consumer<TeamCenterController>(
-                builder: (context, controller, _) {
-                  final players = _unitRoster(controller);
-                  final positions = _orderedPositions(players);
-                  final filtered = _filter(players);
-
-                  return Column(
-                    children: [
-                      _buildHeader(),
-                      _buildUnitTabs(),
-                      _buildSearchRow(),
-                      _buildChipsRow(positions),
-                      const SizedBox(height: 4),
-                      Expanded(
-                        child: _buildBody(controller, filtered),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -141,8 +135,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 18, 16, 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: _kBorderSoft)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: _p.border)),
       ),
       child: Row(
         children: [
@@ -153,7 +147,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               shape: BoxShape.circle,
               color: widget.team.primaryColor,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: _p.surfaceMuted,
                 width: 2,
               ),
             ),
@@ -175,14 +169,14 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          const Text(
+          Text(
             'TEAM ROSTER',
             style: TextStyle(
               fontFamily: 'Russo One',
               fontSize: 20,
               fontStyle: FontStyle.italic,
               letterSpacing: 0.8,
-              color: Colors.white,
+              color: _p.textPrimary,
             ),
           ),
           const Spacer(),
@@ -193,13 +187,13 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               height: 30,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
+                color: _p.surfaceMuted,
               ),
               alignment: Alignment.center,
               child: Icon(
                 Icons.close,
                 size: 14,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: _p.textSecondary,
               ),
             ),
           ),
@@ -212,8 +206,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
   Widget _buildUnitTabs() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: _kBorderSoft)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: _p.border)),
       ),
       child: Row(
         children: List.generate(_units.length, (i) {
@@ -227,7 +221,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: active ? _kAccentBadge : Colors.transparent,
+                      color: active ? _kAccent : Colors.transparent,
                       width: 2,
                     ),
                   ),
@@ -239,9 +233,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.99,
-                    color: active
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.35),
+                    color: active ? _p.textPrimary : _p.textMuted,
                   ),
                 ),
               ),
@@ -259,12 +251,12 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
+          color: _p.surfaceSubtle,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: _searchFocus.hasFocus
-                ? _kAccentBadge.withValues(alpha: 0.6)
-                : Colors.white.withValues(alpha: 0.07),
+                ? _kAccent.withValues(alpha: 0.6)
+                : _p.chipBorder,
           ),
         ),
         child: Row(
@@ -272,7 +264,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
             Icon(
               Icons.search,
               size: 16,
-              color: Colors.white.withValues(alpha: 0.3),
+              color: _p.textMuted,
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -280,8 +272,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                 controller: _searchCtl,
                 focusNode: _searchFocus,
                 onChanged: (v) => setState(() => _query = v),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: _p.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -291,7 +283,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   border: InputBorder.none,
                   hintText: 'Search players, position, college…',
                   hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: _p.textGhost,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -310,13 +302,13 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   height: 18,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: _p.surfaceMuted,
                   ),
                   alignment: Alignment.center,
                   child: Icon(
                     Icons.close,
                     size: 10,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: _p.textSecondary,
                   ),
                 ),
               ),
@@ -329,46 +321,46 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
   // ── CHIPS ────────────────────────────────────────────────────────────────
   Widget _buildChipsRow(List<String> positions) {
     final chips = ['ALL', ...positions];
-    return SizedBox(
-      height: 38,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-        itemCount: chips.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (_, i) {
-          final c = chips[i];
-          final active = c == _posFilter;
-          return GestureDetector(
-            onTap: () => setState(() => _posFilter = c),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-              decoration: BoxDecoration(
-                color: active
-                    ? _kChipActive
-                    : Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: active
-                      ? _kChipActive
-                      : Colors.white.withValues(alpha: 0.1),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 10, 0, 4),
+      child: SizedBox(
+        height: 30,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: chips.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 6),
+          itemBuilder: (_, i) {
+            final c = chips[i];
+            final active = c == _posFilter;
+            return GestureDetector(
+              onTap: () => setState(() => _posFilter = c),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: active ? _kAccent : _p.chipBg,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: active ? _kAccent : _p.chipBorder,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  c,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.77,
+                    color: active ? Colors.white : _p.textMuted,
+                  ),
                 ),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                c,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.77,
-                  color: active
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.45),
-                ),
-              ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -382,7 +374,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
       return Center(
         child: Text(
           'Failed to load roster',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.45)),
+          style: TextStyle(color: _p.textMuted),
         ),
       );
     }
@@ -398,17 +390,20 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
             delegate: _GroupHeaderDelegate(
               label: _positionLabel(g.position),
               count: g.players.length,
+              bg: _p.stickyBg,
+              labelColor: _p.textMuted,
+              countColor: _p.textGhost,
             ),
           ),
           SliverList.separated(
             itemCount: g.players.length,
             itemBuilder: (_, i) => _buildPlayerRow(g.players[i]),
-            separatorBuilder: (_, __) => const Padding(
-              padding: EdgeInsets.only(left: 72, right: 16),
+            separatorBuilder: (_, __) => Padding(
+              padding: const EdgeInsets.only(left: 72, right: 16),
               child: Divider(
                 height: 1,
                 thickness: 1,
-                color: Color(0x0AFFFFFF),
+                color: _p.separator,
               ),
             ),
           ),
@@ -426,13 +421,13 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
           Icon(
             Icons.search_off,
             size: 40,
-            color: Colors.white.withValues(alpha: 0.15),
+            color: _p.surfaceMuted,
           ),
           const SizedBox(height: 10),
           Text(
             'No players found',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4),
+              color: _p.textMuted,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -441,7 +436,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
           Text(
             'Try a different search or filter',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: _p.textMuted,
               fontSize: 12,
             ),
           ),
@@ -468,7 +463,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                   style: TextStyle(
                     fontFamily: 'Russo One',
                     fontSize: 15,
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: _p.textGhost,
                     letterSpacing: 0.3,
                   ),
                 ),
@@ -485,8 +480,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                       p.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: _p.textPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         height: 1.2,
@@ -501,7 +496,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _kAccentBadge.withValues(alpha: 0.5),
+                            color: _kAccent.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -527,7 +522,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.32),
+                          color: _p.textMuted,
                         ),
                       ),
                     ],
@@ -538,7 +533,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               Icon(
                 Icons.chevron_right,
                 size: 18,
-                color: Colors.white.withValues(alpha: 0.18),
+                color: _p.textGhost,
               ),
             ],
           ),
@@ -556,7 +551,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
+          color: _p.logoRing,
           width: 2,
         ),
       ),
@@ -765,8 +760,17 @@ class _PositionGroup {
 class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String label;
   final int count;
+  final Color bg;
+  final Color labelColor;
+  final Color countColor;
 
-  _GroupHeaderDelegate({required this.label, required this.count});
+  _GroupHeaderDelegate({
+    required this.label,
+    required this.count,
+    required this.bg,
+    required this.labelColor,
+    required this.countColor,
+  });
 
   @override
   double get minExtent => 36;
@@ -780,7 +784,7 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
-          color: const Color(0xF80E1410),
+          color: bg,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
           alignment: Alignment.centerLeft,
           child: Row(
@@ -792,7 +796,7 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
                   fontFamily: 'Russo One',
                   fontSize: 11,
                   letterSpacing: 1.1,
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: labelColor,
                 ),
               ),
               Text(
@@ -801,7 +805,7 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: countColor,
                 ),
               ),
             ],
@@ -813,7 +817,11 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _GroupHeaderDelegate oldDelegate) {
-    return oldDelegate.label != label || oldDelegate.count != count;
+    return oldDelegate.label != label ||
+        oldDelegate.count != count ||
+        oldDelegate.bg != bg ||
+        oldDelegate.labelColor != labelColor ||
+        oldDelegate.countColor != countColor;
   }
 }
 
@@ -826,6 +834,28 @@ class _PlayerDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.extension<T4LThemeColors>()!;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final sheetBg = isDark ? const Color(0xFF141E16) : colors.surface;
+    final topBorder = isDark ? const Color(0x14FFFFFF) : colors.border;
+    final dividerColor = isDark ? const Color(0x0DFFFFFF) : colors.border;
+    final keyColor =
+        isDark ? Colors.white.withValues(alpha: 0.28) : colors.textMuted;
+    final valColor =
+        isDark ? Colors.white.withValues(alpha: 0.75) : colors.textSecondary;
+    final ghostColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : colors.textMuted.withValues(alpha: 0.4);
+    final handleColor = isDark
+        ? Colors.white.withValues(alpha: 0.15)
+        : colors.textMuted.withValues(alpha: 0.5);
+    final subColor =
+        isDark ? Colors.white.withValues(alpha: 0.4) : colors.textSecondary;
+    final avatarRing =
+        isDark ? Colors.white.withValues(alpha: 0.2) : colors.border;
+
     final initials = player.name
         .trim()
         .split(RegExp(r'\s+'))
@@ -847,12 +877,10 @@ class _PlayerDetailSheet extends StatelessWidget {
     bioRows.add(['Team', team.id.toUpperCase()]);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF141E16),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: Color(0x14FFFFFF)),
-        ),
+      decoration: BoxDecoration(
+        color: sheetBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: topBorder)),
       ),
       child: SafeArea(
         top: false,
@@ -864,7 +892,7 @@ class _PlayerDetailSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: handleColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -877,10 +905,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                     height: 54,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 2,
-                      ),
+                      border: Border.all(color: avatarRing, width: 2),
                     ),
                     child: ClipOval(
                       child: player.imageUrl.isNotEmpty
@@ -905,10 +930,10 @@ class _PlayerDetailSheet extends StatelessWidget {
                           player.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Russo One',
                             fontSize: 18,
-                            color: Colors.white,
+                            color: colors.textPrimary,
                             letterSpacing: 0.36,
                           ),
                         ),
@@ -928,7 +953,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: subColor,
                           ),
                         ),
                       ],
@@ -942,13 +967,13 @@ class _PlayerDetailSheet extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Russo One',
                       fontSize: 32,
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: ghostColor,
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0x0DFFFFFF)),
+            Divider(height: 1, color: dividerColor),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
               child: Column(
@@ -965,7 +990,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.66,
-                              color: Colors.white.withValues(alpha: 0.28),
+                              color: keyColor,
                             ),
                           ),
                           Flexible(
@@ -977,7 +1002,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: 0.75),
+                                color: valColor,
                               ),
                             ),
                           ),
@@ -985,7 +1010,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                       ),
                     ),
                     if (i < bioRows.length - 1)
-                      const Divider(height: 1, color: Color(0x0DFFFFFF)),
+                      Divider(height: 1, color: dividerColor),
                   ],
                 ],
               ),
@@ -1008,6 +1033,78 @@ class _PlayerDetailSheet extends StatelessWidget {
           color: Colors.white,
         ),
       ),
+    );
+  }
+}
+
+// ─── PALETTE (theme-aware surface/text/border resolution) ────────────────
+class _RosterPalette {
+  final bool isDark;
+  final Color scrim;
+  final Color stickyBg;
+  final Color border;
+  final Color separator;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color textGhost;
+  final Color surfaceMuted;
+  final Color surfaceSubtle;
+  final Color chipBg;
+  final Color chipBorder;
+  final Color logoRing;
+
+  const _RosterPalette({
+    required this.isDark,
+    required this.scrim,
+    required this.stickyBg,
+    required this.border,
+    required this.separator,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.textGhost,
+    required this.surfaceMuted,
+    required this.surfaceSubtle,
+    required this.chipBg,
+    required this.chipBorder,
+    required this.logoRing,
+  });
+
+  factory _RosterPalette.from(T4LThemeColors c, bool isDark) {
+    if (isDark) {
+      return _RosterPalette(
+        isDark: true,
+        scrim: Colors.black.withValues(alpha: 0.45),
+        stickyBg: Colors.black.withValues(alpha: 0.55),
+        border: const Color(0x14FFFFFF),
+        separator: const Color(0x0AFFFFFF),
+        textPrimary: Colors.white,
+        textSecondary: Colors.white.withValues(alpha: 0.6),
+        textMuted: Colors.white.withValues(alpha: 0.4),
+        textGhost: Colors.white.withValues(alpha: 0.22),
+        surfaceMuted: Colors.white.withValues(alpha: 0.1),
+        surfaceSubtle: Colors.white.withValues(alpha: 0.06),
+        chipBg: Colors.white.withValues(alpha: 0.07),
+        chipBorder: Colors.white.withValues(alpha: 0.12),
+        logoRing: Colors.white.withValues(alpha: 0.15),
+      );
+    }
+    return _RosterPalette(
+      isDark: false,
+      scrim: Colors.white.withValues(alpha: 0.55),
+      stickyBg: Colors.white.withValues(alpha: 0.7),
+      border: c.border,
+      separator: c.border.withValues(alpha: 0.5),
+      textPrimary: c.textPrimary,
+      textSecondary: c.textSecondary,
+      textMuted: c.textMuted,
+      textGhost: c.textMuted.withValues(alpha: 0.55),
+      surfaceMuted: c.textPrimary.withValues(alpha: 0.06),
+      surfaceSubtle: c.textPrimary.withValues(alpha: 0.04),
+      chipBg: Colors.white.withValues(alpha: 0.6),
+      chipBorder: c.border,
+      logoRing: c.textPrimary.withValues(alpha: 0.12),
     );
   }
 }
