@@ -430,7 +430,7 @@ class _Body extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _BylineBar(
-            article: article,
+            article: fullForRead,
             readMins: readMins,
             colors: colors,
             isDark: isDark,
