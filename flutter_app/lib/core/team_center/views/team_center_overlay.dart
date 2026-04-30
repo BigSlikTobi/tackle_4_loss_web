@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/team_model.dart';
 import '../controllers/team_center_controller.dart';
 import 'widgets/daily_update_card.dart';
+import 'widgets/game_carousel.dart';
 import 'widgets/team_menu_button.dart';
 import '../../os_shell/widgets/mini_player.dart';
 import 'team_roster_screen.dart';
@@ -57,7 +58,8 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
     super.initState();
     _controller = TeamCenterController()
       ..loadTeamData(widget.team, languageCode: widget.languageCode)
-      ..loadTeamRoster(widget.team.id);
+      ..loadTeamRoster(widget.team.id)
+      ..loadInjuries(widget.team.id);
 
     // Preload Defense images when roster arrives
     _controller.addListener(_preloadDefenseImages);
@@ -120,9 +122,6 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                             children: [
                               const SizedBox(height: 10),
 
-                              // MVP: Games Timeline removed from Team Center.
-                              // Roster, Depth Chart, and Injuries remain.
-
                               // Daily Update
                               DailyUpdateCard(
                                 article: controller.todaysArticle,
@@ -156,7 +155,35 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                                 },
                               ),
 
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 24),
+
+                              // Game carousel (last result + neighbors)
+                              if (controller.allTeamGames.isNotEmpty) ...[
+                                GameCarousel(
+                                  team: widget.team,
+                                  games: controller.allTeamGames,
+                                  initialIndex: controller.startIndex,
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+
+                              // Section label
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(4, 0, 0, 10),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'TEAM INFO',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 1.1,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                ),
+                              ),
 
                               // Menu Buttons
                               TeamMenuButton(
@@ -164,6 +191,9 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                                 icon: Icons.people_outline,
                                 iconAssetPath: 'assets/icons/roster.svg',
                                 color: widget.team.primaryColor,
+                                accentColor: const Color(0xFF0F3D2E),
+                                subtitle: _rosterSubtitle(controller),
+                                statText: _rosterStat(controller),
                                 onTap: () {
                                   final controller = context.read<
                                       TeamCenterController>(); // Get existing controller
@@ -202,6 +232,9 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                                 icon: Icons.list_alt,
                                 iconAssetPath: 'assets/icons/depth.svg',
                                 color: widget.team.primaryColor,
+                                accentColor: const Color(0xFF1A2F4A),
+                                subtitle: 'Offense · Defense · Special Teams',
+                                statText: '3',
                                 onTap: () {
                                   final controller =
                                       context.read<TeamCenterController>();
@@ -239,6 +272,10 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                                 icon: Icons.local_hospital_outlined,
                                 iconAssetPath: 'assets/icons/injuries.svg',
                                 color: widget.team.primaryColor,
+                                accentColor: const Color(0xFF3A1010),
+                                subtitle: _injurySubtitle(controller),
+                                statText: _injuryStat(controller),
+                                statColor: const Color(0xE6E06060),
                                 onTap: () {
                                   final controller =
                                       context.read<TeamCenterController>();
@@ -366,5 +403,39 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
         ],
       ),
     );
+  }
+
+  String _rosterSubtitle(TeamCenterController c) {
+    final total = c.offenseRoster.length +
+        c.defenseRoster.length +
+        c.specialTeamsRoster.length;
+    if (total == 0) return 'Active roster';
+    return '$total players · 3 units';
+  }
+
+  String _rosterStat(TeamCenterController c) {
+    final total = c.offenseRoster.length +
+        c.defenseRoster.length +
+        c.specialTeamsRoster.length;
+    return total > 0 ? '$total' : '—';
+  }
+
+  String _injurySubtitle(TeamCenterController c) {
+    final out = c.outInjuries.length;
+    final q = c.questionableInjuries.length;
+    final d = c.doubtfulInjuries.length;
+    if (out + q + d == 0) return 'No reported injuries';
+    final parts = <String>[];
+    if (out > 0) parts.add('$out Out');
+    if (d > 0) parts.add('$d Doubtful');
+    if (q > 0) parts.add('$q Quest.');
+    return parts.join(' · ');
+  }
+
+  String _injuryStat(TeamCenterController c) {
+    final total = c.outInjuries.length +
+        c.questionableInjuries.length +
+        c.doubtfulInjuries.length;
+    return total > 0 ? '$total' : '—';
   }
 }
