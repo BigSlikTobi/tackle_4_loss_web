@@ -37,6 +37,7 @@ class AppColors {
   // Status (player availability indicators across team center surfaces)
   static const Color statusActive = Color(0xFF4caf80); // Green — active/healthy
   static const Color statusQuest = Color(0xFFc9a256); // Gold — questionable
+  static const Color statusDoubtful = Color(0xFFe08040); // Amber — doubtful
   static const Color statusOut = Color(0xFFe06060); // Red — out / IR
 
   // Editorial accent — used for premium/podcast highlights and starter pills

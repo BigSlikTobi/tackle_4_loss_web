@@ -36,6 +36,7 @@ export const designTokens = {
     status: {
       active: '#4caf80', // healthy / active
       quest: '#c9a256', // questionable
+      doubtful: '#e08040', // doubtful
       out: '#e06060', // out / IR
     },
     // Editorial accent — used for podcast/premium chips and starter pills
