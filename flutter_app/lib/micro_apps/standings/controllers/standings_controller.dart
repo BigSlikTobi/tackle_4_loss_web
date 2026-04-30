@@ -47,6 +47,7 @@ class StandingsController extends ChangeNotifier {
   StandingsViewMode _viewMode = StandingsViewMode.division;
   ScrollController? _scrollController;
   String? _selectedConference; // 'AFC', 'NFC', or null
+  String _selectedDivision = 'North'; // 'North', 'South', 'East', 'West'
 
   // Scroll Request Stream
   final _scrollRequestController = StreamController<String>.broadcast();
@@ -56,6 +57,15 @@ class StandingsController extends ChangeNotifier {
   StandingsViewMode get viewMode => _viewMode;
   ScrollController? get scrollController => _scrollController;
   String? get selectedConference => _selectedConference;
+  String get selectedDivision => _selectedDivision;
+
+  /// Sets the active division (used in division view to filter to one division)
+  void setDivision(String division) {
+    if (_selectedDivision != division) {
+      _selectedDivision = division;
+      notifyListeners();
+    }
+  }
 
   @override
   void dispose() {

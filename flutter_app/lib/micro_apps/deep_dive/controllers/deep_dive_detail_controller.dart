@@ -1,31 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/deep_dive_article.dart';
 
+/// Stubbed in MVP slim — Deep Dive is flag-off and the underlying
+/// `get-article-viewer-data` edge function is gone with the new main
+/// Supabase project.
+///
+// TODO(restore-on-revive): wire to a new edge function when Deep Dive returns.
 class DeepDiveDetailController extends ChangeNotifier {
-  DeepDiveArticle? _article;
-  bool _isLoading = true;
+  final DeepDiveArticle? _article = null;
+  bool _isLoading = false;
 
   DeepDiveArticle? get article => _article;
   bool get isLoading => _isLoading;
 
   Future<void> loadArticleDetails(String articleId) async {
-    _isLoading = true;
+    _isLoading = false;
     notifyListeners();
-
-    try {
-      final response = await Supabase.instance.client.functions.invoke(
-        'get-article-viewer-data',
-        body: {'article_id': articleId},
-      );
-
-      final data = response.data as Map<String, dynamic>;
-      _article = DeepDiveArticle.fromJson(data);
-    } catch (e) {
-      debugPrint('Error fetching article details: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 }

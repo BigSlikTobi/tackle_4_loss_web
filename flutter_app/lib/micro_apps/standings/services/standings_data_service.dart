@@ -5,7 +5,7 @@ import '../models/team_standing.dart';
 /// Service for fetching standings data from the Supabase edge function.
 class StandingsDataService {
   late final SupabaseClient _supabase;
-  static const String _functionName = 'get-standings';
+  static const String _functionName = 'standings';
 
   /// Default constructor - initializes Supabase client
   StandingsDataService() : _supabase = Supabase.instance.client;

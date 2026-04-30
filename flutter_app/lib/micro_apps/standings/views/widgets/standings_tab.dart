@@ -2,10 +2,29 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tackle4loss_mobile/design_tokens.dart';
+import '../../../../core/services/settings_service.dart';
+import '../../../../core/theme/t4l_theme.dart';
 import '../../controllers/standings_controller.dart';
 import '../../models/team_standing.dart';
 import 'standings_filter_header.dart';
 import 'team_standings_card.dart';
+
+/// Result of building a single standings section.
+class _Section {
+  final String title;
+  final String? subtitle;
+  final List<TeamStanding> teams;
+  final int playoffCutoff;
+  final String? scrollKey;
+
+  _Section({
+    required this.title,
+    required this.teams,
+    required this.playoffCutoff,
+    this.subtitle,
+    this.scrollKey,
+  });
+}
 
 class StandingsTab extends StatefulWidget {
   const StandingsTab({super.key});
@@ -15,7 +34,6 @@ class StandingsTab extends StatefulWidget {
 }
 
 class _StandingsTabState extends State<StandingsTab> {
-  String? _expandedTeamId;
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _sectionKeys = {};
   StreamSubscription? _scrollSubscription;
@@ -40,38 +58,30 @@ class _StandingsTabState extends State<StandingsTab> {
 
   void _handleScrollRequest(String key) {
     if (!mounted) return;
-
     final controller = context.read<StandingsController>();
     String? targetKey;
-    final normalizedInfo = key.toUpperCase();
+    final normalized = key.toUpperCase();
 
-    // If a conference is explicitly selected, prioritize that specific key
     if (controller.selectedConference != null) {
-      final specificKey =
-          "${controller.selectedConference} $normalizedInfo".toUpperCase();
-      for (final sectionKey in _sectionKeys.keys) {
-        if (sectionKey.toUpperCase().contains(specificKey)) {
-          targetKey = sectionKey;
+      final specific =
+          '${controller.selectedConference} $normalized'.toUpperCase();
+      for (final k in _sectionKeys.keys) {
+        if (k.toUpperCase().contains(specific)) {
+          targetKey = k;
           break;
         }
       }
     }
+    targetKey ??= _sectionKeys.keys.firstWhere(
+      (k) => k.toUpperCase().contains(normalized),
+      orElse: () => '',
+    );
 
-    // Fallback: Find first matching key (default behavior) if no target found yet
-    if (targetKey == null) {
-      for (final sectionKey in _sectionKeys.keys) {
-        if (sectionKey.toUpperCase().contains(normalizedInfo)) {
-          targetKey = sectionKey;
-          break;
-        }
-      }
-    }
-
-    if (targetKey != null) {
-      final context = _sectionKeys[targetKey]?.currentContext;
-      if (context != null) {
+    if (targetKey.isNotEmpty) {
+      final ctx = _sectionKeys[targetKey]?.currentContext;
+      if (ctx != null) {
         Scrollable.ensureVisible(
-          context,
+          ctx,
           duration: AppAnimation.durationNormal,
           curve: Curves.easeInOut,
           alignment: 0.05,
@@ -80,226 +90,179 @@ class _StandingsTabState extends State<StandingsTab> {
     }
   }
 
-  void _onTeamTap(String teamId) {
-    setState(() {
-      if (_expandedTeamId == teamId) {
-        _expandedTeamId = null; // Collapse if already open
-      } else {
-        _expandedTeamId = teamId; // Expand
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<StandingsController>(
-      builder: (context, controller, child) {
+      builder: (context, controller, _) {
         if (controller.isLoadingStandings) {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.brandBase));
         }
-
         if (controller.standingsError != null) {
-          return _buildErrorState(context, controller);
+          return _buildErrorState(controller);
+        }
+        if (controller.standings.isEmpty) {
+          return const Center(child: Text('No standings available.'));
         }
 
-        if (controller.standings.isEmpty) {
-          return _buildEmptyState(context);
-        }
+        final myTeamId =
+            context.watch<SettingsService>().selectedTeam?.id.toUpperCase();
+        final sections = _buildSections(controller);
+
+        final headerHeight = controller.viewMode == StandingsViewMode.division
+            ? 132.0
+            : controller.viewMode == StandingsViewMode.conference
+                ? 92.0
+                : 50.0;
 
         return CustomScrollView(
           controller: _scrollController,
           slivers: [
-            // Pinned Filter Header
             SliverPersistentHeader(
               pinned: true,
               delegate: _StandingsHeaderDelegate(
                 child: const StandingsFilterHeader(),
-                // Increase height if Division view to accommodate stacked filters
-                height: controller.viewMode == StandingsViewMode.division
-                    ? 160
-                    : 110,
+                height: headerHeight,
               ),
             ),
-
-            // Content
-            SliverPadding(
-              padding: const EdgeInsets.all(AppSpacing.space2),
-              sliver: _buildSliverContent(controller),
+            SliverToBoxAdapter(child: _buildColumnHeaders()),
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (ctx, i) => _buildSection(sections[i], myTeamId),
+                childCount: sections.length,
+              ),
             ),
-
-            const SliverToBoxAdapter(
-                child: SizedBox(height: 80)), // Bottom padding
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
         );
       },
     );
   }
 
-  Widget _buildSliverContent(StandingsController controller) {
-    final mode = controller.viewMode;
-    final standings = controller.standings;
-
-    if (mode == StandingsViewMode.league) {
-      return _buildLeagueView(standings);
-    } else if (mode == StandingsViewMode.conference) {
-      return _buildConferenceView(standings, controller);
-    } else {
-      return _buildDivisionView(standings, controller);
-    }
-  }
-
-  Widget _buildLeagueView(List<ConferenceStandings> standings) {
-    // Flatten all teams
-    final List<TeamStanding> allTeams = [];
-    for (var conf in standings) {
-      for (var div in conf.divisions) {
-        allTeams.addAll(div.teams);
-      }
-    }
-    // Sort by record
-    allTeams.sort((a, b) {
-      if (a.winPercentage != b.winPercentage) {
-        return b.winPercentage.compareTo(a.winPercentage);
-      }
-      return b.netPoints.compareTo(a.netPoints);
-    });
-
-    return SliverToBoxAdapter(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildSectionHeader("NFL LEAGUE", null),
-          ...allTeams.asMap().entries.map((entry) {
-            final index = entry.key;
-            final team = entry.value;
-            return TeamStandingsCard(
-              team: team,
-              rank: index + 1,
-              isExpanded: _expandedTeamId == team.teamId,
-              onTap: () => _onTeamTap(team.teamId),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConferenceView(
-      List<ConferenceStandings> standings, StandingsController controller) {
-    return SliverToBoxAdapter(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var conf in standings) ...[
-            // Filter by selection if active
-            if (controller.selectedConference == null ||
-                controller.selectedConference ==
-                    conf.conference.toUpperCase()) ...[
-              _buildSectionHeader(conf.conference, conf.conference),
-
-              // Flatten divisions for sorting
-              Builder(builder: (context) {
-                final confTeams = <TeamStanding>[];
-                for (var div in conf.divisions) {
-                  confTeams.addAll(div.teams);
-                }
-                // Sort by Conf ranking logic
-                confTeams.sort((a, b) {
-                  if (a.winPercentage != b.winPercentage) {
-                    return b.winPercentage.compareTo(a.winPercentage);
-                  }
-                  return b.netPoints.compareTo(a.netPoints);
-                });
-
-                return Column(
-                  children: [
-                    for (int i = 0; i < confTeams.length; i++)
-                      TeamStandingsCard(
-                        team: confTeams[i],
-                        rank: i + 1,
-                        isExpanded: _expandedTeamId == confTeams[i].teamId,
-                        onTap: () => _onTeamTap(confTeams[i].teamId),
-                      )
-                  ],
-                );
-              }),
-
-              const SizedBox(height: 24),
-            ]
-          ]
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDivisionView(
-      List<ConferenceStandings> standings, StandingsController controller) {
-    final items = <Widget>[];
-
-    for (var conf in standings) {
-      // Filter by selection if active
-      if (controller.selectedConference != null &&
-          controller.selectedConference != conf.conference.toUpperCase()) {
-        continue;
-      }
-
-      for (var div in conf.divisions) {
-        // Fix redundancy: If division mentions conference (e.g. 'AFC EAST'), use it directly.
-        // Otherwise prepend. The data usually comes as 'East', so we construct 'AFC EAST'.
-        // But if it's already full, we handle it.
-        var sectionName =
-            "${conf.conference.toUpperCase()} ${div.division.toUpperCase()}";
-        if (div.division
-            .toUpperCase()
-            .contains(conf.conference.toUpperCase())) {
-          sectionName = div.division.toUpperCase();
-        }
-
-        items.add(_buildSectionHeader(sectionName, sectionName));
-
-        for (int i = 0; i < div.teams.length; i++) {
-          final team = div.teams[i];
-          items.add(TeamStandingsCard(
-            team: team,
-            rank: i + 1,
-            isExpanded: _expandedTeamId == team.teamId,
-            onTap: () => _onTeamTap(team.teamId),
-          ));
-        }
-        items.add(const SizedBox(height: 16));
-      }
-    }
-
-    return SliverToBoxAdapter(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: items,
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, String? keyDetails) {
-    if (keyDetails != null) {
-      if (!_sectionKeys.containsKey(keyDetails)) {
-        _sectionKeys[keyDetails] = GlobalKey();
-      }
-    }
-
-    return Container(
-      key: keyDetails != null ? _sectionKeys[keyDetails] : null,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      alignment: Alignment.centerLeft,
+  // ── Column headers (W / L / PCT) ───────────────────────────────────
+  Widget _buildColumnHeaders() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(64, 6, AppSpacing.space2, 4),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: AppTextStyles.h2.copyWith(
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w900,
-              color: Colors.white.withValues(alpha: 0.9), // Brighter white/grey
-              letterSpacing: -0.5,
+          const Spacer(),
+          for (final h in ['W', 'L', 'PCT'])
+            SizedBox(
+              width: 32,
+              child: Text(
+                h,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.7,
+                  color: Colors.white.withValues(alpha: 0.22),
+                ),
+              ),
+            ),
+          const SizedBox(width: 20),
+        ],
+      ),
+    );
+  }
+
+  // ── Section + cutoff line + rows ───────────────────────────────────
+  Widget _buildSection(_Section section, String? myTeamId) {
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    final key = _ensureSectionKey(section.scrollKey);
+    final cutoff = section.playoffCutoff;
+
+    final children = <Widget>[
+      Container(
+        key: key,
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.space2, 12, AppSpacing.space2, 6),
+        child: Row(
+          children: [
+            Flexible(
+              child: Text(
+                section.title,
+                style: AppTextStyles.h3.copyWith(
+                  fontFamily: 'Russo One',
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  letterSpacing: 0.6,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ),
+            if (section.subtitle != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Text(
+                  section.subtitle!,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.25),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ];
+
+    for (var i = 0; i < section.teams.length; i++) {
+      if (i == cutoff) {
+        children.add(_buildPlayoffLine(colors));
+      }
+      final team = section.teams[i];
+      final isPlayoff = i < cutoff;
+      final isWildcard = !isPlayoff && i < cutoff + 3 && cutoff > 1;
+      children.add(
+        TeamStandingsCard(
+          team: team,
+          rank: i + 1,
+          isPlayoff: isPlayoff,
+          isWildcard: isWildcard,
+          isMyTeam: myTeamId != null && team.teamId.toUpperCase() == myTeamId,
+          onTap: () {},
+        ),
+      );
+    }
+
+    children.add(const SizedBox(height: 12));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    );
+  }
+
+  Widget _buildPlayoffLine(T4LThemeColors colors) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 52, right: AppSpacing.space2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colors.brand,
+                  colors.brand.withValues(alpha: 0.2),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 2, bottom: 2),
+            child: Text(
+              'PLAYOFF LINE',
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 8,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.0,
+                color: colors.brand.computeLuminance() > 0.5
+                    ? colors.brand
+                    : Color.lerp(colors.brand, Colors.white, 0.5),
+              ),
             ),
           ),
         ],
@@ -307,8 +270,120 @@ class _StandingsTabState extends State<StandingsTab> {
     );
   }
 
-  Widget _buildErrorState(
-      BuildContext context, StandingsController controller) {
+  GlobalKey? _ensureSectionKey(String? scrollKey) {
+    if (scrollKey == null) return null;
+    return _sectionKeys.putIfAbsent(scrollKey, () => GlobalKey());
+  }
+
+  // ── Section building ───────────────────────────────────────────────
+  List<_Section> _buildSections(StandingsController controller) {
+    final mode = controller.viewMode;
+    if (mode == StandingsViewMode.league) {
+      return _leagueSections(controller);
+    }
+    if (mode == StandingsViewMode.conference) {
+      return _conferenceSections(controller);
+    }
+    return _divisionSections(controller);
+  }
+
+  List<_Section> _leagueSections(StandingsController controller) {
+    return controller.standings.map((conf) {
+      final teams = <TeamStanding>[];
+      for (final d in conf.divisions) {
+        teams.addAll(d.teams);
+      }
+      teams.sort(_byRank((t) => t.conferenceRank));
+      return _Section(
+        title: conf.conference.toUpperCase(),
+        subtitle: '· ALL TEAMS',
+        teams: teams,
+        playoffCutoff: _playoffCutoff(teams),
+        scrollKey: conf.conference.toUpperCase(),
+      );
+    }).toList();
+  }
+
+  List<_Section> _conferenceSections(StandingsController controller) {
+    final selected = controller.selectedConference;
+    return controller.standings
+        .where(
+            (c) => selected == null || c.conference.toUpperCase() == selected)
+        .map((conf) {
+      final teams = <TeamStanding>[];
+      for (final d in conf.divisions) {
+        teams.addAll(d.teams);
+      }
+      teams.sort(_byRank((t) => t.conferenceRank));
+      return _Section(
+        title: '${conf.conference.toUpperCase()} STANDINGS',
+        teams: teams,
+        playoffCutoff: _playoffCutoff(teams),
+        scrollKey: conf.conference.toUpperCase(),
+      );
+    }).toList();
+  }
+
+  List<_Section> _divisionSections(StandingsController controller) {
+    final selectedDivision = controller.selectedDivision.toUpperCase();
+    final selectedConf = controller.selectedConference;
+    final sections = <_Section>[];
+
+    for (final conf in controller.standings) {
+      if (selectedConf != null &&
+          conf.conference.toUpperCase() != selectedConf) {
+        continue;
+      }
+      for (final div in conf.divisions) {
+        if (div.division.toUpperCase() != selectedDivision) continue;
+        final sortedTeams = [...div.teams]
+          ..sort(_byRank((t) => t.divisionRank));
+        sections.add(_Section(
+          title:
+              '${conf.conference.toUpperCase()} ${div.division.toUpperCase()}',
+          teams: sortedTeams,
+          // Draw the line after the last team from this division that's
+          // currently in the playoffs (division winner + any wildcards).
+          playoffCutoff: _playoffCutoff(sortedTeams),
+          scrollKey:
+              '${conf.conference.toUpperCase()} ${div.division.toUpperCase()}',
+        ));
+      }
+    }
+    return sections;
+  }
+
+  /// Sort by the given server-supplied rank (ascending). Teams without a
+  /// rank fall to the bottom and are ordered by win pct / net points so the
+  /// list still degrades gracefully if the backend stops emitting ranks.
+  static int Function(TeamStanding, TeamStanding) _byRank(
+      int? Function(TeamStanding) pickRank) {
+    return (a, b) {
+      final ra = pickRank(a);
+      final rb = pickRank(b);
+      if (ra != null && rb != null) return ra.compareTo(rb);
+      if (ra != null) return -1;
+      if (rb != null) return 1;
+      if (a.winPercentage != b.winPercentage) {
+        return b.winPercentage.compareTo(a.winPercentage);
+      }
+      return b.netPoints.compareTo(a.netPoints);
+    };
+  }
+
+  /// Index after the last team in [teams] currently holding a conference
+  /// playoff seed (1–7). Drives the playoff line position so it lands right
+  /// below the deepest seeded team in the section regardless of sort order.
+  /// Returns 0 if no team in the section is in the playoffs.
+  static int _playoffCutoff(List<TeamStanding> teams) {
+    int lastSeededIndex = -1;
+    for (int i = 0; i < teams.length; i++) {
+      if (teams[i].inPlayoffs) lastSeededIndex = i;
+    }
+    return lastSeededIndex + 1;
+  }
+
+  Widget _buildErrorState(StandingsController controller) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -319,14 +394,10 @@ class _StandingsTabState extends State<StandingsTab> {
           const Text('Failed to load standings', style: AppTextStyles.h3),
           const SizedBox(height: AppSpacing.space1),
           TextButton(
-              onPressed: controller.fetchStandings, child: const Text("Retry")),
+              onPressed: controller.fetchStandings, child: const Text('Retry')),
         ],
       ),
     );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return const Center(child: Text("No standings available."));
   }
 }
 
@@ -348,7 +419,6 @@ class _StandingsHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(_StandingsHeaderDelegate oldDelegate) {
-    return oldDelegate.child != child || oldDelegate.height != height;
-  }
+  bool shouldRebuild(_StandingsHeaderDelegate old) =>
+      old.child != child || old.height != height;
 }

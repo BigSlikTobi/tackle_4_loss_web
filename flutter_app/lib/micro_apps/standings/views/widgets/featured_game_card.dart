@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../../../core/services/team_service.dart';
+import '../../../../core/services/team_logo_service.dart';
 import '../../../../core/models/team_model.dart';
 import '../../models/game_model.dart';
 
+/// "Your Matchup" card. EMOTIONAL DESIGN: brand color (user team) drives the
+/// border accent and the Details button.
 class FeaturedGameCard extends StatelessWidget {
   final Game game;
   final Team featuredTeam;
@@ -19,252 +22,43 @@ class FeaturedGameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final teamService = TeamService();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
-
-    // Determine colors based on the featured team
-    final primaryColor = featuredTeam.primaryColor;
+    final teamService = TeamService();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header Label
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.space2,
-            vertical: AppSpacing.space1,
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.star_rounded, color: primaryColor, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Your Matchup',
-                style: AppTextStyles.h3.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : AppColors.textPrimary,
-                ),
-              ),
-            ],
+          padding: const EdgeInsets.fromLTRB(
+              AppSpacing.space3, 14, AppSpacing.space3, 8),
+          child: Text(
+            'YOUR MATCHUP',
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.0,
+              color: Colors.white.withValues(alpha: 0.35),
+            ),
           ),
         ),
-
-        // The Card
         Container(
-          height: 240,
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.space2,
-            vertical: AppSpacing.space1,
-          ),
+          margin: const EdgeInsets.fromLTRB(
+              AppSpacing.space2, 0, AppSpacing.space2, 6),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppBorders.radiusXl),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                const Color(0xFF1a1a1a),
-                primaryColor.withValues(alpha: 0.4),
-                colors.background,
-              ],
-            ),
-            boxShadow: AppShadows.lg,
+            color: Colors.white.withValues(alpha: 0.04),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: colors.brand.withValues(alpha: 0.3)),
           ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(AppBorders.radiusXl),
-              child: Stack(
+              borderRadius: BorderRadius.circular(14),
+              child: Column(
                 children: [
-                  // Spotlights (Atmosphere)
-                  Positioned(
-                    top: -50,
-                    left: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0.3),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    top: -50,
-                    right: -50,
-                    child: Container(
-                      width: 200,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: RadialGradient(
-                          colors: [
-                            Colors.white.withValues(alpha: 0.3),
-                            Colors.transparent,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Content
-                  Padding(
-                    padding: const EdgeInsets.all(AppSpacing.space2),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Top Row: Status/Notification
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Status Badge (FINAL or Time)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: game.isPlayed
-                                    ? Colors.white.withValues(alpha: 0.2)
-                                    : primaryColor,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                game.isPlayed ? 'FINAL' : game.gametime,
-                                style: AppTextStyles.caption.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.notifications_none,
-                              color: Colors.white.withValues(alpha: 0.8),
-                            ),
-                          ],
-                        ),
-
-                        // Middle Row: Matchup (Logo - Score - Logo)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildBigTeamColumn(
-                              teamService,
-                              game.awayTeam,
-                              game.awayScore,
-                              game.isPlayed,
-                              game.winner == game.awayTeam,
-                              primaryColor,
-                            ),
-                            Column(
-                              children: [
-                                if (game.isPlayed)
-                                  const Text(
-                                    '-',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white54,
-                                    ),
-                                  )
-                                else
-                                  Text(
-                                    'VS',
-                                    style: TextStyle(
-                                      fontFamily: 'Russo One',
-                                      fontSize: 24,
-                                      fontStyle: FontStyle.italic,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                    ),
-                                  ),
-                                Text(
-                                  'Week ${game.week}',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: Colors.white70,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            _buildBigTeamColumn(
-                              teamService,
-                              game.homeTeam,
-                              game.homeScore,
-                              game.isPlayed,
-                              game.winner == game.homeTeam,
-                              primaryColor,
-                            ),
-                          ],
-                        ),
-
-                        // Bottom Row: Date & Button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  game.weekday.toUpperCase(),
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.schedule,
-                                      color: primaryColor,
-                                      size: 14,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      game.gametime,
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: primaryColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                            // Details Button
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: primaryColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'Details',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildTopRow(),
+                  _buildTeamsRow(teamService),
+                  _buildBottomRow(colors),
                 ],
               ),
             ),
@@ -274,55 +68,205 @@ class FeaturedGameCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBigTeamColumn(
-    TeamService teamService,
-    String teamId,
-    int? score,
-    bool isPlayed,
-    bool isWinner,
-    Color teamColor,
-  ) {
-    final team = teamService.getTeams().firstWhere(
-          (t) => t.id.toUpperCase() == teamId.toUpperCase(),
-          orElse: () => teamService.getTeams().first,
-        );
-
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+  Widget _buildTopRow() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              game.isPlayed ? 'FINAL' : 'UPCOMING',
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8,
+                color: Colors.white.withValues(alpha: 0.55),
               ),
-            ],
-          ),
-          padding: const EdgeInsets.all(8),
-          child: Image.asset(team.logoUrl),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          team.id.toUpperCase(),
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        if (isPlayed && score != null)
-          Text(
-            score.toString(),
-            style: AppTextStyles.h2.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
             ),
           ),
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.07),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.notifications_none,
+              size: 14,
+              color: Colors.white.withValues(alpha: 0.35),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeamsRow(TeamService teamService) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 2, 14, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: _matchupTeam(
+              teamService: teamService,
+              teamId: game.awayTeam,
+              score: game.awayScore,
+              isWinner: game.winner == game.awayTeam,
+              alignEnd: false,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '–',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.2),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Week ${game.week}',
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.25),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _matchupTeam(
+              teamService: teamService,
+              teamId: game.homeTeam,
+              score: game.homeScore,
+              isWinner: game.winner == game.homeTeam,
+              alignEnd: true,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _matchupTeam({
+    required TeamService teamService,
+    required String teamId,
+    required int? score,
+    required bool isWinner,
+    required bool alignEnd,
+  }) {
+    final logo = Container(
+      width: 38,
+      height: 38,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+              color: Color(0x4D000000), blurRadius: 6, offset: Offset(0, 2)),
+        ],
+      ),
+      padding: const EdgeInsets.all(3),
+      child: ClipOval(
+        child: Image.asset(
+          TeamLogoService.getLogoPath(teamId),
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.shield, size: 18, color: Colors.black54),
+        ),
+      ),
+    );
+    final abbr = Text(
+      teamId.toUpperCase(),
+      style: AppTextStyles.body.copyWith(
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.4,
+        color: Colors.white.withValues(alpha: 0.65),
+      ),
+    );
+    final scoreWidget = (game.isPlayed && score != null)
+        ? Text(
+            '$score',
+            style: TextStyle(
+              fontFamily: 'Russo One',
+              fontSize: 26,
+              height: 1,
+              color: isWinner
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.35),
+            ),
+          )
+        : null;
+
+    final children = <Widget>[
+      logo,
+      const SizedBox(width: 8),
+      abbr,
+      if (scoreWidget != null) ...[
+        const Spacer(),
+        scoreWidget,
       ],
+    ];
+    return Row(
+      mainAxisAlignment:
+          alignEnd ? MainAxisAlignment.end : MainAxisAlignment.start,
+      children: alignEnd ? children.reversed.toList() : children,
+    );
+  }
+
+  Widget _buildBottomRow(T4LThemeColors colors) {
+    final brandIsLight = colors.brand.computeLuminance() > 0.5;
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            game.weekday.toUpperCase(),
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.8,
+              color: Colors.white.withValues(alpha: 0.35),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 5),
+            decoration: BoxDecoration(
+              color: colors.brand,
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Text(
+              'Details',
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.4,
+                color: brandIsLight ? const Color(0xFF0B1810) : Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,8 +4,12 @@ import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../core/theme/t4l_theme.dart';
 import '../../controllers/standings_controller.dart';
 
-/// Filter header for standings view with view mode and conference toggles.
-/// Uses EMOTIONAL DESIGN: all button backgrounds use brandLight.
+/// Filter header for the standings tab.
+/// Layout:
+///  - Segmented control: Division | Conference | League
+///  - AFC / NFC pills (hidden in League view)
+///  - Division pills with directional arrows (Division view only)
+/// EMOTIONAL DESIGN: the user team's brand color is the leading accent.
 class StandingsFilterHeader extends StatelessWidget {
   const StandingsFilterHeader({super.key});
 
@@ -15,217 +19,224 @@ class StandingsFilterHeader extends StatelessWidget {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.space2,
-        vertical: AppSpacing.space1,
-      ),
+      color: const Color(0xFF0D130F),
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Row 1: View Modes (Conference / Division / League)
-          _buildViewModeSelector(controller, colors),
-
-          // Row 2: Secondary Filters
-          if (controller.viewMode == StandingsViewMode.conference) ...[
-            const SizedBox(height: AppSpacing.space1),
-            _buildConferenceToggles(controller, colors),
-          ] else if (controller.viewMode == StandingsViewMode.division) ...[
-            const SizedBox(height: AppSpacing.space1),
-            _buildConferenceToggles(controller, colors),
-            const SizedBox(height: AppSpacing.space1),
-            _buildRegionButtons(controller, colors),
+          _buildSegmented(controller, colors),
+          if (controller.viewMode != StandingsViewMode.league) ...[
+            const SizedBox(height: 8),
+            _buildConfRow(controller, colors),
+          ],
+          if (controller.viewMode == StandingsViewMode.division) ...[
+            const SizedBox(height: 8),
+            _buildDivisionPills(controller, colors),
           ],
         ],
       ),
     );
   }
 
-  /// View mode selector (Conference / Division / League)
-  Widget _buildViewModeSelector(
-    StandingsController controller,
-    T4LThemeColors colors,
-  ) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        // EMOTIONAL DESIGN: Use brandLight for background
-        color: colors.brandLight,
-        borderRadius: BorderRadius.circular(AppBorders.radiusMd),
-        border: Border.all(color: colors.brand.withValues(alpha: 0.3)),
-      ),
+  // ── Segmented control ──────────────────────────────────────────────
+  Widget _buildSegmented(
+      StandingsController controller, T4LThemeColors colors) {
+    const items = [
+      (StandingsViewMode.division, 'Division'),
+      (StandingsViewMode.conference, 'Conference'),
+      (StandingsViewMode.league, 'League'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
       child: Row(
         children: [
-          _buildModeButton(
-            label: 'Conference',
-            isActive: controller.viewMode == StandingsViewMode.conference,
-            onTap: () => controller.setViewMode(StandingsViewMode.conference),
-            colors: colors,
-          ),
-          _buildDivider(colors),
-          _buildModeButton(
-            label: 'Division',
-            isActive: controller.viewMode == StandingsViewMode.division,
-            onTap: () => controller.setViewMode(StandingsViewMode.division),
-            colors: colors,
-          ),
-          _buildDivider(colors),
-          _buildModeButton(
-            label: 'League',
-            isActive: controller.viewMode == StandingsViewMode.league,
-            onTap: () => controller.setViewMode(StandingsViewMode.league),
-            colors: colors,
-          ),
+          for (var i = 0; i < items.length; i++)
+            Expanded(
+              child: _SegButton(
+                label: items[i].$2,
+                active: controller.viewMode == items[i].$1,
+                isFirst: i == 0,
+                isLast: i == items.length - 1,
+                brand: colors.brand,
+                contrastText: colors.contrastText,
+                onTap: () => controller.setViewMode(items[i].$1),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildModeButton({
-    required String label,
-    required bool isActive,
-    required VoidCallback onTap,
-    required T4LThemeColors colors,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          decoration: isActive
-              ? BoxDecoration(
-                  color: colors.brand,
-                  borderRadius: BorderRadius.circular(AppBorders.radiusMd - 2),
-                )
-              : null,
-          margin: const EdgeInsets.all(2),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: AppTextStyles.body.copyWith(
-              // EMOTIONAL: Active uses contrastText, inactive uses contrastText with opacity
-              color: isActive
-                  ? colors.contrastText
-                  : colors.contrastText.withValues(alpha: 0.6),
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              fontSize: 13,
-            ),
-          ),
-        ),
+  // ── AFC / NFC pills ────────────────────────────────────────────────
+  Widget _buildConfRow(StandingsController controller, T4LThemeColors colors) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
+      child: Row(
+        children: [
+          Expanded(child: _confButton('AFC', controller, colors)),
+          const SizedBox(width: 8),
+          Expanded(child: _confButton('NFC', controller, colors)),
+        ],
       ),
     );
   }
 
-  Widget _buildDivider(T4LThemeColors colors) {
-    return Container(
-      width: 1,
-      height: 20,
-      color: colors.brand.withValues(alpha: 0.3),
-    );
-  }
-
-  /// Conference toggle buttons (AFC / NFC)
-  Widget _buildConferenceToggles(
-    StandingsController controller,
-    T4LThemeColors colors,
-  ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildConferenceButton('AFC', controller, colors),
-        const SizedBox(width: AppSpacing.space2),
-        _buildConferenceButton('NFC', controller, colors),
-      ],
-    );
-  }
-
-  Widget _buildConferenceButton(
-    String label,
-    StandingsController controller,
-    T4LThemeColors colors,
-  ) {
+  Widget _confButton(
+      String label, StandingsController controller, T4LThemeColors colors) {
     final isSelected = controller.selectedConference == label;
-
     return GestureDetector(
       onTap: () => controller.filterConference(label),
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: AppAnimation.durationFast,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space4,
-          vertical: AppSpacing.space1,
-        ),
+        height: 32,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          // EMOTIONAL: Selected uses brand, unselected uses brandLight
-          color: isSelected ? colors.brand : colors.brandLight,
-          borderRadius: BorderRadius.circular(20),
+          color:
+              isSelected ? colors.brand : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(9),
           border: Border.all(
             color:
-                isSelected ? colors.brand : colors.brand.withValues(alpha: 0.3),
+                isSelected ? colors.brand : Colors.white.withValues(alpha: 0.1),
           ),
         ),
         child: Text(
           label,
           style: AppTextStyles.caption.copyWith(
-            // EMOTIONAL: Use contrastText for both states
-            color: colors.contrastText,
-            fontWeight: FontWeight.bold,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.5,
+            color: isSelected
+                ? colors.contrastText
+                : Colors.white.withValues(alpha: 0.4),
           ),
         ),
       ),
     );
   }
 
-  /// Region navigation buttons (North / South / East / West)
-  Widget _buildRegionButtons(
-    StandingsController controller,
-    T4LThemeColors colors,
-  ) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: [
-          _buildRegionButton('North', Icons.arrow_upward, controller, colors),
-          const SizedBox(width: AppSpacing.space1),
-          _buildRegionButton('South', Icons.arrow_downward, controller, colors),
-          const SizedBox(width: AppSpacing.space1),
-          _buildRegionButton('East', Icons.arrow_forward, controller, colors),
-          const SizedBox(width: AppSpacing.space1),
-          _buildRegionButton('West', Icons.arrow_back, controller, colors),
-        ],
+  // ── Division pills ─────────────────────────────────────────────────
+  Widget _buildDivisionPills(
+      StandingsController controller, T4LThemeColors colors) {
+    const divisions = [
+      ('North', Icons.arrow_upward),
+      ('South', Icons.arrow_downward),
+      ('East', Icons.arrow_forward),
+      ('West', Icons.arrow_back),
+    ];
+    return SizedBox(
+      height: 28,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.space2),
+        itemCount: divisions.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, i) {
+          final d = divisions[i];
+          final isActive = controller.selectedDivision == d.$1;
+          return GestureDetector(
+            onTap: () {
+              controller.setDivision(d.$1);
+              controller.scrollToSection(d.$1);
+            },
+            child: AnimatedContainer(
+              duration: AppAnimation.durationFast,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                color: isActive
+                    ? colors.brand.withValues(alpha: 0.18)
+                    : Colors.white.withValues(alpha: 0.05),
+                border: Border.all(
+                  color: isActive
+                      ? colors.brand.withValues(alpha: 0.6)
+                      : Colors.white.withValues(alpha: 0.08),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    d.$2,
+                    size: 11,
+                    color: isActive
+                        ? colors.brand.computeLuminance() > 0.5
+                            ? colors.brand
+                            : Color.lerp(colors.brand, Colors.white, 0.5)
+                        : Colors.white.withValues(alpha: 0.4),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(
+                    d.$1,
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                      color: isActive
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
+}
 
-  Widget _buildRegionButton(
-    String label,
-    IconData icon,
-    StandingsController controller,
-    T4LThemeColors colors,
-  ) {
+class _SegButton extends StatelessWidget {
+  final String label;
+  final bool active;
+  final bool isFirst;
+  final bool isLast;
+  final Color brand;
+  final Color contrastText;
+  final VoidCallback onTap;
+
+  const _SegButton({
+    required this.label,
+    required this.active,
+    required this.isFirst,
+    required this.isLast,
+    required this.brand,
+    required this.contrastText,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const radius = Radius.circular(9);
+    final borderRadius = BorderRadius.only(
+      topLeft: isFirst ? radius : Radius.zero,
+      bottomLeft: isFirst ? radius : Radius.zero,
+      topRight: isLast ? radius : Radius.zero,
+      bottomRight: isLast ? radius : Radius.zero,
+    );
     return GestureDetector(
-      onTap: () => controller.scrollToSection(label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space2,
-          vertical: AppSpacing.space1,
-        ),
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: AppAnimation.durationFast,
+        height: 30,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          // EMOTIONAL: Use brandLight for button background
-          color: colors.brandLight,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colors.brand.withValues(alpha: 0.3)),
+          color: active ? brand : Colors.white.withValues(alpha: 0.05),
+          borderRadius: borderRadius,
+          border: Border.all(
+            color: active ? brand : Colors.white.withValues(alpha: 0.08),
+          ),
         ),
-        child: Row(
-          children: [
-            Icon(icon, size: 14, color: colors.brand),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: colors.brand,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        child: Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+            color: active ? contrastText : Colors.white.withValues(alpha: 0.55),
+          ),
         ),
       ),
     );

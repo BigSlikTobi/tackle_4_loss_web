@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tackle4loss_mobile/core/services/audio_player_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/radio_station.dart';
 import '../models/radio_category.dart';
 
@@ -210,39 +209,10 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
       debugPrint("Error loading news images for UI: $e");
     }
 
-    // 2. Fetch Deep Dive Articles via Edge Function
-    List<RadioStation> deepDiveStations = [];
-    try {
-      final response = await Supabase.instance.client.functions.invoke(
-        'get-radio-deepdives',
-        body: {'language_code': languageCode},
-      );
-
-      if (response.status == 200 &&
-          response.data != null &&
-          response.data is List) {
-        final List<dynamic> ddData = response.data;
-        deepDiveStations = ddData
-            .map<RadioStation>((item) => RadioStation(
-                  id: 'dd_${item['id']}',
-                  title: item['title'] ?? '',
-                  description: item['subtitle'] ?? '',
-                  imageUrl: item['hero_image_url'] ??
-                      'https://placehold.co/400/1a1a1a/ffffff?text=Deep+Dive',
-                  categoryId: 'deep_dive',
-                  streamUrl: item['audio_file']
-                      as String?, // Store the URL directly for easy access
-                ))
-            .toList();
-      } else {
-        debugPrint(
-            "RadioController: get-radio-deepdives failed: ${response.data}");
-      }
-    } catch (e) {
-      debugPrint(
-          "RadioController: Error fetching deep dives via Edge Function: $e");
-    }
-
+    // TODO(restore-on-revive): `get-radio-deepdives` is gone with the new
+    // main Supabase project. Radio is flag-off in MVP slim — return no deep
+    // dives so the rest of the controller still wires up cleanly.
+    const List<RadioStation> deepDiveStations = [];
     _allDeepDives = deepDiveStations;
 
     // Create a Collection Station for Deep Dives
@@ -414,52 +384,14 @@ class RadioController extends ChangeNotifier with WidgetsBindingObserver {
     await _audioService.playPlaylist([track]);
   }
 
+  // TODO(restore-on-revive): `get-radio-news` is gone with the new main
+  // Supabase project. Radio is flag-off in MVP slim.
   Future<List<Map<String, String>>> fetchNewsTracks(
     String languageCode, {
     String? sinceCreatedAt,
     int? limit,
   }) async {
-    try {
-      final body = <String, dynamic>{'language_code': languageCode};
-      if (sinceCreatedAt != null && sinceCreatedAt.isNotEmpty) {
-        body['since_created_at'] = sinceCreatedAt;
-      }
-      if (limit != null) {
-        body['limit'] = limit;
-      }
-
-      final response = await Supabase.instance.client.functions.invoke(
-        'get-radio-news',
-        body: body,
-      );
-
-      if (response.data == null) return [];
-
-      final List<dynamic> data = response.data;
-      return data
-          .map<Map<String, String>>((item) {
-            final team = item['primaryTeam'];
-            return {
-              'id': item['id']?.toString() ?? '',
-              'url': item['audioUrl'] ?? '',
-              'title': item['title'] ?? 'News Update',
-              'createdAt': item['createdAt']?.toString() ??
-                  item['created_at']?.toString() ??
-                  '',
-              'author':
-                  team != null ? team['team_name'] ?? 'T4L News' : 'T4L News',
-              'imageUrl':
-                  item['imageUrl'] ?? 'https://placehold.co/400x400/png',
-              'teamName': team != null ? team['team_name'] ?? '' : '',
-              'teamLogoUrl': team != null ? team['logo_url'] ?? '' : '',
-            };
-          })
-          .where((track) => track['url'] != null && track['url']!.isNotEmpty)
-          .toList();
-    } catch (e) {
-      debugPrint('Error in fetchNewsTracks: $e');
-      rethrow;
-    }
+    return const [];
   }
 
   // Played Tracking Logic

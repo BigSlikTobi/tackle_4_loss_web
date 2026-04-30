@@ -4,155 +4,111 @@ import '../../../../core/theme/t4l_theme.dart';
 import '../../../../core/services/team_logo_service.dart';
 import '../../models/team_standing.dart';
 
-/// Expandable card showing a team's standings.
-/// Uses EMOTIONAL DESIGN: all backgrounds use brandLight (team's secondary color).
+/// Compact standings row.
+/// EMOTIONAL DESIGN: the user's team brand color drives every accent
+/// (playoff border, my-team highlight, rank/text emphasis).
 class TeamStandingsCard extends StatelessWidget {
   final TeamStanding team;
   final int rank;
-  final bool isExpanded;
+  final bool isPlayoff;
+  final bool isWildcard;
+  final bool isMyTeam;
   final VoidCallback onTap;
 
   const TeamStandingsCard({
     super.key,
     required this.team,
     required this.rank,
-    required this.isExpanded,
     required this.onTap,
+    this.isPlayoff = false,
+    this.isWildcard = false,
+    this.isMyTeam = false,
   });
+
+  static const _wildcardGold = Color(0xFFC9A256);
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
 
-    return GestureDetector(
+    final Color leftBorderColor = isPlayoff
+        ? colors.brand
+        : isWildcard
+            ? _wildcardGold.withValues(alpha: 0.6)
+            : Colors.transparent;
+
+    return InkWell(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: AppAnimation.durationFast,
-        curve: Curves.easeInOut,
-        margin: const EdgeInsets.only(bottom: AppSpacing.space1),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.space2, vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppBorders.radiusMd),
-          // EMOTIONAL DESIGN: Use brandLight as card background
-          color: colors.brandLight,
-          border: Border.all(
-            color:
-                isExpanded ? colors.brand : colors.brand.withValues(alpha: 0.3),
-            width: isExpanded ? 2 : 1,
+          color: isMyTeam ? colors.brand.withValues(alpha: 0.14) : null,
+          border: Border(
+            left: BorderSide(color: leftBorderColor, width: 3),
+            bottom: BorderSide(
+                color: Colors.white.withValues(alpha: 0.04), width: 1),
           ),
-          boxShadow: isExpanded
-              ? [
-                  BoxShadow(
-                    color: colors.brand.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: colors.brandLight.withValues(alpha: 0.3),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppBorders.radiusMd),
-          child: Column(
-            children: [
-              // Main content row
-              _buildMainRow(colors),
-              // Expandable details
-              AnimatedCrossFade(
-                firstChild: const SizedBox(height: 0),
-                secondChild: _buildExpandedDetails(colors),
-                crossFadeState: isExpanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-                duration: AppAnimation.durationFast,
+        child: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              child: Text(
+                '$rank',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(
+                  fontFamily: 'Russo One',
+                  fontSize: 13,
+                  color: isPlayoff || isWildcard
+                      ? Colors.white.withValues(alpha: 0.7)
+                      : Colors.white.withValues(alpha: 0.3),
+                ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            _buildLogo(),
+            const SizedBox(width: 10),
+            Expanded(child: _buildTeamInfo(colors)),
+            _buildStat(team.wins.toString(),
+                emphasized: true, color: Colors.white.withValues(alpha: 0.85)),
+            _buildStat(team.losses.toString()),
+            _buildStat(team.formattedWinPercentage),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.chevron_right,
+              size: 16,
+              color: Colors.white.withValues(alpha: 0.25),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// Main always-visible row with rank, logo, name, record
-  Widget _buildMainRow(T4LThemeColors colors) {
+  Widget _buildLogo() {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.space2),
-      decoration: BoxDecoration(
-        // Slight gradient for depth
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [colors.brandLight, colors.brand.withValues(alpha: 0.15)],
-        ),
-      ),
-      child: Row(
-        children: [
-          // Rank number
-          _buildRankBadge(colors),
-          const SizedBox(width: AppSpacing.space2),
-          // Team logo
-          _buildTeamLogo(colors),
-          const SizedBox(width: AppSpacing.space2),
-          // Team name and subtitle
-          Expanded(child: _buildTeamInfo(colors)),
-          // Record
-          _buildRecord(colors),
-          const SizedBox(width: AppSpacing.space1),
-          // Expand/collapse indicator
-          Icon(
-            isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_right,
-            color: colors.contrastText.withValues(alpha: 0.6),
-            size: 20,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRankBadge(T4LThemeColors colors) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: colors.brand.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Center(
-        child: Text(
-          '$rank',
-          style: AppTextStyles.h3.copyWith(
-            color: colors.contrastText,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamLogo(T4LThemeColors colors) {
-    return Container(
-      width: 44,
-      height: 44,
+      width: 34,
+      height: 34,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: colors.brand.withValues(alpha: 0.2),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 4,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 1),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(4),
-      child: Image.asset(
-        TeamLogoService.getLogoPath(team.teamId),
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => const Icon(Icons.error),
+      padding: const EdgeInsets.all(3),
+      child: ClipOval(
+        child: Image.asset(
+          TeamLogoService.getLogoPath(team.teamId),
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.shield, size: 18, color: Colors.black54),
+        ),
       ),
     );
   }
@@ -160,118 +116,49 @@ class TeamStandingsCard extends StatelessWidget {
   Widget _buildTeamInfo(T4LThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            Flexible(
-              child: Text(
-                team.teamName,
-                style: AppTextStyles.body.copyWith(
-                  fontWeight: FontWeight.bold,
-                  // EMOTIONAL: Use contrast text
-                  color: colors.contrastText,
-                ),
-                overflow: TextOverflow.ellipsis,
+        Text(
+          team.teamName,
+          style: AppTextStyles.body.copyWith(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (isMyTeam)
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Text(
+              'YOUR TEAM',
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.7,
+                color: colors.brand.computeLuminance() > 0.5
+                    ? colors.brand
+                    : Color.lerp(colors.brand, Colors.white, 0.55),
               ),
             ),
-            if (isExpanded) ...[
-              const SizedBox(width: AppSpacing.space1),
-              _buildClinchedBadge(colors),
-            ],
-          ],
-        ),
-        Text(
-          team.teamName, // Could be city name
-          style: AppTextStyles.caption.copyWith(
-            color: colors.contrastText.withValues(alpha: 0.6),
           ),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
       ],
     );
   }
 
-  Widget _buildClinchedBadge(T4LThemeColors colors) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: colors.brand,
-        borderRadius: BorderRadius.circular(4),
-      ),
+  Widget _buildStat(String value, {bool emphasized = false, Color? color}) {
+    return SizedBox(
+      width: 32,
       child: Text(
-        'CLINCHED',
-        style: TextStyle(
-          // EMOTIONAL: Contrast text on brand background
-          color: colors.contrastText,
-          fontWeight: FontWeight.w900,
-          fontSize: 10,
-          letterSpacing: 0.5,
+        value,
+        textAlign: TextAlign.center,
+        style: AppTextStyles.caption.copyWith(
+          fontSize: 12,
+          fontWeight: emphasized ? FontWeight.w800 : FontWeight.w600,
+          color: color ?? Colors.white.withValues(alpha: 0.55),
         ),
       ),
-    );
-  }
-
-  Widget _buildRecord(T4LThemeColors colors) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          team.record,
-          style: AppTextStyles.h3.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colors.contrastText,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Expanded details section
-  Widget _buildExpandedDetails(T4LThemeColors colors) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.space2,
-        0,
-        AppSpacing.space2,
-        AppSpacing.space2,
-      ),
-      decoration: BoxDecoration(color: colors.brand.withValues(alpha: 0.1)),
-      child: Row(
-        // EMOTIONAL: Use contrast text on brand background
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildStatColumn('CONF', team.conferenceRecord, colors),
-          _buildStatColumn('DIV', team.divisionRecord, colors),
-          _buildStatColumn('PF', '${team.pointsFor}', colors),
-          _buildStatColumn('PA', '${team.pointsAgainst}', colors),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, String value, T4LThemeColors colors) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: colors.contrastText.withValues(alpha: 0.6),
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: AppTextStyles.body.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colors.contrastText,
-          ),
-        ),
-      ],
     );
   }
 }
