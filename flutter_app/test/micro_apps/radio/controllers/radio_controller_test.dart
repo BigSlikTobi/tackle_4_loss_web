@@ -29,8 +29,8 @@ class MockAudioPlayerService extends AudioPlayerService {
 class MockHttpClient extends Mock implements http.Client {}
 
 class TestRadioController extends RadioController {
-  TestRadioController(this.tracks, {AudioPlayerService? audioService})
-      : super(languageCode: 'en', audioService: audioService);
+  TestRadioController(this.tracks, {super.audioService})
+      : super(languageCode: 'en');
 
   final List<Map<String, String>> tracks;
 

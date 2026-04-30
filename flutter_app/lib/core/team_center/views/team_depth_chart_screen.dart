@@ -2,18 +2,19 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../design_tokens.dart';
 import '../../models/team_model.dart';
 import '../../services/settings_service.dart';
 import '../../theme/t4l_theme.dart';
 import '../models/depth_chart_player.dart';
 import '../controllers/team_center_controller.dart';
 
-// ─── Brand semantic constants (identical in both themes) ─────────────────
-const Color _kAccent = Color(0xFF0F3D2E); // brand green
-const Color _kGold = Color(0xFFC9A256); // starter / 1ST
-const Color _kStatusActive = Color(0xFF4CAF80);
-const Color _kStatusQuest = Color(0xFFC9A256);
-const Color _kStatusOut = Color(0xFFE06060);
+// ─── Brand semantics — sourced from the shared design token layer ────────
+const Color _kAccent = AppColors.brandBase; // brand green
+const Color _kGold = AppColors.editorialGold; // starter / 1ST
+const Color _kStatusActive = AppColors.statusActive;
+const Color _kStatusQuest = AppColors.statusQuest;
+const Color _kStatusOut = AppColors.statusOut;
 
 enum _ViewMode { list, overview }
 
@@ -545,6 +546,14 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
         bg = _kStatusOut.withValues(alpha: 0.15);
         fg = _kStatusOut;
         text = 'OUT';
+        break;
+      case 'ir':
+        // Same red family as OUT but slightly lower-key — IR is longer-term
+        // than OUT, but it should still surface visibly in list rows so the
+        // detail sheet's IR label doesn't appear out of nowhere.
+        bg = _kStatusOut.withValues(alpha: 0.1);
+        fg = _kStatusOut.withValues(alpha: 0.85);
+        text = 'IR';
         break;
       default:
         return const SizedBox.shrink();
