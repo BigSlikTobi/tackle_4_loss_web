@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/team_model.dart';
+import '../../services/settings_service.dart';
 import '../../theme/t4l_theme.dart';
 import '../models/depth_chart_player.dart';
 import '../controllers/team_center_controller.dart';
@@ -87,62 +88,48 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.extension<T4LThemeColors>()!;
-    _p = _DepthPalette.from(colors, theme.brightness == Brightness.dark);
+    final isDark = theme.brightness == Brightness.dark;
+    final settings = Provider.of<SettingsService>(context);
+    _p = _DepthPalette.from(colors, isDark);
 
     return ChangeNotifierProvider.value(
       value: widget.controller,
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                child: Container(color: Colors.transparent),
+        body: Container(
+          decoration: BoxDecoration(gradient: settings.backgroundGradient),
+          child: Stack(
+            children: [
+              // Subtle overlay tint so chrome (text, dividers, sticky headers)
+              // stays readable on bright team-color gradients.
+              Positioned.fill(
+                child: Container(color: _p.scrim),
               ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(-0.6, -0.4),
-                    radius: 1.1,
-                    colors: [
-                      _p.brandGlow,
-                      _p.sheetBg,
-                    ],
-                    stops: const [0.0, 0.65],
-                  ),
+              SafeArea(
+                child: Consumer<TeamCenterController>(
+                  builder: (context, controller, _) {
+                    final groups = _unitGroups(controller);
+                    final orderedKeys = groups.keys.toList();
+                    final filteredKeys = _posFilter == 'ALL'
+                        ? orderedKeys
+                        : orderedKeys.where((k) => k == _posFilter).toList();
+
+                    return Column(
+                      children: [
+                        _buildHeader(),
+                        _buildUnitTabs(),
+                        _buildControlsRow(),
+                        _buildChipsRow(orderedKeys),
+                        Expanded(
+                          child: _buildBody(controller, groups, filteredKeys),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            ),
-            Positioned.fill(
-              child: Container(color: _p.sheetBg),
-            ),
-            SafeArea(
-              child: Consumer<TeamCenterController>(
-                builder: (context, controller, _) {
-                  final groups = _unitGroups(controller);
-                  final orderedKeys = groups.keys.toList();
-                  final filteredKeys = _posFilter == 'ALL'
-                      ? orderedKeys
-                      : orderedKeys.where((k) => k == _posFilter).toList();
-
-                  return Column(
-                    children: [
-                      _buildHeader(),
-                      _buildUnitTabs(),
-                      _buildControlsRow(),
-                      _buildChipsRow(orderedKeys),
-                      Expanded(
-                        child: _buildBody(controller, groups, filteredKeys),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -817,9 +804,15 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
 // ─── PALETTE (theme-aware surface/text/border resolution) ────────────────
 class _DepthPalette {
   final bool isDark;
+
+  /// Lightly tints the underlying team-color gradient so chrome stays readable
+  /// without hiding the team color entirely.
+  final Color scrim;
+
+  /// Translucent sheet color used for the dot border cutout, sticky headers,
+  /// the detail bottom sheet, etc.
   final Color sheetBg;
   final Color stickyBg;
-  final Color brandGlow;
 
   final Color border;
   final Color separator;
@@ -840,9 +833,9 @@ class _DepthPalette {
 
   const _DepthPalette({
     required this.isDark,
+    required this.scrim,
     required this.sheetBg,
     required this.stickyBg,
-    required this.brandGlow,
     required this.border,
     required this.separator,
     required this.textPrimary,
@@ -861,29 +854,32 @@ class _DepthPalette {
     if (isDark) {
       return _DepthPalette(
         isDark: true,
-        sheetBg: const Color(0xFA0D130F),
-        stickyBg: const Color(0xF80D130F),
-        brandGlow: const Color(0xFF1A4A32),
-        border: const Color(0x10FFFFFF),
+        // Slight darken so text reads on bright team gradients while letting
+        // the team color clearly show through.
+        scrim: Colors.black.withValues(alpha: 0.45),
+        sheetBg: const Color(0xFF0D130F),
+        stickyBg: Colors.black.withValues(alpha: 0.55),
+        border: const Color(0x14FFFFFF),
         separator: const Color(0x0AFFFFFF),
         textPrimary: Colors.white,
-        textSecondary: Colors.white.withValues(alpha: 0.55),
-        textMuted: Colors.white.withValues(alpha: 0.35),
-        textGhost: Colors.white.withValues(alpha: 0.18),
-        surfaceMuted: Colors.white.withValues(alpha: 0.08),
+        textSecondary: Colors.white.withValues(alpha: 0.6),
+        textMuted: Colors.white.withValues(alpha: 0.4),
+        textGhost: Colors.white.withValues(alpha: 0.2),
+        surfaceMuted: Colors.white.withValues(alpha: 0.1),
         surfaceSubtle: Colors.white.withValues(alpha: 0.06),
-        chipBg: Colors.white.withValues(alpha: 0.07),
-        chipBgSofter: Colors.white.withValues(alpha: 0.04),
-        chipBorder: Colors.white.withValues(alpha: 0.12),
-        logoRing: Colors.white.withValues(alpha: 0.15),
+        chipBg: Colors.white.withValues(alpha: 0.1),
+        chipBgSofter: Colors.white.withValues(alpha: 0.05),
+        chipBorder: Colors.white.withValues(alpha: 0.16),
+        logoRing: Colors.white.withValues(alpha: 0.18),
       );
     }
-    // Light mode — use the theme's surface/border tokens with subtle alpha.
+    // Light mode — gradient is white→team color, so a soft white scrim keeps
+    // the gradient visible while text/chips stay legible.
     return _DepthPalette(
       isDark: false,
+      scrim: Colors.white.withValues(alpha: 0.55),
       sheetBg: c.background,
-      stickyBg: c.background.withValues(alpha: 0.97),
-      brandGlow: c.brand.withValues(alpha: 0.06),
+      stickyBg: Colors.white.withValues(alpha: 0.7),
       border: c.border,
       separator: c.border.withValues(alpha: 0.5),
       textPrimary: c.textPrimary,
@@ -892,8 +888,8 @@ class _DepthPalette {
       textGhost: c.textMuted.withValues(alpha: 0.55),
       surfaceMuted: c.textPrimary.withValues(alpha: 0.06),
       surfaceSubtle: c.textPrimary.withValues(alpha: 0.04),
-      chipBg: c.surface,
-      chipBgSofter: c.textPrimary.withValues(alpha: 0.03),
+      chipBg: Colors.white.withValues(alpha: 0.6),
+      chipBgSofter: Colors.white.withValues(alpha: 0.4),
       chipBorder: c.border,
       logoRing: c.textPrimary.withValues(alpha: 0.12),
     );
