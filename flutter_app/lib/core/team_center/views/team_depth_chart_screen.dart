@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/team_model.dart';
+import '../../theme/t4l_theme.dart';
 import '../models/depth_chart_player.dart';
 import '../controllers/team_center_controller.dart';
 
-const Color _kSheetBgSurface = Color(0xFA0D130F);
-const Color _kBorderSoft = Color(0x10FFFFFF);
-const Color _kAccent = Color(0xFF0F3D2E);
-const Color _kGold = Color(0xFFC9A256);
+// ─── Brand semantic constants (identical in both themes) ─────────────────
+const Color _kAccent = Color(0xFF0F3D2E); // brand green
+const Color _kGold = Color(0xFFC9A256); // starter / 1ST
 const Color _kStatusActive = Color(0xFF4CAF80);
 const Color _kStatusQuest = Color(0xFFC9A256);
 const Color _kStatusOut = Color(0xFFE06060);
@@ -36,6 +36,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
   int _unitIdx = 0;
   String _posFilter = 'ALL';
   _ViewMode _viewMode = _ViewMode.list;
+
+  late _DepthPalette _p;
 
   @override
   void initState() {
@@ -83,6 +85,10 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.extension<T4LThemeColors>()!;
+    _p = _DepthPalette.from(colors, theme.brightness == Brightness.dark);
+
     return ChangeNotifierProvider.value(
       value: widget.controller,
       child: Scaffold(
@@ -95,20 +101,23 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
                 child: Container(color: Colors.transparent),
               ),
             ),
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
-                    center: Alignment(-0.6, -0.4),
+                    center: const Alignment(-0.6, -0.4),
                     radius: 1.1,
-                    colors: [Color(0xFF1A4A32), Color(0xFF0B1810)],
-                    stops: [0.0, 0.65],
+                    colors: [
+                      _p.brandGlow,
+                      _p.sheetBg,
+                    ],
+                    stops: const [0.0, 0.65],
                   ),
                 ),
               ),
             ),
             Positioned.fill(
-              child: Container(color: _kSheetBgSurface),
+              child: Container(color: _p.sheetBg),
             ),
             SafeArea(
               child: Consumer<TeamCenterController>(
@@ -143,8 +152,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 18, 16, 14),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: _kBorderSoft)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: _p.border)),
       ),
       child: Row(
         children: [
@@ -154,10 +163,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: widget.team.primaryColor,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-                width: 2,
-              ),
+              border: Border.all(color: _p.logoRing, width: 2),
             ),
             alignment: Alignment.center,
             child: Padding(
@@ -177,14 +183,14 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          const Text(
+          Text(
             'DEPTH CHART',
             style: TextStyle(
               fontFamily: 'Russo One',
               fontSize: 20,
               fontStyle: FontStyle.italic,
               letterSpacing: 0.8,
-              color: Colors.white,
+              color: _p.textPrimary,
             ),
           ),
           const Spacer(),
@@ -195,14 +201,10 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
               height: 30,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
+                color: _p.surfaceMuted,
               ),
               alignment: Alignment.center,
-              child: Icon(
-                Icons.close,
-                size: 14,
-                color: Colors.white.withValues(alpha: 0.5),
-              ),
+              child: Icon(Icons.close, size: 14, color: _p.textSecondary),
             ),
           ),
         ],
@@ -214,8 +216,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
   Widget _buildUnitTabs() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: _kBorderSoft)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: _p.border)),
       ),
       child: Row(
         children: List.generate(_units.length, (i) {
@@ -241,9 +243,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.99,
-                    color: active
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.35),
+                    color: active ? _p.textPrimary : _p.textMuted,
                   ),
                 ),
               ),
@@ -262,9 +262,9 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: _p.surfaceSubtle,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              border: Border.all(color: _p.border),
             ),
             child: Row(
               children: [
@@ -308,8 +308,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
             Icon(
               icon,
               size: 12,
-              color:
-                  active ? Colors.white : Colors.white.withValues(alpha: 0.35),
+              color: active ? Colors.white : _p.textMuted,
             ),
             const SizedBox(width: 5),
             Text(
@@ -318,9 +317,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.66,
-                color: active
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.35),
+                color: active ? Colors.white : _p.textMuted,
               ),
             ),
           ],
@@ -332,43 +329,46 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
   // ── CHIPS ────────────────────────────────────────────────────────────────
   Widget _buildChipsRow(List<String> keys) {
     final chips = ['ALL', ...keys];
-    return SizedBox(
-      height: 38,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-        itemCount: chips.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (_, i) {
-          final c = chips[i];
-          final active = c == _posFilter;
-          return GestureDetector(
-            onTap: () => setState(() => _posFilter = c),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
-              decoration: BoxDecoration(
-                color: active ? _kAccent : Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color:
-                      active ? _kAccent : Colors.white.withValues(alpha: 0.1),
+    // Use intrinsic chip height (~28) + comfortable vertical padding; the
+    // earlier fixed height of 38 with internal vertical padding clipped chips.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 12, 0, 10),
+      child: SizedBox(
+        height: 30,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: chips.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 6),
+          itemBuilder: (_, i) {
+            final c = chips[i];
+            final active = c == _posFilter;
+            return GestureDetector(
+              onTap: () => setState(() => _posFilter = c),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: active ? _kAccent : _p.chipBg,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: active ? _kAccent : _p.chipBorder,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  c.toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.7,
+                    color: active ? Colors.white : _p.textSecondary,
+                  ),
                 ),
               ),
-              alignment: Alignment.center,
-              child: Text(
-                c.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.7,
-                  color: active
-                      ? Colors.white
-                      : Colors.white.withValues(alpha: 0.4),
-                ),
-              ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -386,7 +386,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
       return Center(
         child: Text(
           'Failed to load depth chart',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.45)),
+          style: TextStyle(color: _p.textMuted),
         ),
       );
     }
@@ -394,7 +394,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
       return Center(
         child: Text(
           'No depth chart data available',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+          style: TextStyle(color: _p.textMuted),
         ),
       );
     }
@@ -418,6 +418,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
             delegate: _GroupHeaderDelegate(
               label: _positionLabel(key),
               count: groups[key]!.length,
+              bg: _p.stickyBg,
+              labelColor: _p.textMuted,
             ),
           ),
           SliverList.separated(
@@ -427,13 +429,9 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
               final p = players[i];
               return _buildDepthRow(p, key, i, players.length);
             },
-            separatorBuilder: (_, __) => const Padding(
-              padding: EdgeInsets.only(left: 58, right: 16),
-              child: Divider(
-                height: 1,
-                thickness: 1,
-                color: Color(0x0AFFFFFF),
-              ),
+            separatorBuilder: (_, __) => Padding(
+              padding: const EdgeInsets.only(left: 58, right: 16),
+              child: Divider(height: 1, thickness: 1, color: _p.separator),
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 4)),
@@ -450,12 +448,16 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
     int total,
   ) {
     final isStarter = idx == 0;
-    final fade = isStarter ? 1.0 : (idx == 1 ? 0.78 : 0.55);
+    final fade = isStarter ? 1.0 : (idx == 1 ? 0.85 : 0.65);
     final avatarSize = isStarter ? 42.0 : (idx == 1 ? 36.0 : 30.0);
     final nameSize = isStarter ? 15.0 : (idx == 1 ? 13.0 : 12.0);
     final nameWeight = isStarter ? FontWeight.w700 : FontWeight.w600;
     final padV = isStarter ? 10.0 : (idx == 1 ? 8.0 : 6.0);
     final statusKey = _statusKey(p);
+
+    final nameColor = isStarter
+        ? _p.textPrimary
+        : (idx == 1 ? _p.textSecondary : _p.textMuted);
 
     return Material(
       color: Colors.transparent,
@@ -481,11 +483,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: isStarter
-                              ? Colors.white
-                              : Colors.white.withValues(
-                                  alpha: idx == 1 ? 0.78 : 0.55,
-                                ),
+                          color: nameColor,
                           fontSize: nameSize,
                           fontWeight: nameWeight,
                           height: 1.2,
@@ -499,7 +497,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white.withValues(alpha: 0.32),
+                              color: _p.textMuted,
                             ),
                           ),
                           if (statusKey != 'active') ...[
@@ -511,11 +509,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  size: 16,
-                  color: Colors.white.withValues(alpha: 0.18),
-                ),
+                Icon(Icons.chevron_right, size: 16, color: _p.textGhost),
               ],
             ),
           ),
@@ -533,7 +527,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
       decoration: BoxDecoration(
         color: isStarter
             ? _kGold.withValues(alpha: 0.18)
-            : Colors.white.withValues(alpha: idx == 1 ? 0.07 : 0.04),
+            : (idx == 1 ? _p.chipBg : _p.chipBgSofter),
         borderRadius: BorderRadius.circular(4),
       ),
       alignment: Alignment.center,
@@ -543,9 +537,8 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
           fontSize: 8,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.64,
-          color: isStarter
-              ? _kGold
-              : Colors.white.withValues(alpha: idx == 1 ? 0.45 : 0.25),
+          color:
+              isStarter ? _kGold : (idx == 1 ? _p.textSecondary : _p.textMuted),
         ),
       ),
     );
@@ -604,6 +597,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
             posKey: key,
             posLabel: _positionLabel(key),
             players: players,
+            palette: _p,
             onTap: (p, rank) => _showPlayerDetail(p, key, rank),
           ),
         );
@@ -618,7 +612,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       barrierColor: Colors.black.withValues(alpha: 0.55),
-      builder: (_) => _PlayerDetailSheet(
+      builder: (sheetCtx) => _PlayerDetailSheet(
         player: p,
         posKey: posKey,
         posLabel: _positionLabel(posKey),
@@ -678,9 +672,7 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: dot,
-                border: const Border.fromBorderSide(
-                  BorderSide(color: _kSheetBgSurface, width: 2),
-                ),
+                border: Border.all(color: _p.sheetBg, width: 2),
               ),
             ),
           ),
@@ -822,12 +814,105 @@ class _TeamDepthChartScreenState extends State<TeamDepthChartScreen> {
   }
 }
 
+// ─── PALETTE (theme-aware surface/text/border resolution) ────────────────
+class _DepthPalette {
+  final bool isDark;
+  final Color sheetBg;
+  final Color stickyBg;
+  final Color brandGlow;
+
+  final Color border;
+  final Color separator;
+
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color textGhost;
+
+  final Color surfaceMuted;
+  final Color surfaceSubtle;
+
+  final Color chipBg;
+  final Color chipBgSofter;
+  final Color chipBorder;
+
+  final Color logoRing;
+
+  const _DepthPalette({
+    required this.isDark,
+    required this.sheetBg,
+    required this.stickyBg,
+    required this.brandGlow,
+    required this.border,
+    required this.separator,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.textGhost,
+    required this.surfaceMuted,
+    required this.surfaceSubtle,
+    required this.chipBg,
+    required this.chipBgSofter,
+    required this.chipBorder,
+    required this.logoRing,
+  });
+
+  factory _DepthPalette.from(T4LThemeColors c, bool isDark) {
+    if (isDark) {
+      return _DepthPalette(
+        isDark: true,
+        sheetBg: const Color(0xFA0D130F),
+        stickyBg: const Color(0xF80D130F),
+        brandGlow: const Color(0xFF1A4A32),
+        border: const Color(0x10FFFFFF),
+        separator: const Color(0x0AFFFFFF),
+        textPrimary: Colors.white,
+        textSecondary: Colors.white.withValues(alpha: 0.55),
+        textMuted: Colors.white.withValues(alpha: 0.35),
+        textGhost: Colors.white.withValues(alpha: 0.18),
+        surfaceMuted: Colors.white.withValues(alpha: 0.08),
+        surfaceSubtle: Colors.white.withValues(alpha: 0.06),
+        chipBg: Colors.white.withValues(alpha: 0.07),
+        chipBgSofter: Colors.white.withValues(alpha: 0.04),
+        chipBorder: Colors.white.withValues(alpha: 0.12),
+        logoRing: Colors.white.withValues(alpha: 0.15),
+      );
+    }
+    // Light mode — use the theme's surface/border tokens with subtle alpha.
+    return _DepthPalette(
+      isDark: false,
+      sheetBg: c.background,
+      stickyBg: c.background.withValues(alpha: 0.97),
+      brandGlow: c.brand.withValues(alpha: 0.06),
+      border: c.border,
+      separator: c.border.withValues(alpha: 0.5),
+      textPrimary: c.textPrimary,
+      textSecondary: c.textSecondary,
+      textMuted: c.textMuted,
+      textGhost: c.textMuted.withValues(alpha: 0.55),
+      surfaceMuted: c.textPrimary.withValues(alpha: 0.06),
+      surfaceSubtle: c.textPrimary.withValues(alpha: 0.04),
+      chipBg: c.surface,
+      chipBgSofter: c.textPrimary.withValues(alpha: 0.03),
+      chipBorder: c.border,
+      logoRing: c.textPrimary.withValues(alpha: 0.12),
+    );
+  }
+}
+
 // ─── STICKY GROUP HEADER ─────────────────────────────────────────────────────
 class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
   final String label;
   final int count;
+  final Color bg;
+  final Color labelColor;
 
-  _GroupHeaderDelegate({required this.label, required this.count});
+  _GroupHeaderDelegate({
+    required this.label,
+    required this.count,
+    required this.bg,
+    required this.labelColor,
+  });
 
   @override
   double get minExtent => 38;
@@ -841,7 +926,7 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
-          color: const Color(0xF80D130F),
+          color: bg,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
           alignment: Alignment.center,
           child: Row(
@@ -853,7 +938,7 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
                   fontFamily: 'Russo One',
                   fontSize: 11,
                   letterSpacing: 1.1,
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: labelColor,
                 ),
               ),
               Container(
@@ -881,7 +966,10 @@ class _GroupHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _GroupHeaderDelegate oldDelegate) {
-    return oldDelegate.label != label || oldDelegate.count != count;
+    return oldDelegate.label != label ||
+        oldDelegate.count != count ||
+        oldDelegate.bg != bg ||
+        oldDelegate.labelColor != labelColor;
   }
 }
 
@@ -890,12 +978,14 @@ class _OverviewCard extends StatelessWidget {
   final String posKey;
   final String posLabel;
   final List<DepthChartPlayer> players;
+  final _DepthPalette palette;
   final void Function(DepthChartPlayer player, int rank) onTap;
 
   const _OverviewCard({
     required this.posKey,
     required this.posLabel,
     required this.players,
+    required this.palette,
     required this.onTap,
   });
 
@@ -903,9 +993,9 @@ class _OverviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
+        color: palette.surfaceSubtle,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
+        border: Border.all(color: palette.border),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
@@ -915,7 +1005,7 @@ class _OverviewCard extends StatelessWidget {
               // Vertical position label
               Container(
                 width: 40,
-                color: _kAccent.withValues(alpha: 0.3),
+                color: _kAccent.withValues(alpha: palette.isDark ? 0.3 : 0.12),
                 alignment: Alignment.center,
                 child: RotatedBox(
                   quarterTurns: 3,
@@ -925,7 +1015,7 @@ class _OverviewCard extends StatelessWidget {
                       fontFamily: 'Russo One',
                       fontSize: 11,
                       letterSpacing: 0.66,
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: palette.textSecondary,
                     ),
                   ),
                 ),
@@ -941,6 +1031,7 @@ class _OverviewCard extends StatelessWidget {
                         posKey: posKey,
                         rank: i,
                         showRightBorder: i < 2,
+                        palette: palette,
                         onTap: p == null ? null : () => onTap(p, i),
                       ),
                     );
@@ -960,6 +1051,7 @@ class _OverviewSlot extends StatelessWidget {
   final String posKey;
   final int rank;
   final bool showRightBorder;
+  final _DepthPalette palette;
   final VoidCallback? onTap;
 
   const _OverviewSlot({
@@ -967,6 +1059,7 @@ class _OverviewSlot extends StatelessWidget {
     required this.posKey,
     required this.rank,
     required this.showRightBorder,
+    required this.palette,
     required this.onTap,
   });
 
@@ -976,7 +1069,7 @@ class _OverviewSlot extends StatelessWidget {
     final empty = player == null;
 
     final bg = isStarter && !empty
-        ? _kAccent.withValues(alpha: 0.12)
+        ? _kAccent.withValues(alpha: palette.isDark ? 0.12 : 0.06)
         : Colors.transparent;
 
     return Material(
@@ -988,7 +1081,7 @@ class _OverviewSlot extends StatelessWidget {
             color: bg,
             border: Border(
               right: showRightBorder
-                  ? const BorderSide(color: Color(0x0AFFFFFF))
+                  ? BorderSide(color: palette.separator)
                   : BorderSide.none,
             ),
           ),
@@ -1004,7 +1097,7 @@ class _OverviewSlot extends StatelessWidget {
                   letterSpacing: 0.8,
                   color: isStarter && !empty
                       ? _kGold.withValues(alpha: 0.65)
-                      : Colors.white.withValues(alpha: 0.2),
+                      : palette.textMuted,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1021,10 +1114,10 @@ class _OverviewSlot extends StatelessWidget {
                     fontSize: isStarter && !empty ? 11 : 10,
                     fontWeight: FontWeight.w700,
                     color: empty
-                        ? Colors.white.withValues(alpha: 0.18)
+                        ? palette.textGhost
                         : (isStarter
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.7)),
+                            ? palette.textPrimary
+                            : palette.textSecondary),
                     fontStyle: empty ? FontStyle.italic : FontStyle.normal,
                   ),
                 ),
@@ -1042,19 +1135,13 @@ class _OverviewSlot extends StatelessWidget {
       height: 30,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.04),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
-          style: BorderStyle.solid,
-        ),
+        color: palette.surfaceSubtle,
+        border: Border.all(color: palette.border),
       ),
       alignment: Alignment.center,
       child: Text(
         '—',
-        style: TextStyle(
-          fontSize: 10,
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        style: TextStyle(fontSize: 10, color: palette.textGhost),
       ),
     );
   }
@@ -1079,9 +1166,8 @@ class _OverviewSlot extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isStarter
-                    ? _kGold.withValues(alpha: 0.3)
-                    : Colors.white.withValues(alpha: 0.08),
+                color:
+                    isStarter ? _kGold.withValues(alpha: 0.3) : palette.border,
                 width: 1.5,
               ),
             ),
@@ -1105,9 +1191,7 @@ class _OverviewSlot extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: dot,
-                border: const Border.fromBorderSide(
-                  BorderSide(color: _kSheetBgSurface, width: 1.5),
-                ),
+                border: Border.all(color: palette.sheetBg, width: 1.5),
               ),
             ),
           ),
@@ -1195,6 +1279,26 @@ class _PlayerDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.extension<T4LThemeColors>()!;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final sheetBg = isDark ? const Color(0xFF141E16) : colors.surface;
+    final topBorder = isDark ? const Color(0x14FFFFFF) : colors.border;
+    final dividerColor = isDark ? const Color(0x0DFFFFFF) : colors.border;
+    final keyColor =
+        isDark ? Colors.white.withValues(alpha: 0.25) : colors.textMuted;
+    final valColor =
+        isDark ? Colors.white.withValues(alpha: 0.72) : colors.textSecondary;
+    final ghostColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : colors.textMuted.withValues(alpha: 0.4);
+    final handleColor = isDark
+        ? Colors.white.withValues(alpha: 0.15)
+        : colors.textMuted.withValues(alpha: 0.5);
+    final subColor =
+        isDark ? Colors.white.withValues(alpha: 0.4) : colors.textSecondary;
+
     final initials = player.name
         .trim()
         .split(RegExp(r'\s+'))
@@ -1216,12 +1320,10 @@ class _PlayerDetailSheet extends StatelessWidget {
     ];
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF141E16),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(
-          top: BorderSide(color: Color(0x14FFFFFF)),
-        ),
+      decoration: BoxDecoration(
+        color: sheetBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border(top: BorderSide(color: topBorder)),
       ),
       child: SafeArea(
         top: false,
@@ -1233,7 +1335,7 @@ class _PlayerDetailSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: handleColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1272,10 +1374,10 @@ class _PlayerDetailSheet extends StatelessWidget {
                           player.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Russo One',
                             fontSize: 17,
-                            color: Colors.white,
+                            color: colors.textPrimary,
                             letterSpacing: 0.34,
                           ),
                         ),
@@ -1287,7 +1389,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: subColor,
                           ),
                         ),
                         if (statusLabel != null) ...[
@@ -1322,13 +1424,13 @@ class _PlayerDetailSheet extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Russo One',
                       fontSize: 22,
-                      color: Colors.white.withValues(alpha: 0.1),
+                      color: ghostColor,
                     ),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1, color: Color(0x0FFFFFFF)),
+            Divider(height: 1, color: dividerColor),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
               child: Column(
@@ -1345,7 +1447,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.7,
-                              color: Colors.white.withValues(alpha: 0.25),
+                              color: keyColor,
                             ),
                           ),
                           Flexible(
@@ -1357,7 +1459,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white.withValues(alpha: 0.72),
+                                color: valColor,
                               ),
                             ),
                           ),
@@ -1365,7 +1467,7 @@ class _PlayerDetailSheet extends StatelessWidget {
                       ),
                     ),
                     if (i < bioRows.length - 1)
-                      const Divider(height: 1, color: Color(0x0DFFFFFF)),
+                      Divider(height: 1, color: dividerColor),
                   ],
                 ],
               ),
