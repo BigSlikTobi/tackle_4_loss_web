@@ -88,6 +88,30 @@ class ArticlesService {
     return ArticlesPage(items: items, nextCursor: nextCursor);
   }
 
+  /// Returns the most recent article belonging to [teamId] from the home
+  /// articles feed. Scans up to [scanLimit] articles (one page) and returns
+  /// the first match by `team` field, lower-cased on both sides.
+  ///
+  /// Returns `null` if no article in the latest page matches.
+  Future<NewsFeedItem?> fetchLatestArticleForTeam({
+    required String teamId,
+    required String language,
+    int scanLimit = 50,
+  }) async {
+    final target = teamId.toLowerCase();
+    final page = await fetchArticles(language: language, limit: scanLimit);
+    for (final item in page.items) {
+      final teams = item.teams ?? const [];
+      for (final t in teams) {
+        if (t is Map &&
+            (t['team_id']?.toString().toLowerCase() ?? '') == target) {
+          return item;
+        }
+      }
+    }
+    return null;
+  }
+
   Future<BreakingNewsArticle> fetchArticleDetail(
     String id, {
     String? language,

@@ -7,10 +7,10 @@ import 'widgets/daily_update_card.dart';
 import 'widgets/game_carousel.dart';
 import 'widgets/team_menu_button.dart';
 import '../../os_shell/widgets/mini_player.dart';
+import '../../os_shell/widgets/news_feed/feed_navigation.dart';
 import 'team_roster_screen.dart';
 import 'team_depth_chart_screen.dart';
 import 'team_injury_report_screen.dart';
-import 'team_article_screen.dart';
 
 /// Overlay widget that displays the Team Center dashboard.
 class TeamCenterOverlay extends StatefulWidget {
@@ -122,36 +122,19 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
                             children: [
                               const SizedBox(height: 10),
 
-                              // Daily Update
+                              // Daily Update — sourced from the home
+                              // articles project, filtered by team. Tapping
+                              // the card opens the same detail screen the
+                              // home news feed pushes (so the article comes
+                              // from the same backend in both places).
                               DailyUpdateCard(
                                 article: controller.todaysArticle,
                                 teamColor: widget.team.primaryColor,
                                 onTap: () => controller.playArticleAudio(),
                                 onImageTap: () {
-                                  if (controller.todaysArticle != null) {
-                                    Navigator.of(context).push(
-                                      PageRouteBuilder(
-                                        opaque:
-                                            false, // Keep previous route visible
-                                        pageBuilder: (context, animation,
-                                                secondaryAnimation) =>
-                                            TeamArticleScreen(
-                                          articleId:
-                                              controller.todaysArticle!.id,
-                                          languageCode: widget.languageCode,
-                                          initialArticle:
-                                              controller.todaysArticle,
-                                        ),
-                                        transitionsBuilder: (context, animation,
-                                            secondaryAnimation, child) {
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: child,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  }
+                                  final feedItem = controller.todaysFeedItem;
+                                  if (feedItem == null) return;
+                                  openNewsItemDetail(context, feedItem);
                                 },
                               ),
 
