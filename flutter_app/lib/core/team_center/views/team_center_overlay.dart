@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/team_model.dart';
 import '../controllers/team_center_controller.dart';
 import 'widgets/daily_update_card.dart';
@@ -76,7 +77,13 @@ class _TeamCenterOverlayState extends State<TeamCenterOverlay> {
     if (_controller.defenseRoster.isNotEmpty) {
       if (!mounted) return;
       for (final player in _controller.defenseRoster) {
-        precacheImage(NetworkImage(player.imageUrl), context);
+        // Skip empty/invalid URLs — `NetworkImage("")` resolves to `file:///`
+        // and throws "No host specified in URI" inside precache.
+        final url = player.imageUrl;
+        if (url.isEmpty) continue;
+        final uri = Uri.tryParse(url);
+        if (uri == null || !uri.hasAuthority) continue;
+        precacheImage(CachedNetworkImageProvider(url), context);
       }
       // Remove listener to run only once (or keep if roster can update)
       _controller.removeListener(_preloadDefenseImages);
