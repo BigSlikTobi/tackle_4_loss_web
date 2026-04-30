@@ -205,11 +205,6 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
                           ],
                         ),
                       ),
-                      _GlassIconButton(
-                        onTap: () => _share(article),
-                        icon: Icons.ios_share_outlined,
-                        iconColor: colors.brand,
-                      ),
                     ],
                   ),
                 ),
@@ -221,15 +216,6 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
     );
   }
 
-  Future<void> _share(BreakingNewsArticle article) async {
-    final url = article.sourceUrl;
-    if (url == null) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
-  }
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────
@@ -247,7 +233,6 @@ class _Hero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final parallax = (scrollY * 0.35).clamp(0.0, 60.0);
     final overlayOpacity = (0.55 + scrollY * 0.001).clamp(0.55, 0.88);
 
@@ -309,20 +294,6 @@ class _Hero extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Update vs. Breaking eyebrow pill
-                  if (article.isUpdate)
-                    _EyebrowPill(
-                      text: l10n.breakingNewsUpdateTag,
-                      bg: AppColors.breakingNewsRed,
-                      fg: Colors.white,
-                    )
-                  else
-                    _EyebrowPill(
-                      text: l10n.breakingNewsTag,
-                      bg: const Color(0xFFC9A256),
-                      fg: AppColors.brandBase,
-                    ),
-                  const SizedBox(height: 12),
                   Text(
                     article.headline.toUpperCase(),
                     style: GoogleFonts.anton(
@@ -363,33 +334,6 @@ class _Hero extends StatelessWidget {
   }
 }
 
-class _EyebrowPill extends StatelessWidget {
-  final String text;
-  final Color bg;
-  final Color fg;
-  const _EyebrowPill({required this.text, required this.bg, required this.fg});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.4,
-          color: fg,
-        ),
-      ),
-    );
-  }
-}
-
 // ─── Glass header buttons ────────────────────────────────────────────
 
 class _GlassPillButton extends StatelessWidget {
@@ -404,29 +348,6 @@ class _GlassPillButton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 7, 13, 7),
         child: child,
-      ),
-    );
-  }
-}
-
-class _GlassIconButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final IconData icon;
-  final Color iconColor;
-  const _GlassIconButton({
-    required this.onTap,
-    required this.icon,
-    required this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return _GlassSurface(
-      onTap: onTap,
-      child: SizedBox(
-        width: 36,
-        height: 36,
-        child: Icon(icon, size: 16, color: iconColor),
       ),
     );
   }
@@ -509,7 +430,7 @@ class _Body extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _BylineBar(
-            article: article,
+            article: fullForRead,
             readMins: readMins,
             colors: colors,
             isDark: isDark,
@@ -649,6 +570,7 @@ class _Body extends StatelessWidget {
                   ),
                 ),
               ),
+            _SourceFooter(article: fullArticle!, colors: colors),
             const SizedBox(height: 32),
             FutureBuilder<List<RelatedStory>>(
               future: relatedFuture,
@@ -697,11 +619,8 @@ class _BylineBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sourceUri =
-        article.sourceUrl != null ? Uri.tryParse(article.sourceUrl!) : null;
-    final hasValidSourceUrl = sourceUri != null &&
-        (sourceUri.isScheme('http') || sourceUri.isScheme('https'));
-    final hasSource = article.sourceName != 'Source';
+    final author = (article.author ?? '').trim();
+    final hasAuthor = author.isNotEmpty;
     final dividerColor =
         (isDark ? Colors.white : AppColors.brandBase).withValues(alpha: 0.10);
 
@@ -710,49 +629,40 @@ class _BylineBar extends StatelessWidget {
       child: Column(
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (hasSource)
-                Flexible(
-                  child: GestureDetector(
-                    onTap: hasValidSourceUrl
-                        ? () async {
-                            if (await canLaunchUrl(sourceUri)) {
-                              await launchUrl(sourceUri,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          }
-                        : null,
-                    child: Text(
-                      article.sourceName.toUpperCase(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              Expanded(
+                child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    if (hasAuthor)
+                      Text(
+                        author.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.0,
+                          color: colors.brand,
+                        ),
+                      ),
+                    if (hasAuthor)
+                      Text('·',
+                          style: TextStyle(
+                              color: colors.textMuted.withValues(alpha: 0.6))),
+                    Text(
+                      DateFormat('MMM d, y · h:mm a').format(article.createdAt),
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                        color: colors.brand,
-                        decoration:
-                            hasValidSourceUrl ? TextDecoration.underline : null,
-                        decorationColor: colors.brand,
+                        color: colors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ),
-                ),
-              if (hasSource) const SizedBox(width: 8),
-              if (hasSource)
-                Text('·',
-                    style: TextStyle(
-                        color: colors.textMuted.withValues(alpha: 0.6))),
-              if (hasSource) const SizedBox(width: 8),
-              Text(
-                DateFormat('MMM d, y · h:mm a').format(article.createdAt),
-                style: TextStyle(
-                  fontSize: 11,
-                  color: colors.textSecondary,
-                  fontWeight: FontWeight.w500,
+                  ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -839,6 +749,63 @@ class _TeamChip extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SourceFooter extends StatelessWidget {
+  final BreakingNewsArticle article;
+  final T4LThemeColors colors;
+  const _SourceFooter({required this.article, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = article.sourceUrl;
+    if (url == null || url.isEmpty) return const SizedBox.shrink();
+    final uri = Uri.tryParse(url);
+    if (uri == null || !(uri.isScheme('http') || uri.isScheme('https'))) {
+      return const SizedBox.shrink();
+    }
+    final label = article.sourceName == 'Source'
+        ? uri.host.replaceFirst('www.', '')
+        : article.sourceName;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: GestureDetector(
+        onTap: () async {
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
+        },
+        child: Row(
+          children: [
+            Text(
+              'Read more at ',
+              style: TextStyle(
+                fontSize: 13,
+                color: colors.textSecondary,
+              ),
+            ),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: colors.brand,
+                  decoration: TextDecoration.underline,
+                  decorationColor: colors.brand,
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.open_in_new, size: 13, color: colors.brand),
+          ],
+        ),
       ),
     );
   }

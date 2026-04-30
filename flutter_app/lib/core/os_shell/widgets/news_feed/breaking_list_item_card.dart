@@ -43,7 +43,8 @@ class _BreakingListItemCardState extends State<BreakingListItemCard> {
     final firstTeamId = (item.teams != null && item.teams!.isNotEmpty)
         ? item.teams!.first['team_id']?.toString().toLowerCase() ?? ''
         : '';
-    final cat = (item.headline ?? 'NEWS').toUpperCase();
+    final cat = item.xPost.trim();
+    final body = (item.headline ?? item.xPost).trim();
     final timeLabel = _timeAgo(item.createdAt);
 
     return GestureDetector(
@@ -96,15 +97,13 @@ class _BreakingListItemCardState extends State<BreakingListItemCard> {
                 children: [
                   Row(
                     children: [
-                      Flexible(
-                        child: Text(
-                          cat,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      Expanded(
+                        child: _MarqueeText(
+                          text: cat,
                           style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
                             color: categoryColor,
                           ),
                         ),
@@ -122,7 +121,7 @@ class _BreakingListItemCardState extends State<BreakingListItemCard> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    item.xPost,
+                    body,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -156,5 +155,94 @@ class _BreakingListItemCardState extends State<BreakingListItemCard> {
     if (d.inHours < 24) return '${d.inHours}h';
     if (d.inDays < 7) return '${d.inDays}d';
     return '${dt.month}/${dt.day}';
+  }
+}
+
+class _MarqueeText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+
+  const _MarqueeText({
+    required this.text,
+    required this.style,
+  });
+
+  static const double _pixelsPerSecond = 14;
+  static const double _gap = 48;
+
+  @override
+  State<_MarqueeText> createState() => _MarqueeTextState();
+}
+
+class _MarqueeTextState extends State<_MarqueeText>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  double _loopWidth = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(days: 1))
+      ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tp = TextPainter(
+      text: TextSpan(text: widget.text, style: widget.style),
+      textDirection: TextDirection.ltr,
+      maxLines: 1,
+    )..layout();
+    final textW = tp.width;
+    final textH = tp.height;
+    _loopWidth = textW + _MarqueeText._gap;
+    final period = _loopWidth / _MarqueeText._pixelsPerSecond;
+
+    return ClipRect(
+      child: SizedBox(
+        height: textH,
+        width: double.infinity,
+        child: AnimatedBuilder(
+          animation: _ctrl,
+          builder: (_, __) {
+            final t = (_ctrl.lastElapsedDuration?.inMicroseconds ?? 0) /
+                1e6 %
+                period;
+            final dx = -_MarqueeText._pixelsPerSecond * t;
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: dx,
+                  top: 0,
+                  child: Text(
+                    widget.text,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: widget.style,
+                  ),
+                ),
+                Positioned(
+                  left: dx + _loopWidth,
+                  top: 0,
+                  child: Text(
+                    widget.text,
+                    maxLines: 1,
+                    softWrap: false,
+                    style: widget.style,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
   }
 }

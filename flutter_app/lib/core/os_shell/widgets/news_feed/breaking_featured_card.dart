@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../models/news_feed_item.dart';
 import '../../../services/team_logo_service.dart';
 import 'feed_navigation.dart';
@@ -15,19 +14,8 @@ class BreakingFeaturedCard extends StatefulWidget {
   State<BreakingFeaturedCard> createState() => _BreakingFeaturedCardState();
 }
 
-class _BreakingFeaturedCardState extends State<BreakingFeaturedCard>
-    with SingleTickerProviderStateMixin {
+class _BreakingFeaturedCardState extends State<BreakingFeaturedCard> {
   bool _pressed = false;
-  late final AnimationController _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1200),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +24,6 @@ class _BreakingFeaturedCardState extends State<BreakingFeaturedCard>
         ? item.teams!.first['team_id']?.toString().toLowerCase() ?? ''
         : '';
     final headline = (item.headline ?? item.xPost).toUpperCase();
-    final category = (item.headline ?? 'BREAKING').toUpperCase();
     final timeLabel = _timeAgo(item.createdAt);
 
     return Padding(
@@ -111,22 +98,25 @@ class _BreakingFeaturedCardState extends State<BreakingFeaturedCard>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            _breakingPill(),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                category,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.2,
-                                  color: Color(0x73FFFFFF),
+                            if (firstTeamId.isNotEmpty)
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.all(3),
+                                child: Image.asset(
+                                  TeamLogoService.getLogoPath(firstTeamId),
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) =>
+                                      const SizedBox(),
                                 ),
                               ),
-                            ),
+                            const Spacer(),
                             Text(
                               timeLabel,
                               style: const TextStyle(
@@ -137,23 +127,6 @@ class _BreakingFeaturedCardState extends State<BreakingFeaturedCard>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        if (firstTeamId.isNotEmpty)
-                          Container(
-                            width: 36,
-                            height: 36,
-                            margin: const EdgeInsets.only(bottom: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.all(4),
-                            child: Image.asset(
-                              TeamLogoService.getLogoPath(firstTeamId),
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => const SizedBox(),
-                            ),
-                          ),
                         if (item.imageUrl != null) const SizedBox(height: 80),
                         Text(
                           headline,
@@ -208,44 +181,6 @@ class _BreakingFeaturedCardState extends State<BreakingFeaturedCard>
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _breakingPill() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.breakingNewsRedBright.withValues(alpha: 0.20),
-        border: Border.all(
-            color: AppColors.breakingNewsRedBright.withValues(alpha: 0.40)),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FadeTransition(
-            opacity: Tween<double>(begin: 1.0, end: 0.45).animate(_pulse),
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: const BoxDecoration(
-                color: AppColors.breakingNewsRedBright,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          const SizedBox(width: 5),
-          const Text(
-            'BREAKING',
-            style: TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.4,
-              color: AppColors.breakingNewsRedBright,
-            ),
-          ),
-        ],
       ),
     );
   }

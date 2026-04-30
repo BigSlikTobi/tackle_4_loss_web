@@ -109,6 +109,7 @@ class BreakingNewsArticle {
   final String? audioFile;
   final String? sourceUrl;
   final String? imageSource;
+  final String? author;
 
   BreakingNewsArticle({
     required this.id,
@@ -125,6 +126,7 @@ class BreakingNewsArticle {
     this.audioFile,
     this.sourceUrl,
     this.imageSource,
+    this.author,
     String? sourceName,
   }) : _sourceName = sourceName;
 
@@ -175,6 +177,7 @@ class BreakingNewsArticle {
       audioFile: json['audioFile'] as String?,
       sourceUrl: (json['source_url'] ?? json['sourceUrl']) as String?,
       imageSource: (json['image_source'] ?? json['imageSource']) as String?,
+      author: json['author'] as String?,
       // Pass source_name through constructor to private field
       sourceName: (json['source_name'] ?? json['sourceName']) as String?,
     );
