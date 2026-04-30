@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../micro_apps/standings/services/standings_service.dart';
 import '../../../micro_apps/standings/models/game_model.dart';
+import '../../models/news_feed_item.dart';
 import '../../models/team_model.dart';
+import '../../services/articles_service.dart';
 import '../../services/audio_player_service.dart';
 
 import '../models/team_article.dart';
@@ -15,12 +17,17 @@ import '../models/injury_player.dart';
 class TeamCenterController extends ChangeNotifier {
   final StandingsService _standingsService = StandingsService();
   final AudioPlayerService _audioService = AudioPlayerService();
+  final ArticlesService _articlesService;
+
+  TeamCenterController({ArticlesService? articlesService})
+      : _articlesService = articlesService ?? ArticlesService();
 
   bool _isLoading = false;
   String? _error;
   Game? _lastGame;
   Game? _nextGame;
   TeamArticle? _todaysArticle;
+  NewsFeedItem? _todaysFeedItem;
 
   /// All games for the team in chronological order
   List<Game> _allTeamGames = [];
@@ -33,6 +40,13 @@ class TeamCenterController extends ChangeNotifier {
   Game? get lastGame => _lastGame;
   Game? get nextGame => _nextGame;
   TeamArticle? get todaysArticle => _todaysArticle;
+
+  /// Underlying news feed item for today's article — used to navigate into
+  /// the same detail screen the home news feed pushes (the home articles
+  /// project owns the detail fetcher), rather than the legacy
+  /// `get-team-article-detail` flow.
+  NewsFeedItem? get todaysFeedItem => _todaysFeedItem;
+
   List<Game> get allTeamGames => _allTeamGames;
   int get startIndex => _startIndex;
 
@@ -56,6 +70,7 @@ class TeamCenterController extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     _todaysArticle = null;
+    _todaysFeedItem = null;
     notifyListeners();
 
     try {
@@ -106,19 +121,17 @@ class TeamCenterController extends ChangeNotifier {
 
   Future<void> _loadDailyUpdate(String teamId, String languageCode) async {
     try {
-      final response = await Supabase.instance.client.functions.invoke(
-        'get-team-daily-update',
-        // Ensure team_id is uppercase to match team_abbr (e.g., DEN, BUF)
-        body: {'team_id': teamId.toUpperCase(), 'language_code': languageCode},
+      final feedItem = await _articlesService.fetchLatestArticleForTeam(
+        teamId: teamId,
+        language: languageCode,
       );
 
-      final data = response.data;
-      if (data != null && data['article'] != null) {
-        _todaysArticle = TeamArticle.fromJson(data['article']);
-      }
+      _todaysFeedItem = feedItem;
+      _todaysArticle = feedItem != null ? _toTeamArticle(feedItem) : null;
     } catch (e) {
       debugPrint('Failed to load daily update: $e');
-      // Set fallback even on error to stop spinner
+      _todaysFeedItem = null;
+      // Surface a placeholder so the card stops the spinner state.
       _todaysArticle = TeamArticle(
         id: 'placeholder_error',
         title: 'Stay tuned for updates!',
@@ -127,6 +140,21 @@ class TeamCenterController extends ChangeNotifier {
         publishedAt: DateTime.now(),
       );
     }
+  }
+
+  /// Map a home-feed [NewsFeedItem] onto the [TeamArticle] shape consumed by
+  /// the existing Daily Update card. The home feed has no per-article TTS
+  /// audio file, so [TeamArticle.audioUrl] stays null and the play button on
+  /// the card is inert (matching how the card already short-circuits on a
+  /// missing audio URL).
+  TeamArticle _toTeamArticle(NewsFeedItem item) {
+    return TeamArticle(
+      id: item.id,
+      title: item.headline ?? item.xPost,
+      summary: item.xPost,
+      imageUrl: item.imageUrl ?? '',
+      publishedAt: item.createdAt,
+    );
   }
 
   List<RosterPlayer> _offenseRoster = [];
