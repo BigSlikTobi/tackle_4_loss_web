@@ -17,6 +17,13 @@ class TeamStanding {
   final int divisionLosses;
   final double winPercentage;
   final int netPoints;
+  final int? divisionRank;
+  final int? conferenceRank;
+  final int? leagueRank;
+
+  /// Conference playoff seed (1–7 if in playoffs, null otherwise).
+  /// Seeds 1–4 are division winners, 5–7 are wildcards.
+  final int? conferenceSeed;
 
   const TeamStanding({
     required this.teamId,
@@ -36,10 +43,22 @@ class TeamStanding {
     required this.divisionLosses,
     required this.winPercentage,
     required this.netPoints,
+    this.divisionRank,
+    this.conferenceRank,
+    this.leagueRank,
+    this.conferenceSeed,
   });
 
   /// Creates a TeamStanding from JSON.
   factory TeamStanding.fromJson(Map<String, dynamic> json) {
+    int? asNullableInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
+
     return TeamStanding(
       teamId: json['teamId'] as String? ?? '',
       teamName: json['teamName'] as String? ?? '',
@@ -58,8 +77,24 @@ class TeamStanding {
       divisionLosses: json['divisionLosses'] as int? ?? 0,
       winPercentage: (json['winPercentage'] as num?)?.toDouble() ?? 0.0,
       netPoints: json['netPoints'] as int? ?? 0,
+      divisionRank: asNullableInt(json['divisionRank']),
+      conferenceRank: asNullableInt(json['conferenceRank']),
+      leagueRank: asNullableInt(json['leagueRank']),
+      conferenceSeed: asNullableInt(json['conferenceSeed']),
     );
   }
+
+  /// True when this team currently holds a conference playoff seed (1–7).
+  bool get inPlayoffs =>
+      conferenceSeed != null && conferenceSeed! >= 1 && conferenceSeed! <= 7;
+
+  /// True when this team's seed would make them a division winner (1–4).
+  bool get isDivisionWinner =>
+      conferenceSeed != null && conferenceSeed! >= 1 && conferenceSeed! <= 4;
+
+  /// True when this team holds a wildcard seed (5–7).
+  bool get isWildcardSeed =>
+      conferenceSeed != null && conferenceSeed! >= 5 && conferenceSeed! <= 7;
 
   /// Formatted record string (e.g., "13-4" or "13-3-1").
   String get record {

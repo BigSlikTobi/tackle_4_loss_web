@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:tackle4loss_mobile/design_tokens.dart';
+import '../../../../core/theme/t4l_theme.dart';
 import '../../controllers/standings_controller.dart';
 
-/// Horizontal scrollable week selector with animated highlighting.
+/// Horizontally scrolling week chips.
+/// EMOTIONAL DESIGN: the active chip uses the user team's brand color as text
+/// when light, otherwise stays white-on-brand for the current-week ring.
 class WeekSelector extends StatefulWidget {
   final List<int> weeks;
   final int selectedWeek;
   final int currentWeek;
   final ValueChanged<int> onWeekSelected;
-  final Color? activeColor; // From selected team
+  final Color? activeColor;
 
   const WeekSelector({
     super.key,
@@ -24,36 +27,29 @@ class WeekSelector extends StatefulWidget {
 }
 
 class _WeekSelectorState extends State<WeekSelector> {
-  late ScrollController _scrollController;
+  late final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToSelectedWeek();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToSelected());
   }
 
   @override
-  void didUpdateWidget(WeekSelector oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedWeek != widget.selectedWeek) {
-      _scrollToSelectedWeek();
-    }
+  void didUpdateWidget(WeekSelector old) {
+    super.didUpdateWidget(old);
+    if (old.selectedWeek != widget.selectedWeek) _scrollToSelected();
   }
 
-  void _scrollToSelectedWeek() {
-    final index = widget.weeks.indexOf(widget.selectedWeek);
-    if (index >= 0 && _scrollController.hasClients) {
-      final offset =
-          (index * 72.0) - (MediaQuery.of(context).size.width / 2) + 36;
-      _scrollController.animateTo(
-        offset.clamp(0.0, _scrollController.position.maxScrollExtent),
-        duration: AppAnimation.durationNormal,
-        curve: AppAnimation.curveEaseInOut,
-      );
-    }
+  void _scrollToSelected() {
+    final i = widget.weeks.indexOf(widget.selectedWeek);
+    if (i < 0 || !_scrollController.hasClients) return;
+    final offset = (i * 60.0) - (MediaQuery.of(context).size.width / 2) + 30;
+    _scrollController.animateTo(
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: AppAnimation.durationNormal,
+      curve: AppAnimation.curveEaseInOut,
+    );
   }
 
   @override
@@ -64,37 +60,31 @@ class _WeekSelectorState extends State<WeekSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+    final brand = widget.activeColor ??
+        Theme.of(context).extension<T4LThemeColors>()?.brand ??
+        AppColors.brandBase;
     return Container(
-      height: 64, // Increased from 56
+      height: 68,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.cardLight,
-        boxShadow: AppShadows.sm,
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
       ),
-      child: ListView.builder(
+      child: ListView.separated(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space1,
-          vertical: AppSpacing.space1,
-        ),
+            horizontal: AppSpacing.space2, vertical: 8),
         itemCount: widget.weeks.length,
-        itemBuilder: (context, index) {
-          final week = widget.weeks[index];
-          final isSelected = week == widget.selectedWeek;
-          final isCurrent = week == widget.currentWeek;
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: _WeekChip(
-              week: week,
-              isSelected: isSelected,
-              isCurrent: isCurrent,
-              isDark: isDark,
-              onTap: () => widget.onWeekSelected(week),
-              activeColor: widget.activeColor ?? AppColors.brandBase,
-            ),
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, i) {
+          final w = widget.weeks[i];
+          return _WeekChip(
+            week: w,
+            isSelected: w == widget.selectedWeek,
+            isCurrent: w == widget.currentWeek,
+            brand: brand,
+            onTap: () => widget.onWeekSelected(w),
           );
         },
       ),
@@ -106,94 +96,65 @@ class _WeekChip extends StatelessWidget {
   final int week;
   final bool isSelected;
   final bool isCurrent;
-  final bool isDark;
+  final Color brand;
   final VoidCallback onTap;
-  final Color activeColor;
 
   const _WeekChip({
     required this.week,
     required this.isSelected,
     required this.isCurrent,
-    required this.isDark,
+    required this.brand,
     required this.onTap,
-    required this.activeColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Logic from RadioHomeWidget:
-    // Light Mode (App Light) -> Use Team Color (Dark) for selected
-    // Dark Mode (App Dark) -> Use White for selected
-
-    Color backgroundColor;
-    Color textColor;
-    Color borderColor;
-
-    if (isSelected) {
-      if (isDark) {
-        // App Dark -> Chip White
-        backgroundColor = Colors.white;
-        textColor =
-            activeColor; // Or Black? Radio used team color foreground on white
-        borderColor = Colors.white;
-      } else {
-        // App Light -> Chip Team Color
-        backgroundColor = activeColor;
-        textColor = Colors.white;
-        borderColor = activeColor;
-      }
-    } else {
-      // Unselected
-      backgroundColor =
-          isDark ? AppColors.backgroundDark : AppColors.neutralSoft;
-      textColor = isDark ? AppColors.textSubDark : AppColors.textSubLight;
-      borderColor = Colors.transparent;
-
-      if (isCurrent) {
-        borderColor =
-            activeColor; // Border for current week even if not selected
-      }
-    }
-
-    final (label, subLabel) = StandingsController.getWeekLabels(week);
-
+    final (top, main) = StandingsController.getWeekLabels(week);
+    final activeBg = Colors.white.withValues(alpha: 0.95);
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: AppAnimation.durationFast,
-        curve: AppAnimation.curveEaseInOut,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.space2,
-          vertical: 4,
-        ),
+        constraints: const BoxConstraints(minWidth: 48),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(AppBorders.radiusFull),
-          border: isCurrent || isSelected
-              ? Border.all(color: borderColor, width: 2)
-              : null,
+          color: isSelected ? activeBg : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : isCurrent
+                    ? brand
+                    : Colors.white.withValues(alpha: 0.08),
+            width: isCurrent && !isSelected ? 1.5 : 1,
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                height: 1.1,
-                fontWeight: FontWeight.normal,
-                color:
-                    isSelected ? textColor.withValues(alpha: 0.8) : textColor,
+              top.toUpperCase(),
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: isSelected
+                    ? Colors.black.withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.35),
+                height: 1.2,
               ),
             ),
             Text(
-              subLabel,
+              main,
               style: TextStyle(
+                fontFamily: 'Russo One',
                 fontSize: 14,
-                height: 1.1,
-                fontWeight: FontWeight.bold,
-                color: textColor,
+                height: 1.2,
+                color: isSelected
+                    ? const Color(0xFF0B1810)
+                    : Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ],

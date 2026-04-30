@@ -1,61 +1,28 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/breaking_news_article.dart';
 
+/// Stubbed in MVP slim — the home shell now sources articles from
+/// `ArticlesService` (separate Supabase project). The legacy
+/// `get-breaking-news`, `get-breaking-news-detail` and `get-related-stories`
+/// edge functions no longer exist on the new main project.
+///
+// TODO(restore-on-revive): wire to ArticlesService or new edge functions.
 class BreakingNewsService {
-  final SupabaseClient _supabase = Supabase.instance.client;
-
   Future<List<BreakingNewsArticle>> fetchBreakingNews({
     String languageCode = 'en',
   }) async {
-    try {
-      final response = await _supabase.functions.invoke(
-        'get-breaking-news',
-        body: {'language_code': languageCode},
-      );
-
-      final List<dynamic> data = response.data;
-      return data.map((json) => BreakingNewsArticle.fromJson(json)).toList();
-    } catch (e) {
-      throw Exception('Failed to load breaking news: $e');
-    }
+    return const [];
   }
 
   Future<BreakingNewsArticle> fetchBreakingNewsDetail(String id) async {
-    try {
-      final response = await _supabase.functions.invoke(
-        'get-breaking-news-detail',
-        body: {'id': id},
-      );
-
-      return BreakingNewsArticle.fromJson(response.data);
-    } catch (e) {
-      throw Exception('Failed to load breaking news detail: $e');
-    }
+    throw UnimplementedError(
+      'BreakingNewsService.fetchBreakingNewsDetail is disabled in MVP slim.',
+    );
   }
 
-  /// Fetches stories related to [newsUpdateId] via story groups.
-  ///
-  /// Returns an empty list when the story has no group membership or
-  /// if the request fails.
   Future<List<RelatedStory>> fetchRelatedStories(
     String newsUpdateId, {
     String? languageCode,
   }) async {
-    try {
-      final body = <String, dynamic>{'news_update_id': newsUpdateId};
-      if (languageCode != null) body['language_code'] = languageCode;
-
-      final response = await _supabase.functions.invoke(
-        'get-related-stories',
-        body: body,
-      );
-
-      final List<dynamic> data = response.data ?? [];
-      return data
-          .map((json) => RelatedStory.fromJson(Map<String, dynamic>.from(json)))
-          .toList();
-    } catch (_) {
-      return [];
-    }
+    return const [];
   }
 }

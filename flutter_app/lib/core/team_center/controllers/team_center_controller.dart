@@ -186,7 +186,7 @@ class TeamCenterController extends ChangeNotifier {
       debugPrint(
           'Loading roster for team: ${teamId.toUpperCase()}'); // Debug log
       final response = await Supabase.instance.client.functions.invoke(
-        'get-team-roster',
+        'roster',
         body: {'team_id': teamId.toUpperCase()},
       );
 
@@ -246,7 +246,7 @@ class TeamCenterController extends ChangeNotifier {
     try {
       debugPrint('Loading depth chart for team: ${teamId.toUpperCase()}');
       final response = await Supabase.instance.client.functions.invoke(
-        'get-team-depth-chart',
+        'depth-chart',
         body: {'team_id': teamId.toUpperCase()},
       );
 
@@ -312,7 +312,7 @@ class TeamCenterController extends ChangeNotifier {
     try {
       debugPrint('Loading injuries for team: ${teamId.toUpperCase()}');
       final response = await Supabase.instance.client.functions.invoke(
-        'get-team-injuries',
+        'injuries',
         body: {'team_id': teamId.toUpperCase()},
       );
 

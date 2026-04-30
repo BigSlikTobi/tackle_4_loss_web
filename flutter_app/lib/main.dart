@@ -24,10 +24,12 @@ Future<void> main() async {
   // Load Env
   await dotenv.load(fileName: ".env");
 
-  // Initialize Supabase
+  // Initialize Supabase. The articles project is now the single backend for
+  // both the home feed (`get-articles`, `get-article-detail`) and the team
+  // center / standings functions, so all clients share one URL/key pair.
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: dotenv.env['ARTICLES_SUPABASE_URL']!,
+    anonKey: dotenv.env['ARTICLES_SUPABASE_ANON_KEY']!,
   );
 
   // MVP: FlutterGemma is not initialized — Game Reports MicroApp (its only

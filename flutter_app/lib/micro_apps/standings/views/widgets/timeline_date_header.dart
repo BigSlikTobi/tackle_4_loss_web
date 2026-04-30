@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:tackle4loss_mobile/design_tokens.dart';
 import 'package:intl/intl.dart';
+import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../controllers/standings_controller.dart';
 
+/// Sticky-style date divider used between days in the schedule timeline.
 class TimelineDateHeader extends StatelessWidget {
   final DateTime date;
   final int week;
-  final Color? themeColor;
+  final Color? themeColor; // kept for compat; not used in new design
 
   const TimelineDateHeader({
     super.key,
@@ -18,56 +19,33 @@ class TimelineDateHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateStr = DateFormat('EEEE, MMM d').format(date).toUpperCase();
-    final primaryColor = themeColor ?? AppColors.brandBase;
-
-    return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppSpacing.space2,
-        top: AppSpacing.space2,
-      ),
-      child: Row(
+    final isPost = week > 18;
+    final sub =
+        '${StandingsController.getWeekLabel(week)} ${isPost ? 'Post-Season' : 'Regular Season'}';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.space3, 14, AppSpacing.space3, 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Timeline dot
-          Container(
-            width: 32,
-            alignment: Alignment.center,
-            child: Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: primaryColor,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.5),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
+          Text(
+            dateStr,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+              color: Colors.white.withValues(alpha: 0.3),
             ),
           ),
-          const SizedBox(width: AppSpacing.space2),
-          // Date Text
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                dateStr,
-                style: AppTextStyles.h3.copyWith(
-                  color: primaryColor,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              Text(
-                '${StandingsController.getWeekLabel(week)} ${week <= 18 ? 'Regular Season' : 'Post-Season'}',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textSubLight,
-                ),
-              ),
-            ],
+          const SizedBox(height: 2),
+          Text(
+            sub,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.22),
+            ),
           ),
         ],
       ),

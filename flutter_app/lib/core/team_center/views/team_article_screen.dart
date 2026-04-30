@@ -1,6 +1,5 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/team_article.dart';
 
 class TeamArticleScreen extends StatefulWidget {
@@ -28,45 +27,18 @@ class _TeamArticleScreenState extends State<TeamArticleScreen> {
     _articleFuture = _loadArticleDetails();
   }
 
+  // TODO(restore-on-revive): the legacy `get-team-article-detail` edge
+  // function is gone with the new main Supabase project. Team Center's Daily
+  // Update card now navigates through the home article detail screen, so this
+  // screen is no longer reachable. Falls back to whatever was passed in.
   Future<TeamArticle> _loadArticleDetails() async {
-    // If we have initial data with content/subHeadline/etc, return it.
-    // However, initialArticle usually comes from the list/daily update which might only have title/summary.
-    // So we fetch to be sure we have everything.
-
-    try {
-      final response = await Supabase.instance.client.functions.invoke(
-        'get-team-article-detail',
-        body: {'id': widget.articleId, 'language_code': widget.languageCode},
-      );
-
-      final data = response.data;
-      if (data != null) {
-        // Merge with initial data if needed, but the endpoint returns full data.
-        // We create a new object from the response.
-        // The response structure matches what TeamArticle.fromJson expects mostly,
-        // but we need to ensure ID is there as the function returns specific fields.
-        // The function selects: id, headline, image, sub_headline, introduction, bullet_points, content
-        // (Wait, my implementation of get-team-article-detail selected: headline, image, sub_headline, introduction, bullet_points, content and mapped image to full URL. It did NOT select ID in the select string explicitly in the 'data' passed to fromJson unless I merge it.)
-
-        // Actually, looking at my edge function implementation:
-        // .select('headline, image, sub_headline, introduction, bullet_points, content')
-        // It returns JSON { headline: ..., image: ..., ... }
-        // TeamArticle.fromJson expects 'id'.
-
-        final Map<String, dynamic> json = Map<String, dynamic>.from(data);
-        json['id'] = widget.articleId; // Inject ID
-
-        return TeamArticle.fromJson(json);
-      }
-    } catch (e) {
-      debugPrint('Error fetching article details: $e');
-    }
-
     if (widget.initialArticle != null) {
       return widget.initialArticle!;
     }
-
-    throw Exception('Failed to load article');
+    throw UnimplementedError(
+      'TeamArticleScreen is disabled in MVP slim — route through '
+      'BreakingNewsDetailScreen via openNewsItemDetail() instead.',
+    );
   }
 
   @override

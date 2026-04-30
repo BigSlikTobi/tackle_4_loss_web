@@ -1,56 +1,80 @@
 import 'package:flutter/material.dart';
 import 'package:tackle4loss_mobile/design_tokens.dart';
 import '../../../../core/theme/t4l_theme.dart';
-import '../../models/game_model.dart';
-import '../../../../core/services/team_service.dart';
+import '../../../../core/services/team_logo_service.dart';
 import '../../../../core/models/team_model.dart';
+import '../../models/game_model.dart';
 
-/// A row displaying a single game in the schedule timeline.
-/// Uses emotional design: card backgrounds use the team's secondary color (brandLight).
+/// Single schedule row: vertical time line on the left, game card on the right.
+/// EMOTIONAL DESIGN: the brand color drives the time-line accent, the
+/// "upcoming" gradient, and the user-team highlight on the score.
 class TimelineGameRow extends StatelessWidget {
   final Game game;
   final Team? themeTeam;
 
   const TimelineGameRow({super.key, required this.game, this.themeTeam});
 
+  static const _phoneBg = Color(0xFF0D130F);
+  static const _mnfGold = Color(0xFFC9A256);
+
+  bool get _isPrimeTime {
+    final hh = int.tryParse(game.gametime.split(':').first) ?? 0;
+    return hh >= 20;
+  }
+
+  bool get _isMNF => game.weekday.toLowerCase().startsWith('mon');
+
   @override
   Widget build(BuildContext context) {
-    final teamService = TeamService();
     final colors = Theme.of(context).extension<T4LThemeColors>()!;
+    return IntrinsicHeight(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.space2, 6, AppSpacing.space2, 6),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildTimeColumn(colors),
+            Expanded(child: _buildCard(colors)),
+          ],
+        ),
+      ),
+    );
+  }
 
-    // Parse time for display
-    final timeParts = game.gametime.split(' ');
-    String displayTime = game.gametime;
-    String meridiem = '';
-
-    if (timeParts.length > 1) {
-      displayTime = timeParts[0];
-      meridiem = timeParts[1];
-    }
-
-    // Check if this is a prime time game (evening games)
-    final isPrimeTime = game.gametime.contains('20:') ||
-        game.gametime.contains('21:') ||
-        (game.gametime.contains('PM') &&
-            (game.gametime.startsWith('8') || game.gametime.startsWith('9')));
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.space2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildTimeColumn(T4LThemeColors colors) {
+    return SizedBox(
+      width: 48,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Timeline indicator
-          _buildTimelineIndicator(colors),
-          const SizedBox(width: AppSpacing.space2),
-          // Game card
-          Expanded(
-            child: _buildGameCard(
-              context,
-              colors,
-              teamService,
-              displayTime,
-              meridiem,
-              isPrimeTime,
+          Positioned.fill(
+            child: Center(
+              child: Container(
+                width: 2,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              width: 2,
+              height: 28,
+              color: colors.brand,
+            ),
+          ),
+          Container(
+            color: _phoneBg,
+            padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 4),
+            child: Text(
+              game.gametime,
+              style: TextStyle(
+                fontFamily: 'Russo One',
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.55),
+                height: 1,
+              ),
             ),
           ),
         ],
@@ -58,248 +82,204 @@ class TimelineGameRow extends StatelessWidget {
     );
   }
 
-  /// Timeline vertical line indicator
-  Widget _buildTimelineIndicator(T4LThemeColors colors) {
-    return Container(
-      width: 32,
-      alignment: Alignment.center,
+  Widget _buildCard(T4LThemeColors colors) {
+    final gradient = _cardGradient(colors);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        width: 3,
-        height: 100,
         decoration: BoxDecoration(
-          color: colors.brandLight,
-          borderRadius: BorderRadius.circular(2),
+          gradient: gradient,
+          border:
+              Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1),
+        ),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeaderRow(),
+            const SizedBox(height: 8),
+            _buildMatchupRow(colors),
+          ],
         ),
       ),
     );
   }
 
-  /// Main game card with emotional design colors
-  Widget _buildGameCard(
-    BuildContext context,
-    T4LThemeColors colors,
-    TeamService teamService,
-    String displayTime,
-    String meridiem,
-    bool isPrimeTime,
-  ) {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        // EMOTIONAL DESIGN: Use brandLight (team's secondary color) as background
-        color: colors.brandLight,
-        borderRadius: BorderRadius.circular(AppBorders.radiusMd),
-        border: Border.all(
-          color: colors.brand.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.brandLight.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+  LinearGradient _cardGradient(T4LThemeColors colors) {
+    if (_isPrimeTime) {
+      return const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0x4D3C2878), Color(0x331E1446)],
+      );
+    }
+    if (!game.isPlayed) {
+      return LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          colors.brand.withValues(alpha: 0.25),
+          colors.brand.withValues(alpha: 0.10),
         ],
-      ),
-      child: Row(
-        children: [
-          // Time section (left side)
-          _buildTimeSection(colors, displayTime, meridiem),
-          // Game info section (right side)
-          Expanded(
-            child: _buildGameInfo(context, colors, teamService, isPrimeTime),
-          ),
-        ],
-      ),
+      );
+    }
+    // Played: warm orange-tinted background like the design
+    return const LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0x2EC9641E), Color(0x1FB43C14)],
     );
   }
 
-  /// Left side time display
-  Widget _buildTimeSection(
-    T4LThemeColors colors,
-    String displayTime,
-    String meridiem,
-  ) {
-    return Container(
-      width: 70,
-      decoration: BoxDecoration(
-        color: colors.brand.withValues(alpha: 0.2),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(AppBorders.radiusMd),
-          bottomLeft: Radius.circular(AppBorders.radiusMd),
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            displayTime,
-            style: AppTextStyles.h3.copyWith(
-              fontWeight: FontWeight.bold,
-              // EMOTIONAL: Use contrast text color
-              color: colors.contrastText,
-              height: 1.0,
+  Widget _buildHeaderRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            game.stadium ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.38),
             ),
           ),
-          if (meridiem.isNotEmpty)
-            Text(
-              meridiem,
-              style: AppTextStyles.caption.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colors.contrastText.withValues(alpha: 0.7),
-                fontSize: 10,
-              ),
-            ),
+        ),
+        if (_isPrimeTime)
+          _badge('PRIME TIME',
+              bg: Colors.white.withValues(alpha: 0.12),
+              fg: Colors.white.withValues(alpha: 0.6)),
+        if (_isMNF) ...[
+          if (_isPrimeTime) const SizedBox(width: 4),
+          _badge('MNF', bg: _mnfGold.withValues(alpha: 0.18), fg: _mnfGold),
         ],
-      ),
+      ],
     );
   }
 
-  /// Right side game information
-  Widget _buildGameInfo(
-    BuildContext context,
-    T4LThemeColors colors,
-    TeamService teamService,
-    bool isPrimeTime,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Header row: Stadium + Prime Time badge
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  game.stadium ?? '',
-                  style: AppTextStyles.caption.copyWith(
-                    color: colors.contrastText.withValues(alpha: 0.6),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isPrimeTime) _buildPrimeTimeBadge(colors),
-            ],
-          ),
-          const Spacer(),
-          // Teams matchup row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTeamDisplay(
-                context,
-                teamService,
-                game.awayTeam,
-                game.awayScore,
-                colors,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  game.isPlayed ? '-' : 'vs',
-                  style: TextStyle(
-                    color: colors.contrastText.withValues(alpha: 0.5),
-                    fontWeight: FontWeight.bold,
-                    fontSize: game.isPlayed ? 14 : 12,
-                  ),
-                ),
-              ),
-              _buildTeamDisplay(
-                context,
-                teamService,
-                game.homeTeam,
-                game.homeScore,
-                colors,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Prime time badge
-  Widget _buildPrimeTimeBadge(T4LThemeColors colors) {
+  Widget _badge(String label, {required Color bg, required Color fg}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: colors.brand,
+        color: bg,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        'PRIME TIME',
-        style: TextStyle(
+        label,
+        style: AppTextStyles.caption.copyWith(
           fontSize: 8,
-          fontWeight: FontWeight.bold,
-          // EMOTIONAL: Contrast text on brand background
-          color: colors.contrastText,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.0,
+          color: fg,
         ),
       ),
     );
   }
 
-  /// Single team display with logo and score
-  Widget _buildTeamDisplay(
-    BuildContext context,
-    TeamService teamService,
-    String teamId,
-    int? score,
-    T4LThemeColors colors,
-  ) {
-    final team = teamService.getTeams().firstWhere(
-          (t) => t.id.toUpperCase() == teamId.toUpperCase(),
-          orElse: () => teamService.getTeams().first,
-        );
-
-    final isWinner = game.winner == teamId;
-
+  Widget _buildMatchupRow(T4LThemeColors colors) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.9),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+        Expanded(child: _teamSide(game.awayTeam, leading: true)),
+        if (game.isPlayed)
+          ..._scoreCenter(colors)
+        else
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              game.gametime,
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.7,
+                color: Colors.white.withValues(alpha: 0.3),
               ),
-            ],
-          ),
-          padding: const EdgeInsets.all(4),
-          child: Image.asset(team.logoUrl),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          teamId.toUpperCase(),
-          style: TextStyle(
-            color: isWinner ? colors.brand : colors.contrastText,
-            fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
-            fontSize: 12,
-          ),
-        ),
-        if (game.isPlayed && score != null) ...[
-          const SizedBox(width: 6),
-          Text(
-            score.toString(),
-            style: TextStyle(
-              color: isWinner
-                  ? colors.brand
-                  : colors.contrastText.withValues(alpha: 0.8),
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
             ),
           ),
-        ],
+        Expanded(child: _teamSide(game.homeTeam, leading: false)),
       ],
+    );
+  }
+
+  List<Widget> _scoreCenter(T4LThemeColors colors) {
+    final awayWon = game.winner == game.awayTeam;
+    final homeWon = game.winner == game.homeTeam;
+    Color color(bool won) =>
+        won ? Colors.white : Colors.white.withValues(alpha: 0.38);
+    return [
+      Text(
+        '${game.awayScore ?? 0}',
+        style: TextStyle(
+          fontFamily: 'Russo One',
+          fontSize: 18,
+          color: color(awayWon),
+          height: 1,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: Text(
+          '–',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+        ),
+      ),
+      Text(
+        '${game.homeScore ?? 0}',
+        style: TextStyle(
+          fontFamily: 'Russo One',
+          fontSize: 18,
+          color: color(homeWon),
+          height: 1,
+        ),
+      ),
+    ];
+  }
+
+  Widget _teamSide(String teamId, {required bool leading}) {
+    final logo = Container(
+      width: 28,
+      height: 28,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+              color: Color(0x40000000), blurRadius: 4, offset: Offset(0, 1)),
+        ],
+      ),
+      padding: const EdgeInsets.all(2.5),
+      child: ClipOval(
+        child: Image.asset(
+          TeamLogoService.getLogoPath(teamId),
+          fit: BoxFit.contain,
+          errorBuilder: (_, __, ___) =>
+              const Icon(Icons.shield, size: 14, color: Colors.black54),
+        ),
+      ),
+    );
+    final abbr = Text(
+      teamId.toUpperCase(),
+      style: AppTextStyles.body.copyWith(
+        fontSize: 13,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.4,
+        color: Colors.white.withValues(alpha: 0.75),
+      ),
+    );
+    final children = <Widget>[
+      logo,
+      const SizedBox(width: 6),
+      abbr,
+    ];
+    return Row(
+      mainAxisAlignment:
+          leading ? MainAxisAlignment.start : MainAxisAlignment.end,
+      children: leading ? children : children.reversed.toList(),
     );
   }
 }

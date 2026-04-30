@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/news_feed_item.dart';
 import '../../micro_apps/breaking_news/models/breaking_news_article.dart';
@@ -20,28 +19,17 @@ class ArticlesPage {
   const ArticlesPage({required this.items, this.nextCursor});
 }
 
-/// Service for the dedicated "articles" Supabase project that owns the
-/// `get-articles` (home feed) and `get-article-detail` edge functions.
+/// Service for the home articles feed (`get-articles` + `get-article-detail`).
 ///
-/// This project is separate from the main app project (auth, standings,
-/// realtime, etc.), so the service holds its own [SupabaseClient] keyed by
-/// the `ARTICLES_SUPABASE_URL` / `ARTICLES_SUPABASE_ANON_KEY` env entries.
+/// These functions live on the same Supabase project as the team center /
+/// standings functions, so the service uses the shared
+/// `Supabase.instance.client` configured from `ARTICLES_SUPABASE_URL` /
+/// `ARTICLES_SUPABASE_ANON_KEY`.
 class ArticlesService {
   final SupabaseClient _client;
 
   ArticlesService({SupabaseClient? client})
-      : _client = client ?? _defaultClient();
-
-  static SupabaseClient _defaultClient() {
-    final url = dotenv.env['ARTICLES_SUPABASE_URL'];
-    final key = dotenv.env['ARTICLES_SUPABASE_ANON_KEY'];
-    if (url == null || url.isEmpty || key == null || key.isEmpty) {
-      throw StateError(
-        'Missing ARTICLES_SUPABASE_URL / ARTICLES_SUPABASE_ANON_KEY in .env',
-      );
-    }
-    return SupabaseClient(url, key);
-  }
+      : _client = client ?? Supabase.instance.client;
 
   /// Map app-internal language code (`en`, `de`) to the API's full BCP-47 tag.
   static String mapLanguage(String code) {

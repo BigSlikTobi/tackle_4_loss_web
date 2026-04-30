@@ -10,35 +10,34 @@ import 'timeline_date_header.dart';
 import 'timeline_game_row.dart';
 import 'week_selector.dart';
 
-/// Schedule tab for the Game Center.
-/// Displays NFL games organized by week with team logos.
+/// Schedule tab. Layout matches the new Game Center design:
+/// week selector → optional "Your Matchup" featured card → day-grouped
+/// timeline of game cards. EMOTIONAL DESIGN: brand color leads.
 class ScheduleTab extends StatelessWidget {
   const ScheduleTab({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<SettingsService>(context);
+    final settings = context.watch<SettingsService>();
     final selectedTeam = settings.selectedTeam;
+    final colors = Theme.of(context).extension<T4LThemeColors>()!;
 
     return Consumer<StandingsController>(
-      builder: (context, controller, child) {
+      builder: (context, controller, _) {
         if (controller.allGames.isEmpty) {
-          return _buildEmptyState(context);
+          return _buildEmpty();
         }
-
         return Column(
           children: [
-            // Week selector
             WeekSelector(
               weeks: controller.weeks,
               selectedWeek: controller.selectedWeek,
               currentWeek: controller.currentWeek,
               onWeekSelected: controller.selectWeek,
-              activeColor: Theme.of(context).extension<T4LThemeColors>()!.brand,
+              activeColor: colors.brand,
             ),
-            // Games list
             Expanded(
-              child: _buildGamesList(context, controller, selectedTeam),
+              child: _buildList(context, controller, selectedTeam),
             ),
           ],
         );
@@ -46,98 +45,62 @@ class ScheduleTab extends StatelessWidget {
     );
   }
 
-  Widget _buildGamesList(
+  Widget _buildList(
     BuildContext context,
     StandingsController controller,
     Team? themeTeam,
   ) {
     final games = controller.selectedWeekGames;
-
-    // 1. Find Featured Game (User's Team)
-    final featuredGame = controller.getFeaturedGame(themeTeam?.id);
-
-    // 2. Filter list (Exclude featured game to avoid dupes)
-    final listGames = featuredGame != null
-        ? games.where((g) => g.id != featuredGame.id).toList()
+    final featured = controller.getFeaturedGame(themeTeam?.id);
+    final list = featured != null
+        ? games.where((g) => g.id != featured.id).toList()
         : games;
 
     final children = <Widget>[];
-
-    // Add Featured Game
-    if (featuredGame != null) {
+    if (featured != null && themeTeam != null) {
       children.add(
-        FeaturedGameCard(
-          game: featuredGame,
-          featuredTeam: themeTeam!,
-          onTap: () {},
-        ),
+        FeaturedGameCard(game: featured, featuredTeam: themeTeam, onTap: () {}),
       );
     }
 
-    // Process Timeline Items
-    if (listGames.isNotEmpty) {
-      for (int i = 0; i < listGames.length; i++) {
-        final game = listGames[i];
-        final isNewDay =
-            i == 0 || !_isSameDay(game.gameday, listGames[i - 1].gameday);
-
-        if (isNewDay) {
-          children.add(
-            TimelineDateHeader(
-              date: game.gameday,
-              week: controller.selectedWeek,
-              themeColor: Theme.of(context).extension<T4LThemeColors>()!.brand,
-            ),
-          );
-        }
-
+    for (var i = 0; i < list.length; i++) {
+      final g = list[i];
+      final newDay = i == 0 || !_sameDay(g.gameday, list[i - 1].gameday);
+      if (newDay) {
         children.add(
-          TimelineGameRow(
-            game: game,
-            themeTeam: themeTeam,
-          ),
+          TimelineDateHeader(date: g.gameday, week: controller.selectedWeek),
         );
       }
+      children.add(TimelineGameRow(game: g, themeTeam: themeTeam));
     }
+    children.add(const SizedBox(height: 24));
 
     return ListView(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.space1,
-        bottom: AppSpacing.space6,
-        left: AppSpacing.space3,
-        right: AppSpacing.space3,
-      ),
+      padding: EdgeInsets.zero,
       children: children,
     );
   }
 
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
+  bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
-  Widget _buildEmptyState(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
+  Widget _buildEmpty() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.sports_football,
-            size: 64,
-            color: isDark ? AppColors.textSubDark : AppColors.textSubLight,
+            Icons.calendar_today_outlined,
+            size: 36,
+            color: Colors.white.withValues(alpha: 0.2),
           ),
           const SizedBox(height: AppSpacing.space2),
           Text(
-            'No games found',
-            style: AppTextStyles.h3.copyWith(
-              color: isDark ? AppColors.textMainDark : AppColors.textMainLight,
+            'No games scheduled',
+            style: AppTextStyles.body.copyWith(
+              color: Colors.white.withValues(alpha: 0.4),
+              fontWeight: FontWeight.w600,
             ),
-          ),
-          const SizedBox(height: AppSpacing.space1),
-          const Text(
-            'Check back later for game schedules',
-            style: AppTextStyles.caption,
           ),
         ],
       ),
