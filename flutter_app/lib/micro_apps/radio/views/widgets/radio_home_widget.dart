@@ -67,6 +67,7 @@ class _RadioHomeWidgetState extends State<RadioHomeWidget>
     if (!mounted || !_scrollController.hasClients) return;
 
     final maxScroll = _scrollController.position.maxScrollExtent;
+    // ignore: deprecated_member_use
     final tickerEnabled = TickerMode.of(context);
     final shouldRun = tickerEnabled && maxScroll > 0;
 

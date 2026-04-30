@@ -32,6 +32,16 @@ export const designTokens = {
       breakingNewsRed: '#991b1b',
       breakingNewsRedBright: '#ef4444',
     },
+    // Player availability indicators (team center surfaces)
+    status: {
+      active: '#4caf80', // healthy / active
+      quest: '#c9a256', // questionable
+      out: '#e06060', // out / IR
+    },
+    // Editorial accent — used for podcast/premium chips and starter pills
+    editorial: {
+      gold: '#c9a256',
+    },
   },
   typography: {
     fontFamilies: {

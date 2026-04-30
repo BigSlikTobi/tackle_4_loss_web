@@ -215,7 +215,6 @@ class _BreakingNewsDetailScreenState extends State<BreakingNewsDetailScreen> {
       ),
     );
   }
-
 }
 
 // ─── Hero ────────────────────────────────────────────────────────────
