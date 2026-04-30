@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../design_tokens.dart';
 import '../../models/team_article.dart';
 
-const Color _kGold = Color(0xFFC9A256);
+// Editorial gold sourced from the design tokens
+const Color _kGold = AppColors.editorialGold;
+// Field gradient stops — visual treatment around the brand base; kept local
+// because they are blended artifacts of `brandBase`, not reusable brand colors.
 const Color _kFieldDark1 = Color(0xFF071810);
 const Color _kFieldDark2 = AppColors.brandBase; // 0xFF0F3D2E
 const Color _kFieldDark3 = Color(0xFF08221A);

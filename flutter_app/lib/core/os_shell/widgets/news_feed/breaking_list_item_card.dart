@@ -211,9 +211,8 @@ class _MarqueeTextState extends State<_MarqueeText>
         child: AnimatedBuilder(
           animation: _ctrl,
           builder: (_, __) {
-            final t = (_ctrl.lastElapsedDuration?.inMicroseconds ?? 0) /
-                1e6 %
-                period;
+            final t =
+                (_ctrl.lastElapsedDuration?.inMicroseconds ?? 0) / 1e6 % period;
             final dx = -_MarqueeText._pixelsPerSecond * t;
             return Stack(
               clipBehavior: Clip.none,
